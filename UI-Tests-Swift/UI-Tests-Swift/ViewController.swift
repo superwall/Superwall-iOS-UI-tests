@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  superwall-ios-ui-tests
+//  UI-Tests-Swift
 //
 //  Created by Bryan Dubno on 1/24/23.
 //
