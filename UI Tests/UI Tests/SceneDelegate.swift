@@ -1,6 +1,6 @@
 //
 //  SceneDelegate.swift
-//  UI-Tests-Swift
+//  UI-Tests
 //
 //  Created by Bryan Dubno on 1/24/23.
 //
