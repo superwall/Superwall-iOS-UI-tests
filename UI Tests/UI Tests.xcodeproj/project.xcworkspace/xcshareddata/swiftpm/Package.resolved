@@ -14,7 +14,16 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/superwall-me/SuperwallKit-iOS",
       "state" : {
-        "revision" : "62c2ba201be40650c5fa6cbe1af2e3db5534df4f"
+        "revision" : "2731f75231a79fdfda59ae4f28dc9f749cc6f848"
+      }
+    },
+    {
+      "identity" : "swift-snapshot-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
+      "state" : {
+        "branch" : "main",
+        "revision" : "f5489a273ddd57239fd68b9889b3b541bdcbfa3a"
       }
     }
   ],

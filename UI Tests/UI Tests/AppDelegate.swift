@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  UI-Tests
+//  UI-Tests-Swift
 //
 //  Created by Bryan Dubno on 1/24/23.
 //
@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     // Override point for customization after application launch.
-    SuperwallInteractor.shared.configure()
+    SetupHelper.shared.configure()
 
     return true
   }

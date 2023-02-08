@@ -66,6 +66,56 @@
           "referenceName" : "com.ui_tests.annual",
           "subscriptionGroupID" : "4F31BE19",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "99.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "83B37E75",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.ui_tests.custom_annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "com.ui_tests.custom_annual",
+          "subscriptionGroupID" : "4F31BE19",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "12.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B95207CF",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.ui_tests.custom_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "com.ui_tests.custom_monthly",
+          "subscriptionGroupID" : "4F31BE19",
+          "type" : "RecurringSubscription"
         }
       ]
     }
