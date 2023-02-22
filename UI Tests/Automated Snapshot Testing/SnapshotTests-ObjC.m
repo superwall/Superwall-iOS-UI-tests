@@ -240,6 +240,7 @@ static BOOL kHasConfigured = NO;
   ASYNC_END
 }
 
+#warning https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work
 - (void)test6 {
   ASYNC_BEGIN
 

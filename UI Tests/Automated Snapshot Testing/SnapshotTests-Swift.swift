@@ -154,8 +154,45 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
+  #warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
+  func test10() async {
+    // Present the paywall.
+    Superwall.shared.track(event: "present_products")
 
-#warning("TODO")
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Create override products
+    guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
+      XCTAssert(false, "WARNING: Unable to fetch custom products. These are needed for testing.")
+      return
+    }
+
+    let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
+    let paywallOverrides = PaywallOverrides(products: products)
+
+    Superwall.shared.track(event: "present_products", paywallOverrides: paywallOverrides)
+
+    // Assert override products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Present the paywall.
+    Superwall.shared.track(event: "present_products")
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+
+
+#warning("TODO: Might need to move to Waldo")
 // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
 // Superwall.shared.track(event: "present_urls")
 // Test: present paywall, then present with overrides, the present original again
