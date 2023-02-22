@@ -29,15 +29,34 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "540BF65E2993172A005A8600"
-               BuildableName = "Automated Snapshot Testing.xctest"
-               BlueprintName = "Automated Snapshot Testing"
+               BuildableName = "Automated Snapshot ObjC.xctest"
+               BlueprintName = "Automated Snapshot ObjC"
                ReferencedContainer = "container:UI Tests.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "SnapshotTests_Swift">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "54039AA2299C50EE005AF6B3"
+               BuildableName = "Automated Snapshot Swift.xctest"
+               BlueprintName = "Automated Snapshot Swift"
+               ReferencedContainer = "container:UI Tests.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "SnapshotTests_ObjC">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>

@@ -8,16 +8,17 @@
 import Foundation
 import StoreKit
 
-class StoreKitHelper: NSObject {
-  static let shared: StoreKitHelper = StoreKitHelper()
+@objc(SWKStoreKitHelper)
+public class StoreKitHelper: NSObject {
+  @objc public static let shared: StoreKitHelper = StoreKitHelper()
 
   private(set) var products = [SKProduct]()
 
-  var monthlyProduct: SKProduct? {
+  @objc public var monthlyProduct: SKProduct? {
     return products.first(where: { $0.productIdentifier == Constants.monthlyProductIdentifier })
   }
 
-  var annualProduct: SKProduct? {
+  @objc public var annualProduct: SKProduct? {
     return products.first(where: { $0.productIdentifier == Constants.annualProductIdentifier })
   }
 
@@ -27,8 +28,16 @@ class StoreKitHelper: NSObject {
     return request
   }()
 
-  func fetchCustomProducts() {
+  var mostRecentFetch: (() -> Void)?
+
+  @objc public func fetchCustomProducts() async {
     productsRequest.start()
+    return await withCheckedContinuation { continuation in
+      mostRecentFetch = { [weak self] in
+        continuation.resume()
+        self?.mostRecentFetch = nil
+      }
+    }
   }
 }
 
@@ -40,9 +49,10 @@ extension StoreKitHelper {
 }
 
 extension StoreKitHelper: SKProductsRequestDelegate {
-  func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-      if !response.products.isEmpty {
-         products = response.products
-      }
+  public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
+    if !response.products.isEmpty {
+      products = response.products
+      mostRecentFetch?()
+    }
   }
 }

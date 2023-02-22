@@ -23,63 +23,110 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "D818210A-DA45-418A-9235-B1B75FEA2D96"
-            shouldBeEnabled = "Yes"
+            uuid = "0AE5375F-7CF2-4068-BCE2-E470934BD4E7"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal Presentation/Operators/LogPresentationOperator.swift"
+            filePath = "Automated Snapshot Testing/Automated_Snapshot_Testing.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "26"
             endingLineNumber = "26"
-            landmarkName = "logPresentation(_:)"
-            landmarkType = "7">
+            landmarkName = "defaultTestSuite"
+            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "0AE5375F-7CF2-4068-BCE2-E470934BD4E7 - 4f3dd9bf8816647c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Automated_Snapshot_Testing.Automated_Snapshot_Testing.setUp() async throws -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/Automated_Snapshot_Testing.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "33"
+                  endingLineNumber = "33"
+                  offsetFromSymbolStart = "68">
+               </Location>
+               <Location
+                  uuid = "0AE5375F-7CF2-4068-BCE2-E470934BD4E7 - 2823e9610eae4a26"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) await resume partial function for Automated_Snapshot_Testing.Automated_Snapshot_Testing.setUp() async throws -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/Automated_Snapshot_Testing.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "33"
+                  endingLineNumber = "33"
+                  offsetFromSymbolStart = "48">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "33CD7CD0-3ECA-46F7-98CE-873EC0865C73"
-            shouldBeEnabled = "Yes"
+            uuid = "784368D8-38E9-4371-A633-29B156E04382"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal Presentation/Operators/PresentPaywallOperator.swift"
+            filePath = "Automated Snapshot Testing/SnapshotTests.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "22"
-            endingLineNumber = "22"
-            landmarkName = "presentPaywall(_:)"
-            landmarkType = "7">
+            startingLineNumber = "21"
+            endingLineNumber = "21"
+            landmarkName = "unknown"
+            landmarkType = "0">
             <Locations>
                <Location
-                  uuid = "33CD7CD0-3ECA-46F7-98CE-873EC0865C73 - 8c944ede2e812b28"
+                  uuid = "784368D8-38E9-4371-A633-29B156E04382 - e9f527853e17ff89"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
+                  symbolName = "(1) suspend resume partial function for Automated_Snapshot_Testing.SnapshotTests.test1() async -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/SnapshotTests.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "22"
                   endingLineNumber = "22"
-                  offsetFromSymbolStart = "120">
+                  offsetFromSymbolStart = "64">
                </Location>
                <Location
-                  uuid = "33CD7CD0-3ECA-46F7-98CE-873EC0865C73 - 4ea32e0727b10435"
+                  uuid = "784368D8-38E9-4371-A633-29B156E04382 - 62817ae92c4463ac"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
+                  symbolName = "(2) await resume partial function for Automated_Snapshot_Testing.SnapshotTests.test1() async -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/SnapshotTests.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "23"
-                  endingLineNumber = "23"
-                  offsetFromSymbolStart = "116">
+                  startingLineNumber = "22"
+                  endingLineNumber = "22"
+                  offsetFromSymbolStart = "40">
+               </Location>
+               <Location
+                  uuid = "784368D8-38E9-4371-A633-29B156E04382 - 99d7cb5a86a5a5f6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(6) suspend resume partial function for Automated_Snapshot_Testing.SnapshotTests.test1() async -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/SnapshotTests.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "22"
+                  endingLineNumber = "22"
+                  offsetFromSymbolStart = "56">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -87,78 +134,78 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "59F2DC1A-2A6D-4056-8372-84201CAC1D38"
-            shouldBeEnabled = "Yes"
+            uuid = "16044E6C-6CE8-4879-8A2E-E652C3A37D5F"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal Presentation/Operators/PresentPaywallOperator.swift"
+            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Superwall.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "26"
-            endingLineNumber = "26"
-            landmarkName = "presentPaywall(_:)"
-            landmarkType = "7">
+            startingLineNumber = "150"
+            endingLineNumber = "150"
+            landmarkName = "isPaywallPresented"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "5B9161A7-4997-4710-8D42-F323755F2F45"
-            shouldBeEnabled = "Yes"
+            uuid = "26928EB9-E222-4F0D-8944-56221DE6A761"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal Presentation/Operators/PresentPaywallOperator.swift"
+            filePath = "Automated Snapshot Testing/SnapshotTests copy.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "25"
-            endingLineNumber = "25"
-            landmarkName = "presentPaywall(_:)"
-            landmarkType = "7">
+            startingLineNumber = "60"
+            endingLineNumber = "60"
+            landmarkName = "unknown"
+            landmarkType = "0">
             <Locations>
                <Location
-                  uuid = "5B9161A7-4997-4710-8D42-F323755F2F45 - 4991143ac9858d28"
+                  uuid = "26928EB9-E222-4F0D-8944-56221DE6A761 - 26d9127437ad6a80"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for closure #1 @Sendable () async -&gt; () in closure #1 ((Swift.Result&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;) -&gt; ()) -&gt; () in closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
+                  symbolName = "(1) suspend resume partial function for Automated_Snapshot_Testing.XCTestTransform.verify() async -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/SnapshotTests%20copy.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "25"
-                  endingLineNumber = "25"
-                  offsetFromSymbolStart = "140">
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
+                  offsetFromSymbolStart = "104">
                </Location>
                <Location
-                  uuid = "5B9161A7-4997-4710-8D42-F323755F2F45 - aadf50b497868139"
+                  uuid = "26928EB9-E222-4F0D-8944-56221DE6A761 - 393a87f0676cf3c1"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "(2) await resume partial function for closure #1 @Sendable () async -&gt; () in closure #1 ((Swift.Result&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;) -&gt; ()) -&gt; () in closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
+                  symbolName = "Automated_Snapshot_Testing.XCTestTransform.verify() -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/SnapshotTests%20copy.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "25"
-                  endingLineNumber = "25"
-                  offsetFromSymbolStart = "72">
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
+                  offsetFromSymbolStart = "112">
                </Location>
                <Location
-                  uuid = "5B9161A7-4997-4710-8D42-F323755F2F45 - 36cdc229c2eb0916"
+                  uuid = "26928EB9-E222-4F0D-8944-56221DE6A761 - 26d9127437ad6a80"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "closure #1 @Swift.MainActor @Sendable () -&gt; () in closure #1 @Sendable () async -&gt; () in closure #1 ((Swift.Result&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;) -&gt; ()) -&gt; () in closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
+                  symbolName = "(1) suspend resume partial function for Automated_Snapshot_Testing.XCTestTransform.verify() async -&gt; ()"
+                  moduleName = "Automated Snapshot Testing"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/Automated%20Snapshot%20Testing/SnapshotTests%20copy.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "26"
-                  endingLineNumber = "26"
-                  offsetFromSymbolStart = "360">
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
+                  offsetFromSymbolStart = "112">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -166,95 +213,127 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "BD6BCA41-1517-496E-AC47-9616C52A593A"
+            uuid = "A37709A9-BB53-4284-8575-F067CA2DF25B"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal Presentation/Operators/PresentPaywallOperator.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "24"
-            endingLineNumber = "24"
-            landmarkName = "presentPaywall(_:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "BD6BCA41-1517-496E-AC47-9616C52A593A - b3e1428ff6c62742"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 ((Swift.Result&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;) -&gt; ()) -&gt; () in closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "24"
-                  endingLineNumber = "24"
-                  offsetFromSymbolStart = "200">
-               </Location>
-               <Location
-                  uuid = "BD6BCA41-1517-496E-AC47-9616C52A593A - 6ed4c74ae36c6b26"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 @Sendable () async -&gt; () in closure #1 ((Swift.Result&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;) -&gt; ()) -&gt; () in closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
-                  moduleName = "UI Tests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "24"
-                  endingLineNumber = "24"
-                  offsetFromSymbolStart = "0">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "2E04DFC1-0C6A-4EAE-8038-ECD4B13232D0"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal Presentation/Operators/PresentPaywallOperator.swift"
+            filePath = "UI Tests/Test Suites/ObjcTestSuite.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "23"
             endingLineNumber = "23"
-            landmarkName = "presentPaywall(_:)"
-            landmarkType = "7">
+            landmarkName = "ObjcTestSuite"
+            landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0467A9BA-5DE2-4BDE-8D52-C87B1E5CDE25"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "UI Tests/Test Suites/ObjcTestSuite.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "21"
+            endingLineNumber = "21"
+            landmarkName = "ObjcTestSuite"
+            landmarkType = "3">
             <Locations>
                <Location
-                  uuid = "2E04DFC1-0C6A-4EAE-8038-ECD4B13232D0 - 4ea32e0727b10435"
+                  uuid = "0467A9BA-5DE2-4BDE-8D52-C87B1E5CDE25 - 164f67a7f02897ad"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
+                  symbolName = "__22-[ObjcTestSuite tests]_block_invoke"
                   moduleName = "UI Tests"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/UI%20Tests/Test%20Suites/ObjcTestSuite.m"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "21"
+                  endingLineNumber = "21"
+                  offsetFromSymbolStart = "60">
+               </Location>
+               <Location
+                  uuid = "0467A9BA-5DE2-4BDE-8D52-C87B1E5CDE25 - 6777b423efa6c484"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__22-[ObjcTestSuite tests]_block_invoke_2"
+                  moduleName = "UI Tests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bryandubno/Dropbox/Documents/github/superwall-ios-ui-tests/UI%20Tests/UI%20Tests/Test%20Suites/ObjcTestSuite.m"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "23"
                   endingLineNumber = "23"
-                  offsetFromSymbolStart = "116">
+                  offsetFromSymbolStart = "64">
                </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F7025921-5253-4FEE-85EB-22B49B510BD0"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "UI Tests/Utilities/SetupHelper.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "18"
+            endingLineNumber = "18"
+            landmarkName = "configure(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7A558B4D-A5A5-438E-AD03-9FC858BB0C7A"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../../../Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Superwall.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "142"
+            endingLineNumber = "142"
+            landmarkName = "paywallViewController"
+            landmarkType = "24">
+            <Locations>
                <Location
-                  uuid = "2E04DFC1-0C6A-4EAE-8038-ECD4B13232D0 - b3e1428ff6c62742"
+                  uuid = "7A558B4D-A5A5-438E-AD03-9FC858BB0C7A - 777697bcef1249e7"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "closure #1 ((Swift.Result&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;) -&gt; ()) -&gt; () in closure #1 (SuperwallKit.PresentablePipelineOutput) -&gt; Combine.Future&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt; in Combine.AnyPublisher&lt; where &#x3c4;_0_0 == SuperwallKit.PresentablePipelineOutput, &#x3c4;_0_1 == Swift.Error&gt;.presentPaywall(Combine.PassthroughSubject&lt;SuperwallKit.PaywallState, Swift.Never&gt;) -&gt; Combine.AnyPublisher&lt;SuperwallKit.PresentablePipelineOutput, Swift.Error&gt;"
+                  symbolName = "function signature specialization &lt;Arg[0] = Dead&gt; of static SuperwallKit.Superwall.shared.getter : SuperwallKit.Superwall"
                   moduleName = "UI Tests"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Paywall/Presentation/Internal%20Presentation/Operators/PresentPaywallOperator.swift"
+                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Superwall.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "24"
-                  endingLineNumber = "24"
-                  offsetFromSymbolStart = "200">
+                  startingLineNumber = "145"
+                  endingLineNumber = "145"
+                  offsetFromSymbolStart = "188">
+               </Location>
+               <Location
+                  uuid = "7A558B4D-A5A5-438E-AD03-9FC858BB0C7A - 386c04041e9ee097"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "function signature specialization &lt;Arg[0] = Dead&gt; of static SuperwallKit.Superwall.shared.getter : SuperwallKit.Superwall"
+                  moduleName = "Automated Snapshot ObjC"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/bryandubno/Library/Developer/Xcode/DerivedData/UI_Tests-fhpjupyceraqdkfmfcqjvwgvvikl/SourcePackages/checkouts/SuperwallKit-iOS/Sources/SuperwallKit/Superwall.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "145"
+                  endingLineNumber = "145"
+                  offsetFromSymbolStart = "188">
                </Location>
             </Locations>
          </BreakpointContent>
