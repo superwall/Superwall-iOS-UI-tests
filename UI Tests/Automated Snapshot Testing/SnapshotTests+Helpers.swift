@@ -49,29 +49,23 @@ extension XCTestCase {
   }
 
   func dismissViewControllers() async {
-//    return await withCheckedContinuation({ continuation in
-//      Task {
-//        await MainActor.run(body: {
-//          if let _ = Superwall.shared.getPresentedViewController()
-//        })
-//      }
-//    })
-
     return await withCheckedContinuation { continuation in
-      Task {
-        if let _ = await Superwall.shared.getPresentedViewController() {
+      DispatchQueue.main.async {
+        if let _ = Superwall.shared.presentedViewController {
           Superwall.shared.dismiss {
             DispatchQueue.main.async {
+              guard Superwall.shared.presentedViewController == nil else {
+                fatalError("We dismissed, so this should have been nil")
+              }
+
               RootViewController.shared.dismiss(animated: false) {
                 continuation.resume()
               }
             }
           }
         } else {
-          DispatchQueue.main.async {
-            RootViewController.shared.dismiss(animated: false) {
-              continuation.resume()
-            }
+          RootViewController.shared.dismiss(animated: false) {
+            continuation.resume()
           }
         }
       }

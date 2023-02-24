@@ -43,8 +43,8 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Uses the identify function. Should see the name 'Jack' in the paywall.
   func test0() async {
-    try? await Superwall.shared.identify(userId: "test0")
-    await Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    try? Superwall.shared.identify(userId: "test0")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -53,12 +53,12 @@ final class SnapshotTests_Swift: XCTestCase {
   // Uses the identify function. Should see the name 'Kate' in the paywall.
   func test1() async {
     // Set identity
-    try? await Superwall.shared.identify(userId: "test1a")
-    await Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    try? Superwall.shared.identify(userId: "test1a")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     // Set new identity
-    try? await Superwall.shared.identify(userId: "test1b")
-    await Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
+    try? Superwall.shared.identify(userId: "test1b")
+    Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -67,10 +67,10 @@ final class SnapshotTests_Swift: XCTestCase {
   // Calls `reset()`. No first name should be displayed.
   func test2() async {
     // Set identity
-    try? await Superwall.shared.identify(userId: "test2")
-    await Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    try? Superwall.shared.identify(userId: "test2")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
-    await Superwall.shared.reset()
+    Superwall.shared.reset()
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -79,11 +79,11 @@ final class SnapshotTests_Swift: XCTestCase {
   // Calls `reset()` multiple times. No first name should be displayed.
   func test3() async {
     // Set identity
-    try? await Superwall.shared.identify(userId: "test3")
-    await Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    try? Superwall.shared.identify(userId: "test3")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
-    await Superwall.shared.reset()
-    await Superwall.shared.reset()
+    Superwall.shared.reset()
+    Superwall.shared.reset()
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -96,7 +96,7 @@ final class SnapshotTests_Swift: XCTestCase {
 
     // Dismiss after 4 seconds
     await sleep(timeInterval: 4.0)
-    Superwall.shared.dismiss()
+    await dismissViewControllers()
 
     // Present again after 1 second
     await sleep(timeInterval: 1.0)
@@ -131,8 +131,8 @@ final class SnapshotTests_Swift: XCTestCase {
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
   #warning("File a ticket if not fixed in latest")
   func test7() async {
-    try? await Superwall.shared.identify(userId: "test7")
-    await Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
+    try? Superwall.shared.identify(userId: "test7")
+    Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
     Superwall.shared.track(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -141,7 +141,7 @@ final class SnapshotTests_Swift: XCTestCase {
     await dismissViewControllers()
 
     // Remove those attributes.
-    await Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
+    Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
     Superwall.shared.track(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -149,8 +149,8 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
   func test8() async {
-    try? await Superwall.shared.identify(userId: "test7")
-    await Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 12 ])
+    try? Superwall.shared.identify(userId: "test7")
+    Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 12 ])
     Superwall.shared.track(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -201,9 +201,8 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Clear a specific user attribute.
-  #warning("working in latest branch")
   func test11() async {
-    await Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
+    Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -211,7 +210,7 @@ final class SnapshotTests_Swift: XCTestCase {
     // Dismiss any view controllers
     await dismissViewControllers()
 
-    await Superwall.shared.setUserAttributes([ "first_name": nil ])
+    Superwall.shared.setUserAttributes([ "first_name": nil ])
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -219,7 +218,7 @@ final class SnapshotTests_Swift: XCTestCase {
     // Dismiss any view controllers
     await dismissViewControllers()
 
-    await Superwall.shared.setUserAttributes([ "first_name": "Sawyer" ])
+    Superwall.shared.setUserAttributes([ "first_name": "Sawyer" ])
     Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -245,19 +244,18 @@ final class SnapshotTests_Swift: XCTestCase {
     // Assert that paywall was displayed
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Close paywall
-    #warning("ask Yusuf to bring back named completion")
-    Superwall.shared.dismiss {
-      // Assert that no paywall is displayed as a result of `paywall_close`
-      await assert(after: Constants.paywallPresentationDelay)
-    }
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Assert that no paywall is displayed as a result of `paywall_close`
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
 
 #warning("TODO: Might need to move to Waldo")
 // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
 // Superwall.shared.track(event: "present_urls")
-// Test: present paywall, then present with overrides, the present original again
+// Test: not calling dismiss on main thread
 
 }
 

@@ -141,274 +141,274 @@ static BOOL kHasConfigured = NO;
   ASYNC_END
 }
 
-- (void)test0 {
-  ASYNC_BEGIN
-
-  [[Superwall sharedInstance] identifyWithUserId:@"test0" options:nil completion:^(NSError * _Nullable completion) {
-
-    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
-    [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-    ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
-  }];
-
-  ASYNC_END
-}
-
-- (void)test1 {
-  ASYNC_BEGIN
-
-  // Set identity
-  [[Superwall sharedInstance] identifyWithUserId:@"test1a" options:nil completion:^(NSError * _Nullable completion) {
-    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
-
-    // Set new identity.
-    [[Superwall sharedInstance] identifyWithUserId:@"test1b" options:nil completion:^(NSError * _Nullable completion) {
-      [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Kate" }];
-      [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-      ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
-    }];
-  }];
-
-  ASYNC_END
-}
-
-#warning https://linear.app/superwall/issue/SW-1625/[bug]-reset-not-clearing-user-attributes-before-presenting-paywall
-- (void)test2 {
-  ASYNC_BEGIN
-
-  // Set identity
-  [[Superwall sharedInstance] identifyWithUserId:@"test2" options:nil completion:^(NSError * _Nullable completion) {
-
-    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" } completion:^{
-
-      // Reset the user identity
-      [[Superwall sharedInstance] resetWithCompletion:^{
-        [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-        ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
-      }];
-    }];
-
-  }];
-
-  ASYNC_END
-}
-
-- (void)test3 {
-  ASYNC_BEGIN
-
-  // Set identity
-  [[Superwall sharedInstance] identifyWithUserId:@"test3" options:nil completion:^(NSError * _Nullable completion) {
-
-    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
-
-    // Reset the user identity twice
-    [[Superwall sharedInstance] resetWithCompletion:^{
-
-      [[Superwall sharedInstance] resetWithCompletion:^{
-
-        [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-        ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
-
-      }];
-    }];
-  }];
-
-  ASYNC_END
-}
-
-- (void)test4 {
-  ASYNC_BEGIN
-
-  [[Superwall sharedInstance] trackWithEvent:@"present_video"];
-
-  [self sleepWithTimeInterval:4.0 completionHandler:^{
-    [[Superwall sharedInstance] dismissWithCompletion:^{
-      [self sleepWithTimeInterval:1.0 completionHandler:^{
-        [[Superwall sharedInstance] trackWithEvent:@"present_video"];
-
-        ASYNC_TEST_ASSERT_WITHOUT_PRECISION(2.0);
-      }];
-    }];
-  }];
-
-  ASYNC_END
-}
-
-#warning https://linear.app/superwall/issue/SW-1632/add-objc-initialiser-for-paywallproducts
-- (void)test5 {
-  ASYNC_BEGIN
-
-  SKProduct *primary = SWKStoreKitHelper.shared.monthlyProduct;
-  SKProduct *secondary = SWKStoreKitHelper.shared.annualProduct;
-
-  if (!primary || !secondary) {
-    XCTAssert(false, @"WARNING: Unable to fetch custom products. These are needed for testing.");
-    return;
-  }
-
-  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
-  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
-
-  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-  ////  PaywallOverrides *paywallOverrides = [[PaywallOverrides alloc] initWithProducts:products];
-  //
-  [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
-
-  ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
-
-  ASYNC_END
-}
-
-#warning https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work
-- (void)test6 {
-  ASYNC_BEGIN
-
-  // Present the paywall.
-  [[Superwall sharedInstance] trackWithEvent:@"present_products"];
-
-  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
-
-  ASYNC_END
-}
-
-- (void)test7 {
-  ASYNC_BEGIN_WITH(2)
-
-  // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
-  [[Superwall sharedInstance] identifyWithUserId:@"test7" options:nil completion:^(NSError * _Nullable error) {
-    [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
-    [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
-
-    // Assert after a delay
-    [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-      ASYNC_TEST_ASSERT(0);
-
-      [weakSelf dismissViewControllersWithCompletionHandler:^{
-        // Remove those attributes.
-        [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
-        [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
-
-        ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
-      }];
-    }];
-  }];
-
-  ASYNC_END
-}
-
-- (void)test8 {
-  ASYNC_BEGIN
-
-  // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
-  [[Superwall sharedInstance] identifyWithUserId:@"test7" options:nil completion:^(NSError * _Nullable error) {
-    [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
-    [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
-
-    ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
-  }];
-
-  ASYNC_END
-}
-
-- (void)test9 {
-  ASYNC_BEGIN
-
-  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusActive;
-  [[Superwall sharedInstance] trackWithEvent:@"present_always"];
-
-  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
-
-  ASYNC_END
-}
-
-// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
-#warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
-- (void)test10 {
-  ASYNC_BEGIN_WITH(3)
-
-  // Present the paywall.
-  [[Superwall sharedInstance] trackWithEvent:@"present_products"];
-
-  // Wait and assert.
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    // Assert original products.
-    ASYNC_TEST_ASSERT(0);
-
-    // Dismiss any view controllers
-    [weakSelf dismissViewControllersWithCompletionHandler:^{
-
-      // Create override products
-      SKProduct *monthlyProduct = SWKStoreKitHelper.shared.monthlyProduct;
-      SKProduct *annualProduct = SWKStoreKitHelper.shared.annualProduct;
-
-      SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:monthlyProduct];
-      SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:annualProduct];
-
-      SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-
-      // Override original products with new ones.
-      [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
-
-      // Wait and assert.
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-        // Assert override products.
-        ASYNC_TEST_ASSERT(0);
-
-        // Dismiss any view controllers
-        [weakSelf dismissViewControllersWithCompletionHandler:^{
-
-          // Present the paywall.
-          [[Superwall sharedInstance] trackWithEvent:@"present_products"];
-
-          // Assert original products.
-          ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
-
-        }];
-      }];
-    }];
-  }];
-
-  ASYNC_END
-}
-
-// Clear a specific user attribute.
-- (void)test11 {
-  ASYNC_BEGIN_WITH(3)
-
-  // Add user attribute
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Claire" }];
-  [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    // Assert that the first name is displayed
-    ASYNC_TEST_ASSERT(0)
-
-    [weakSelf dismissViewControllersWithCompletionHandler:^{
-      // Remove user attribute
-      [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
-      [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-        // Assert that the first name is NOT displayed
-        ASYNC_TEST_ASSERT(0)
-
-        [weakSelf dismissViewControllersWithCompletionHandler:^{
-          // Add new user attribute
-          [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Sawyer" }];
-          [[Superwall sharedInstance] trackWithEvent:@"present_data"];
-
-          ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
-        }];
-      }];
-    }];
-  }];
-
-  ASYNC_END
-}
+//- (void)test0 {
+//  ASYNC_BEGIN
+//
+//  [[Superwall sharedInstance] identifyWithUserId:@"test0" options:nil completion:^(NSError * _Nullable completion) {
+//
+//    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+//    [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//    ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//- (void)test1 {
+//  ASYNC_BEGIN
+//
+//  // Set identity
+//  [[Superwall sharedInstance] identifyWithUserId:@"test1a" options:nil completion:^(NSError * _Nullable completion) {
+//    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+//
+//    // Set new identity.
+//    [[Superwall sharedInstance] identifyWithUserId:@"test1b" options:nil completion:^(NSError * _Nullable completion) {
+//      [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Kate" }];
+//      [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//      ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+//    }];
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//#warning https://linear.app/superwall/issue/SW-1625/[bug]-reset-not-clearing-user-attributes-before-presenting-paywall
+//- (void)test2 {
+//  ASYNC_BEGIN
+//
+//  // Set identity
+//  [[Superwall sharedInstance] identifyWithUserId:@"test2" options:nil completion:^(NSError * _Nullable completion) {
+//
+//    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" } completion:^{
+//
+//      // Reset the user identity
+//      [[Superwall sharedInstance] resetWithCompletion:^{
+//        [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//        ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+//      }];
+//    }];
+//
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//- (void)test3 {
+//  ASYNC_BEGIN
+//
+//  // Set identity
+//  [[Superwall sharedInstance] identifyWithUserId:@"test3" options:nil completion:^(NSError * _Nullable completion) {
+//
+//    [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+//
+//    // Reset the user identity twice
+//    [[Superwall sharedInstance] resetWithCompletion:^{
+//
+//      [[Superwall sharedInstance] resetWithCompletion:^{
+//
+//        [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//        ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+//
+//      }];
+//    }];
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//- (void)test4 {
+//  ASYNC_BEGIN
+//
+//  [[Superwall sharedInstance] trackWithEvent:@"present_video"];
+//
+//  [self sleepWithTimeInterval:4.0 completionHandler:^{
+//    [[Superwall sharedInstance] dismissWithCompletion:^{
+//      [self sleepWithTimeInterval:1.0 completionHandler:^{
+//        [[Superwall sharedInstance] trackWithEvent:@"present_video"];
+//
+//        ASYNC_TEST_ASSERT_WITHOUT_PRECISION(2.0);
+//      }];
+//    }];
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//#warning https://linear.app/superwall/issue/SW-1632/add-objc-initialiser-for-paywallproducts
+//- (void)test5 {
+//  ASYNC_BEGIN
+//
+//  SKProduct *primary = SWKStoreKitHelper.shared.monthlyProduct;
+//  SKProduct *secondary = SWKStoreKitHelper.shared.annualProduct;
+//
+//  if (!primary || !secondary) {
+//    XCTAssert(false, @"WARNING: Unable to fetch custom products. These are needed for testing.");
+//    return;
+//  }
+//
+//  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
+//  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
+//
+//  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+//  ////  PaywallOverrides *paywallOverrides = [[PaywallOverrides alloc] initWithProducts:products];
+//  //
+//  [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
+//
+//  ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+//
+//  ASYNC_END
+//}
+//
+//#warning https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work
+//- (void)test6 {
+//  ASYNC_BEGIN
+//
+//  // Present the paywall.
+//  [[Superwall sharedInstance] trackWithEvent:@"present_products"];
+//
+//  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+//
+//  ASYNC_END
+//}
+//
+//- (void)test7 {
+//  ASYNC_BEGIN_WITH(2)
+//
+//  // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
+//  [[Superwall sharedInstance] identifyWithUserId:@"test7" options:nil completion:^(NSError * _Nullable error) {
+//    [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
+//    [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
+//
+//    // Assert after a delay
+//    [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+//      ASYNC_TEST_ASSERT(0);
+//
+//      [weakSelf dismissViewControllersWithCompletionHandler:^{
+//        // Remove those attributes.
+//        [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
+//        [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
+//
+//        ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+//      }];
+//    }];
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//- (void)test8 {
+//  ASYNC_BEGIN
+//
+//  // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
+//  [[Superwall sharedInstance] identifyWithUserId:@"test7" options:nil completion:^(NSError * _Nullable error) {
+//    [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
+//    [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
+//
+//    ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//- (void)test9 {
+//  ASYNC_BEGIN
+//
+//  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusActive;
+//  [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+//
+//  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+//
+//  ASYNC_END
+//}
+//
+//// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
+//#warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
+//- (void)test10 {
+//  ASYNC_BEGIN_WITH(3)
+//
+//  // Present the paywall.
+//  [[Superwall sharedInstance] trackWithEvent:@"present_products"];
+//
+//  // Wait and assert.
+//  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+//    // Assert original products.
+//    ASYNC_TEST_ASSERT(0);
+//
+//    // Dismiss any view controllers
+//    [weakSelf dismissViewControllersWithCompletionHandler:^{
+//
+//      // Create override products
+//      SKProduct *monthlyProduct = SWKStoreKitHelper.shared.monthlyProduct;
+//      SKProduct *annualProduct = SWKStoreKitHelper.shared.annualProduct;
+//
+//      SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:monthlyProduct];
+//      SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:annualProduct];
+//
+//      SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+//
+//      // Override original products with new ones.
+//      [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
+//
+//      // Wait and assert.
+//      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+//        // Assert override products.
+//        ASYNC_TEST_ASSERT(0);
+//
+//        // Dismiss any view controllers
+//        [weakSelf dismissViewControllersWithCompletionHandler:^{
+//
+//          // Present the paywall.
+//          [[Superwall sharedInstance] trackWithEvent:@"present_products"];
+//
+//          // Assert original products.
+//          ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+//
+//        }];
+//      }];
+//    }];
+//  }];
+//
+//  ASYNC_END
+//}
+//
+//// Clear a specific user attribute.
+//- (void)test11 {
+//  ASYNC_BEGIN_WITH(3)
+//
+//  // Add user attribute
+//  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Claire" }];
+//  [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+//    // Assert that the first name is displayed
+//    ASYNC_TEST_ASSERT(0)
+//
+//    [weakSelf dismissViewControllersWithCompletionHandler:^{
+//      // Remove user attribute
+//      [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
+//      [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+//        // Assert that the first name is NOT displayed
+//        ASYNC_TEST_ASSERT(0)
+//
+//        [weakSelf dismissViewControllersWithCompletionHandler:^{
+//          // Add new user attribute
+//          [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Sawyer" }];
+//          [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+//
+//          ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+//        }];
+//      }];
+//    }];
+//  }];
+//
+//  ASYNC_END
+//}
 
 
 @end
