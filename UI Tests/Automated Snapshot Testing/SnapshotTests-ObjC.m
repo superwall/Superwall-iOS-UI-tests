@@ -276,14 +276,25 @@ static BOOL kHasConfigured = NO;
 }
 
 - (void)test7 {
-  ASYNC_BEGIN
+  ASYNC_BEGIN_WITH(2)
 
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7" options:nil completion:^(NSError * _Nullable error) {
     [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
     [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
 
-    ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+    // Assert after a delay
+    [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      ASYNC_TEST_ASSERT(0);
+
+      [weakSelf dismissViewControllersWithCompletionHandler:^{
+        // Remove those attributes.
+        [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
+        [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
+
+        ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+      }];
+    }];
   }];
 
   ASYNC_END

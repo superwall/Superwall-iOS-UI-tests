@@ -128,10 +128,20 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
+  // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
+  #warning("File a ticket if not fixed in latest")
   func test7() async {
     try? await Superwall.shared.identify(userId: "test7")
     await Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
+    Superwall.shared.track(event: "present_and_rule_user")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Remove those attributes.
+    await Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
     Superwall.shared.track(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -214,6 +224,35 @@ final class SnapshotTests_Swift: XCTestCase {
 
     await assert(after: Constants.paywallPresentationDelay)
   }
+
+  // Test trigger: off
+  func test12() async {
+    Superwall.shared.track(event: "keep_this_trigger_off")
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  // Test trigger: not in the dashboard
+  func test13() async {
+    Superwall.shared.track(event: "i_just_make_this_up_and_it_dne")
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  // Test trigger: not-allowed standard event (paywall_close)
+  func test14() async {
+    // Show a paywall
+    Superwall.shared.track(event: "present_always")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close paywall
+    #warning("ask Yusuf to bring back named completion")
+    Superwall.shared.dismiss {
+      // Assert that no paywall is displayed as a result of `paywall_close`
+      await assert(after: Constants.paywallPresentationDelay)
+    }
+  }
+
 
 #warning("TODO: Might need to move to Waldo")
 // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
