@@ -11,20 +11,43 @@
 @import SnapshotTesting;
 @import SuperwallKit;
 
+@interface XCTestExpectationHelp : XCTestExpectation
+@end
+
+@implementation XCTestExpectationHelp
+
+- (void)setExpectedFulfillmentCount:(NSUInteger)expectedFulfillmentCount
+{
+  NSLog(@"[HELP] SETTING expectedFulfillmentCount %@", @(expectedFulfillmentCount));
+  [super setExpectedFulfillmentCount:expectedFulfillmentCount];
+}
+
+- (void)fulfill
+{
+  NSLog(@"[HELP] FULFILLED");
+  [super fulfill];
+}
+
+@end
+
 #define ASYNC_BEGIN \
-  XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@""]; __weak typeof(self) weakSelf = self;
+ASYNC_BEGIN_WITH(1)
+
+#define ASYNC_BEGIN_WITH(NUM_ASSERTS) \
+XCTestExpectation *expectation = [[XCTestExpectationHelp alloc] initWithDescription:@""]; __weak typeof(self) weakSelf = self; expectation.expectedFulfillmentCount = NUM_ASSERTS;
 
 #define ASYNC_END \
-  [self waitWithExpectation:expectation];
+[self waitWithExpectation:expectation];
 
 #define ASYNC_FULFILL \
-  [expectation fulfill]; weakSelf;
+[expectation fulfill]; weakSelf;
 
+// After a delay, the snapshot will be taken and the expectation will be fulfilled. Don't confused this await. You'll need to use `[self sleepWithTimeInterval:completionHandler:]` if you need to wait.
 #define ASYNC_TEST_ASSERT(timeInterval) \
-  [weakSelf assertAfter:timeInterval fulfill:expectation testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:YES];
+[weakSelf assertAfter:timeInterval fulfill:expectation testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:YES];
 
 #define ASYNC_TEST_ASSERT_WITHOUT_PRECISION(timeInterval) \
-  [weakSelf assertAfter:timeInterval fulfill:expectation testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:NO];
+[weakSelf assertAfter:timeInterval fulfill:expectation testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:NO];
 
 #pragma mark - SWKSuperwallDelegate
 
@@ -231,8 +254,8 @@ static BOOL kHasConfigured = NO;
   SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
 
   SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-////  PaywallOverrides *paywallOverrides = [[PaywallOverrides alloc] initWithProducts:products];
-//
+  ////  PaywallOverrides *paywallOverrides = [[PaywallOverrides alloc] initWithProducts:products];
+  //
   [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
 
   ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
@@ -290,5 +313,91 @@ static BOOL kHasConfigured = NO;
 
   ASYNC_END
 }
+
+// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
+#warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
+- (void)test10 {
+  ASYNC_BEGIN_WITH(3)
+
+  // Present the paywall.
+  [[Superwall sharedInstance] trackWithEvent:@"present_products"];
+
+  // Wait and assert.
+  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+    // Assert original products.
+    ASYNC_TEST_ASSERT(0);
+
+    // Dismiss any view controllers
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+      // Create override products
+      SKProduct *monthlyProduct = SWKStoreKitHelper.shared.monthlyProduct;
+      SKProduct *annualProduct = SWKStoreKitHelper.shared.annualProduct;
+
+      SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:monthlyProduct];
+      SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:annualProduct];
+
+      SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+
+      // Override original products with new ones.
+      [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
+
+      // Wait and assert.
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Assert override products.
+        ASYNC_TEST_ASSERT(0);
+
+        // Dismiss any view controllers
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+          // Present the paywall.
+          [[Superwall sharedInstance] trackWithEvent:@"present_products"];
+
+          // Assert original products.
+          ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+
+        }];
+      }];
+    }];
+  }];
+
+  ASYNC_END
+}
+
+// Clear a specific user attribute.
+- (void)test11 {
+  ASYNC_BEGIN_WITH(3)
+
+  // Add user attribute
+  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Claire" }];
+  [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+
+  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+    // Assert that the first name is displayed
+    ASYNC_TEST_ASSERT(0)
+
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+      // Remove user attribute
+      [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
+      [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Assert that the first name is NOT displayed
+        ASYNC_TEST_ASSERT(0)
+
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+          // Add new user attribute
+          [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Sawyer" }];
+          [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+
+          ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+        }];
+      }];
+    }];
+  }];
+
+  ASYNC_END
+}
+
 
 @end

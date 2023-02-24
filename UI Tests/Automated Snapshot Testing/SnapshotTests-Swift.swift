@@ -190,7 +190,30 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // Clear a specific user attribute.
+  #warning("working in latest branch")
+  func test11() async {
+    await Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
+    Superwall.shared.track(event: "present_data")
 
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    await Superwall.shared.setUserAttributes([ "first_name": nil ])
+    Superwall.shared.track(event: "present_data")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    await Superwall.shared.setUserAttributes([ "first_name": "Sawyer" ])
+    Superwall.shared.track(event: "present_data")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
 
 #warning("TODO: Might need to move to Waldo")
 // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
@@ -224,27 +247,3 @@ class MockDelegate: SuperwallDelegate {
     observers.forEach({ $0(info) })
   }
 }
-
-
-////      // 13
-////      Test(
-////        title: "Open URLs",
-////        body: "Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller)",
-////        perform: { invokeAssertion in
-////          Superwall.shared.track(event: "present_urls")
-////        }
-////      ),
-//
-////      // Uncomment, Right-click > Create Code Snippet to add to Xcode as a code snippet. Choose a "Completion" for easy additions.
-////      // <#Test Number#>
-////      Test(
-////        title: <#T##String#>,
-////        body: <#T##String#>,
-////        perform: <#T##() -> Void#>
-////      ),
-//
-//    ]
-//
-//
-//  }()
-//}

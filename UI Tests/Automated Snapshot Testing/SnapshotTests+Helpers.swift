@@ -13,7 +13,7 @@ import SuperwallKit
 @testable import UI_Tests
 extension XCTestCase {
   struct Constants {
-    static let defaultTimeout: TimeInterval = 10.0
+    static let defaultTimeout: TimeInterval = 120.0
   }
 }
 
