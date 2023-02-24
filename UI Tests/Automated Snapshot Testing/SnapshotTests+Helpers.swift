@@ -45,6 +45,7 @@ extension XCTestCase {
   }
 
   @objc func wait(expectation: XCTestExpectation) {
+    // swiftlint:disable:next main_thread
     _ = XCTWaiter.wait(for: [expectation], timeout: Constants.defaultTimeout)
   }
 
