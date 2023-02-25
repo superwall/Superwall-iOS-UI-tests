@@ -11,30 +11,11 @@
 @import SnapshotTesting;
 @import SuperwallKit;
 
-@interface XCTestExpectationHelp : XCTestExpectation
-@end
-
-@implementation XCTestExpectationHelp
-
-- (void)setExpectedFulfillmentCount:(NSUInteger)expectedFulfillmentCount
-{
-  NSLog(@"[HELP] SETTING expectedFulfillmentCount %@", @(expectedFulfillmentCount));
-  [super setExpectedFulfillmentCount:expectedFulfillmentCount];
-}
-
-- (void)fulfill
-{
-  NSLog(@"[HELP] FULFILLED");
-  [super fulfill];
-}
-
-@end
-
 #define ASYNC_BEGIN \
 ASYNC_BEGIN_WITH(1)
 
 #define ASYNC_BEGIN_WITH(NUM_ASSERTS) \
-XCTestExpectation *expectation = [[XCTestExpectationHelp alloc] initWithDescription:@""]; __weak typeof(self) weakSelf = self; expectation.expectedFulfillmentCount = NUM_ASSERTS;
+XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@""]; __weak typeof(self) weakSelf = self; expectation.expectedFulfillmentCount = NUM_ASSERTS;
 
 #define ASYNC_END \
 [self waitWithExpectation:expectation];
@@ -131,7 +112,7 @@ static BOOL kHasConfigured = NO;
   [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
 
   // Dismiss any view controllers
-  [self dismissViewControllersWithCompletion:^{
+  [self dismissViewControllersWithCompletionHandler:^{
     ASYNC_FULFILL
   }];
 
@@ -392,5 +373,43 @@ static BOOL kHasConfigured = NO;
   ASYNC_END
 }
 
+// Test trigger: off
+- (void)test12 {
+  ASYNC_BEGIN
+
+  [[Superwall sharedInstance] trackWithEvent:@"keep_this_trigger_off"];
+  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+
+  ASYNC_END
+}
+
+// Test trigger: not in the dashboard
+- (void)test13 {
+  ASYNC_BEGIN
+
+  [[Superwall sharedInstance] trackWithEvent:@"i_just_made_this_up_and_it_dne"];
+  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+
+  ASYNC_END
+}
+
+// Test trigger: not-allowed standard event (paywall_close)
+- (void)test14 {
+  ASYNC_BEGIN_WITH(2)
+
+  [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+
+  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+    // After delay, assert that there was a presentation
+    ASYNC_TEST_ASSERT(0);
+
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+      // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
+      ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+    }];
+  }];
+
+  ASYNC_END
+}
 
 @end

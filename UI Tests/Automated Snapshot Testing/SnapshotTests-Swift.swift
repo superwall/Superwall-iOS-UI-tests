@@ -232,7 +232,7 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Test trigger: not in the dashboard
   func test13() async {
-    Superwall.shared.track(event: "i_just_make_this_up_and_it_dne")
+    Superwall.shared.track(event: "i_just_made_this_up_and_it_dne")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
@@ -247,7 +247,7 @@ final class SnapshotTests_Swift: XCTestCase {
     // Dismiss any view controllers
     await dismissViewControllers()
 
-    // Assert that no paywall is displayed as a result of `paywall_close`
+    // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
     await assert(after: Constants.paywallPresentationDelay)
   }
 

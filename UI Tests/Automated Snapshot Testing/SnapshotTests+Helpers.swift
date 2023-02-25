@@ -73,15 +73,15 @@ extension XCTestCase {
     }
   }
 
-  @available(swift, obsoleted: 1.0)
-  @objc func dismissViewControllers(completion: (() -> Void)? = nil) {
-    Task {
-      await dismissViewControllers()
-      await MainActor.run {
-        completion?()
-      }
-    }
-  }
+//  @available(swift, obsoleted: 1.0)
+//  @objc func dismissViewControllers(completion: (() -> Void)? = nil) {
+//    Task {
+//      await dismissViewControllers()
+//      await MainActor.run {
+//        completion?()
+//      }
+//    }
+//  }
 }
 
 extension Task where Success == Never, Failure == Never {
