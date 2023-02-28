@@ -251,12 +251,74 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // Clusterfucks by Jake™
+  func test15() async {
+    Superwall.shared.track(event: "present_always")
+    Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
+    Superwall.shared.track(event: "present_always")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    Superwall.shared.track(event: "present_always")
+    try? Superwall.shared.identify(userId: "1111")
+    Superwall.shared.track(event: "present_always")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    Superwall.shared.track(event: "present_always") { state in
+      Superwall.shared.track(event: "present_always")
+    }
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  // Present an alert on Superwall.presentedViewController from the onPresent callback
+  func test16() async {
+    Superwall.shared.track(event: "present_always") { state in
+      switch state {
+        case .presented(_):
+          DispatchQueue.main.async {
+            let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+            let action = UIAlertAction(title: "OK", style: .default)
+            alertController.addAction(action)
+            Superwall.shared.presentedViewController?.present(alertController, animated: false)
+          }
+        default:
+          return
+      }
+    }
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  // Make sure exit / refresh shows up if paywall.js isn’t installed on page
+  #warning("does this still work? what's the correct time interval. Bug filed: https://linear.app/superwall/issue/SW-1657/[bug]-exit-refresh-not-appearing")
+  func test17() async {
+    Superwall.shared.track(event: "no_paywalljs")
+    await assert(after: 30.0)
+  }
 
 #warning("TODO: Might need to move to Waldo")
 // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
 // Superwall.shared.track(event: "present_urls")
 // Test: not calling dismiss on main thread
-
+// Test whatever logic comes out of new track API
+//  22. Infinite loading
+//      1. make sure exit / refresh shows up if paywall.js isn’t installed on page
+//      2. make sure exit closes out for sure
+//      3. make sure refresh loads it again from a fresh start
+//      4. test this for modal + normal presentation + on nil + on another view controller
+// Test custom actions
+// Test localization based on system settings
+// Test localized paywall when available and unavailable using Superwall options
 }
 
 // MARK: - Constants

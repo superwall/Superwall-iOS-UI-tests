@@ -412,4 +412,84 @@ static BOOL kHasConfigured = NO;
   ASYNC_END
 }
 
+// Clusterfucks by Jake™
+#warning Failing on assertion 2: https://linear.app/superwall/issue/SW-1659/[bug-minor]-uiwindow-appears-slightly-misplaced
+- (void)test15 {
+  ASYNC_BEGIN_WITH(3)
+
+  // Present paywall
+  [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+  [[Superwall sharedInstance] trackWithEvent:@"present_always" params:@{@"some_param_1": @"hello"}];
+  [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+
+  // Wait and assert.
+  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+    // After delay, assert that there was a presentation
+    ASYNC_TEST_ASSERT(0);
+
+    // Dismiss any view controllers
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+      [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+      [[Superwall sharedInstance] identifyWithUserId:@"1111" error:nil];
+      [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+
+      // Wait and assert.
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // After delay, assert that there was a presentation
+        ASYNC_TEST_ASSERT(0);
+
+        // Dismiss any view controllers
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+          // Present paywall
+          [[Superwall sharedInstance] trackWithEvent:@"present_always" onSkip:nil onPresent:^(SWKPaywallInfo * _Nonnull info) {
+            [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+
+            // Wait and assert.
+            ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+
+          } onDismiss:nil];
+        }];
+      }];
+    }];
+  }];
+
+  ASYNC_END
+}
+
+// Present an alert on Superwall.presentedViewController from the onPresent callback
+- (void)test16 {
+  ASYNC_BEGIN
+
+  [[Superwall sharedInstance] trackWithEvent:@"present_always" onSkip:nil onPresent:^(SWKPaywallInfo * _Nonnull info) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert" message:@"This is an alert message" preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:okAction];
+
+      UIViewController *presentingViewController = [Superwall sharedInstance].presentedViewController;
+      [presentingViewController presentViewController:alertController animated:NO completion:nil];
+    });
+  } onDismiss:nil];
+
+  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+
+  ASYNC_END
+}
+
+// Make sure exit / refresh shows up if paywall.js isn’t installed on page
+#warning("does this still work? what's the correct time interval. Bug filed: https://linear.app/superwall/issue/SW-1657/[bug]-exit-refresh-not-appearing")
+- (void)test17 {
+  ASYNC_BEGIN
+
+  // Send event
+  [[Superwall sharedInstance] trackWithEvent:@"no_paywalljs"];
+
+  // Wait and assert.
+  ASYNC_TEST_ASSERT(30.0);
+
+  ASYNC_END
+}
+
 @end
