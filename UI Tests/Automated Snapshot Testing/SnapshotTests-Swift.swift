@@ -301,8 +301,6 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Clusterfucks by Jake™
   func test17() async throws {
-    throw XCTSkip("https://linear.app/superwall/issue/SW-1664/[bug]-track-in-succession-doesnt-present-proper-view-controller")
-
     Superwall.shared.identify(userId: "test0")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
     Superwall.shared.track(event: "present_data")

@@ -1,20 +1,11 @@
 {
   "pins" : [
     {
-      "identity" : "asn1swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/tikhop/ASN1Swift",
-      "state" : {
-        "revision" : "b53bee03a942623db25afc5bfb80227b2cb3b425",
-        "version" : "1.2.4"
-      }
-    },
-    {
       "identity" : "superwallkit-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/superwall-me/SuperwallKit-iOS",
       "state" : {
-        "revision" : "8077db2c07f79c2a43ef2ba2e06a1fe60845b7ff"
+        "revision" : "2fbd822096b3c7bfec66ef57a8623cfd7f6eb26a"
       }
     },
     {

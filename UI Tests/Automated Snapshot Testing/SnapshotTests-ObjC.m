@@ -241,10 +241,6 @@ static BOOL kHasConfigured = NO;
 }
 
 - (void)test7 {
-#warning
-  XCTSkip(@"https://linear.app/superwall/issue/SW-1662/[bug]-unable-to-remove-attributes-in-objc");
-  return;
-
   ASYNC_BEGIN_WITH(2)
 
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
@@ -343,10 +339,6 @@ static BOOL kHasConfigured = NO;
 
 // Clear a specific user attribute.
 - (void)test11 {
-#warning
-  XCTSkip(@"https://linear.app/superwall/issue/SW-1662/[bug]-unable-to-remove-attributes-in-objc");
-  return;
-
   ASYNC_BEGIN_WITH(3)
 
   // Add user attribute
@@ -486,10 +478,6 @@ static BOOL kHasConfigured = NO;
 
 // Clusterfucks by Jake™
 - (void)test17 {
-#warning
-  XCTSkip(@"https://linear.app/superwall/issue/SW-1664/[bug]-track-in-succession-doesnt-present-proper-view-controller");
-  return;
-
   ASYNC_BEGIN_WITH(3)
 
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
