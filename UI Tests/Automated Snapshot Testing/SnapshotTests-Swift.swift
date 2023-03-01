@@ -42,8 +42,8 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Uses the identify function. Should see the name 'Jack' in the paywall.
-  func test0() async {
-    try? Superwall.shared.identify(userId: "test0")
+  func test0() async throws {
+    Superwall.shared.identify(userId: "test0")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
     Superwall.shared.track(event: "present_data")
 
@@ -51,13 +51,13 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Uses the identify function. Should see the name 'Kate' in the paywall.
-  func test1() async {
+  func test1() async throws {
     // Set identity
-    try? Superwall.shared.identify(userId: "test1a")
+    Superwall.shared.identify(userId: "test1a")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     // Set new identity
-    try? Superwall.shared.identify(userId: "test1b")
+    Superwall.shared.identify(userId: "test1b")
     Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
     Superwall.shared.track(event: "present_data")
 
@@ -65,9 +65,9 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Calls `reset()`. No first name should be displayed.
-  func test2() async {
+  func test2() async throws {
     // Set identity
-    try? Superwall.shared.identify(userId: "test2")
+    Superwall.shared.identify(userId: "test2")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     Superwall.shared.reset()
@@ -77,9 +77,9 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Calls `reset()` multiple times. No first name should be displayed.
-  func test3() async {
+  func test3() async throws {
     // Set identity
-    try? Superwall.shared.identify(userId: "test3")
+    Superwall.shared.identify(userId: "test3")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     Superwall.shared.reset()
@@ -90,7 +90,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
-  func test4() async {
+  func test4() async throws {
     // Present the paywall.
     Superwall.shared.track(event: "present_video")
 
@@ -106,7 +106,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
-  func test5() async {
+  func test5() async throws {
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
       XCTAssert(false, "WARNING: Unable to fetch custom products. These are needed for testing.")
       return
@@ -121,7 +121,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
-  func test6() async {
+  func test6() async throws {
     // Present the paywall.
     Superwall.shared.track(event: "present_products")
 
@@ -129,9 +129,9 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
-  #warning("File a ticket if not fixed in latest")
-  func test7() async {
-    try? Superwall.shared.identify(userId: "test7")
+#warning("File a ticket if not fixed in latest")
+  func test7() async throws {
+    Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
     Superwall.shared.track(event: "present_and_rule_user")
 
@@ -148,8 +148,8 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
-  func test8() async {
-    try? Superwall.shared.identify(userId: "test7")
+  func test8() async throws {
+    Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 12 ])
     Superwall.shared.track(event: "present_and_rule_user")
 
@@ -157,7 +157,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Present regardless of status
-  func test9() async {
+  func test9() async throws {
     Superwall.shared.subscriptionStatus = .active
     Superwall.shared.track(event: "present_always")
 
@@ -165,8 +165,8 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
-  #warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
-  func test10() async {
+#warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
+  func test10() async throws {
     // Present the paywall.
     Superwall.shared.track(event: "present_products")
 
@@ -201,7 +201,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Clear a specific user attribute.
-  func test11() async {
+  func test11() async throws {
     Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
     Superwall.shared.track(event: "present_data")
 
@@ -225,19 +225,19 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Test trigger: off
-  func test12() async {
+  func test12() async throws {
     Superwall.shared.track(event: "keep_this_trigger_off")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Test trigger: not in the dashboard
-  func test13() async {
+  func test13() async throws {
     Superwall.shared.track(event: "i_just_made_this_up_and_it_dne")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Test trigger: not-allowed standard event (paywall_close)
-  func test14() async {
+  func test14() async throws {
     // Show a paywall
     Superwall.shared.track(event: "present_always")
 
@@ -252,7 +252,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Clusterfucks by Jake™
-  func test15() async {
+  func test15() async throws {
     Superwall.shared.track(event: "present_always")
     Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
     Superwall.shared.track(event: "present_always")
@@ -264,7 +264,7 @@ final class SnapshotTests_Swift: XCTestCase {
     await dismissViewControllers()
 
     Superwall.shared.track(event: "present_always")
-    try? Superwall.shared.identify(userId: "1111")
+    Superwall.shared.identify(userId: "1111")
     Superwall.shared.track(event: "present_always")
 
     // Assert that paywall was displayed
@@ -281,7 +281,7 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Present an alert on Superwall.presentedViewController from the onPresent callback
-  func test16() async {
+  func test16() async throws {
     Superwall.shared.track(event: "present_always") { state in
       switch state {
         case .presented(_):
@@ -299,26 +299,61 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Make sure exit / refresh shows up if paywall.js isn’t installed on page
-  #warning("does this still work? what's the correct time interval. Bug filed: https://linear.app/superwall/issue/SW-1657/[bug]-exit-refresh-not-appearing")
-  func test17() async {
-    Superwall.shared.track(event: "no_paywalljs")
-    await assert(after: 30.0)
+  // Clusterfucks by Jake™
+  func test17() async throws {
+    throw XCTSkip("https://linear.app/superwall/issue/SW-1664/[bug]-track-in-succession-doesnt-present-proper-view-controller")
+
+    Superwall.shared.identify(userId: "test0")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    Superwall.shared.track(event: "present_data")
+
+    // Assert Jack displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await dismissViewControllers()
+
+    // Set identity
+    Superwall.shared.identify(userId: "test2")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    // Reset the user identity
+    Superwall.shared.reset()
+
+    Superwall.shared.track(event: "present_data")
+
+    // Assert no name displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await dismissViewControllers()
+
+    // Present paywall
+    Superwall.shared.track(event: "present_always")
+    Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
+    Superwall.shared.track(event: "present_always")
+
+    // Assert Present Always paywall displayed.
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // Make sure exit / refresh shows up if paywall.js isn’t installed on page
+  //  func test17() async throws {
+  //    Superwall.shared.track(event: "no_paywalljs")
+  //    await assert(after: Constants.paywallPresentationFailureDelay)
+  //  }
+
 #warning("TODO: Might need to move to Waldo")
-// Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
-// Superwall.shared.track(event: "present_urls")
-// Test: not calling dismiss on main thread
-// Test whatever logic comes out of new track API
-//  22. Infinite loading
-//      1. make sure exit / refresh shows up if paywall.js isn’t installed on page
-//      2. make sure exit closes out for sure
-//      3. make sure refresh loads it again from a fresh start
-//      4. test this for modal + normal presentation + on nil + on another view controller
-// Test custom actions
-// Test localization based on system settings
-// Test localized paywall when available and unavailable using Superwall options
+  // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
+  // Superwall.shared.track(event: "present_urls")
+  // Test: not calling dismiss on main thread
+  // Test whatever logic comes out of new track API
+  //  22. Infinite loading
+  //      1. make sure exit / refresh shows up if paywall.js isn’t installed on page
+  //      2. make sure exit closes out for sure
+  //      3. make sure refresh loads it again from a fresh start
+  //      4. test this for modal + normal presentation + on nil + on another view controller
+  // Test custom actions
+  // Test localization based on system settings
+  // Test localized paywall when available and unavailable using Superwall options
 }
 
 // MARK: - Constants
@@ -326,6 +361,7 @@ final class SnapshotTests_Swift: XCTestCase {
 extension SnapshotTests_Swift {
   struct Constants {
     static let paywallPresentationDelay: TimeInterval = 8.0
+    static let paywallPresentationFailureDelay: TimeInterval = 16.0
   }
 }
 

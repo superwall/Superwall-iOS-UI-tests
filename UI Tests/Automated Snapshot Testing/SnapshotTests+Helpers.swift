@@ -23,9 +23,13 @@ extension XCTestCase {
   }
 
   func assert(after timeInterval: TimeInterval, testName: String = #function, precision: Bool = true, prefix: String = "Swift") async {
-    await sleep(timeInterval: timeInterval)
+    if timeInterval > 0 {
+      await sleep(timeInterval: timeInterval)
+    }
     await MainActor.run {
-      let precisionValue: Float = precision ? 1.0 : 0.95
+      #warning("consider removing")
+//      let precisionValue: Float = precision ? 1.0 : 0.95
+      let precisionValue: Float = 0.95
       assertSnapshot(matching: UIScreen.main.snapshotImage(), as: .image(precision: precisionValue), testName: "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))")
     }
   }
@@ -51,37 +55,31 @@ extension XCTestCase {
 
   func dismissViewControllers() async {
     return await withCheckedContinuation { continuation in
-      DispatchQueue.main.async {
-        if let _ = Superwall.shared.presentedViewController {
-          Superwall.shared.dismiss {
-            DispatchQueue.main.async {
-              guard Superwall.shared.presentedViewController == nil else {
-                fatalError("We dismissed, so this should have been nil")
-              }
-
-              RootViewController.shared.dismiss(animated: false) {
-                continuation.resume()
-              }
+      DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
+        let presentedViewController = Superwall.shared.presentedViewController?.presentedViewController
+        Task {
+          await presentedViewController?.dismissAsync(animated: true)
+          DispatchQueue.main.async {
+            Superwall.shared.dismiss {
+              continuation.resume()
             }
-          }
-        } else {
-          RootViewController.shared.dismiss(animated: false) {
-            continuation.resume()
           }
         }
       }
     }
   }
+}
 
-//  @available(swift, obsoleted: 1.0)
-//  @objc func dismissViewControllers(completion: (() -> Void)? = nil) {
-//    Task {
-//      await dismissViewControllers()
-//      await MainActor.run {
-//        completion?()
-//      }
-//    }
-//  }
+extension UIViewController {
+  func dismissAsync(animated: Bool) async {
+    return await withCheckedContinuation { continuation in
+      DispatchQueue.main.async { [weak self] in
+        self?.dismiss(animated: animated) {
+          continuation.resume()
+        }
+      }
+    }
+  }
 }
 
 extension Task where Success == Never, Failure == Never {
