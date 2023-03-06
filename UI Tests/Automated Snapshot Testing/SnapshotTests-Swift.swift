@@ -333,6 +333,46 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // MARK: - Get Track Result
+
+  func test_getTrackResult_paywall() async {
+    let result = await Superwall.shared.getTrackResult(forEvent: "present_data")
+    switch result {
+    case .paywall:
+      break
+    default:
+      XCTFail()
+    }
+  }
+
+  func test_getTrackResult_eventNotFound() async {
+    let result = await Superwall.shared.getTrackResult(forEvent: "a_random_madeup_event")
+    XCTAssertEqual(result, .eventNotFound)
+  }
+
+  func test_getTrackResult_noRuleMatch() async {
+    let result = await Superwall.shared.getTrackResult(forEvent: "present_and_rule_user")
+    XCTAssertEqual(result, .noRuleMatch)
+  }
+
+  func test_getTrackResult_paywallNotAvailable() async {
+    let result = await Superwall.shared.getTrackResult(forEvent: "incorrect_product_identifier")
+    XCTAssertEqual(result, .paywallNotAvailable)
+  }
+
+  func test_getTrackResult_holdout() async {
+    let result = await Superwall.shared.getTrackResult(forEvent: "holdout")
+    switch result {
+    case .holdout:
+      break
+    default:
+      XCTFail()
+    }
+  }
+
+  // Missing the final case `userIsSubscribed`. This can be done when we are able to manually
+  // set the subscription status using the purchaseController.
+
   // Make sure exit / refresh shows up if paywall.js isn’t installed on page
   //  func test17() async throws {
   //    Superwall.shared.track(event: "no_paywalljs")
