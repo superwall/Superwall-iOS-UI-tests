@@ -58,7 +58,7 @@ extension XCTestCase {
       DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
         let presentedViewController = Superwall.shared.presentedViewController?.presentedViewController
         Task {
-          await presentedViewController?.dismissAsync(animated: true)
+          await presentedViewController?.dismissAsync()
           DispatchQueue.main.async {
             Superwall.shared.dismiss {
               continuation.resume()
@@ -71,10 +71,10 @@ extension XCTestCase {
 }
 
 extension UIViewController {
-  func dismissAsync(animated: Bool) async {
+  func dismissAsync() async {
     return await withCheckedContinuation { continuation in
       DispatchQueue.main.async { [weak self] in
-        self?.dismiss(animated: animated) {
+        self?.dismiss(animated: true) {
           continuation.resume()
         }
       }
