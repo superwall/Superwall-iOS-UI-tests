@@ -1,5 +1,5 @@
 //
-//  SnapshotTests+Helpers.swift
+//  SharedHelpers.swift
 //  Automated Snapshot Testing
 //
 //  Created by Bryan Dubno on 2/13/23.
@@ -11,11 +11,8 @@ import SnapshotTesting
 import SuperwallKit
 
 @testable import UI_Tests
-extension XCTestCase {
-  struct Constants {
-    static let defaultTimeout: TimeInterval = 120.0
-  }
-}
+
+// MARK: - XCTestCase
 
 @objc public extension XCTestCase {
   func assert(after timeInterval: TimeInterval, testName: String = #function, precision: Bool = true, prefix: String = "Swift") async {
@@ -41,7 +38,7 @@ extension XCTestCase {
   }
 }
 
-// MARK: - Helpers
+// MARK: - XCTestCase Helpers
 
 @objc public extension XCTestCase {
   @objc func sleep(timeInterval: TimeInterval) async {
@@ -82,6 +79,8 @@ extension XCTestCase {
   }
 }
 
+// MARK: - UIViewController
+
 extension UIViewController {
   func dismissAsync() async {
     return await withCheckedContinuation { continuation in
@@ -94,12 +93,16 @@ extension UIViewController {
   }
 }
 
+// MARK: - Task
+
 extension Task where Success == Never, Failure == Never {
   public static func sleep(timeInterval: TimeInterval) async {
     let nanoseconds = UInt64(timeInterval * 1_000_000_000)
     try? await sleep(nanoseconds: nanoseconds)
   }
 }
+
+// MARK: - UIScreen
 
 extension UIScreen {
   func snapshotImage() -> UIImage {

@@ -5,30 +5,11 @@
 //  Created by Bryan Dubno on 2/13/23.
 //
 
-#import <XCTest/XCTest.h>
 #import "Automated_Snapshot_Testing-Swift.h"
+#import "SWKConfiguration.h"
 
 @import SnapshotTesting;
 @import SuperwallKit;
-
-#define ASYNC_BEGIN \
-ASYNC_BEGIN_WITH(1)
-
-#define ASYNC_BEGIN_WITH(NUM_ASSERTS) \
-XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@""]; __weak typeof(self) weakSelf = self; expectation.expectedFulfillmentCount = NUM_ASSERTS;
-
-#define ASYNC_END \
-[self waitWithExpectation:expectation];
-
-#define ASYNC_FULFILL \
-[expectation fulfill]; weakSelf;
-
-// After a delay, the snapshot will be taken and the expectation will be fulfilled. Don't confused this await. You'll need to use `[self sleepWithTimeInterval:completionHandler:]` if you need to wait.
-#define ASYNC_TEST_ASSERT(timeInterval) \
-[weakSelf assertAfter:timeInterval fulfill:expectation testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:YES];
-
-#define ASYNC_TEST_ASSERT_WITHOUT_PRECISION(timeInterval) \
-[weakSelf assertAfter:timeInterval fulfill:expectation testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:NO];
 
 #pragma mark - SWKSuperwallDelegate
 
@@ -67,60 +48,23 @@ XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:
 
 #pragma mark - SnapshotTests_ObjC
 
-@interface SnapshotTests_ObjC : XCTestCase
-
-@property (nonatomic, strong) SWKMockDelegate *mockDelegate;
-
-@end
-
 // Constants
-static NSTimeInterval kPaywallPresentationDelay = 8.0;
-static NSTimeInterval kPaywallPresentationFailureDelay = 16.0;
-static BOOL kHasConfigured = NO;
+static NSTimeInterval kPaywallPresentationDelay;
+static NSTimeInterval kPaywallPresentationFailureDelay;
 
 @implementation SnapshotTests_ObjC
 
++ (void)initialize {
+  kPaywallPresentationDelay = SWKConstants.paywallPresentationDelay;
+  kPaywallPresentationFailureDelay = SWKConstants.paywallPresentationFailureDelay;
+}
+
 - (void)setUp {
-  // Make sure setup has not been called
-  if (kHasConfigured) {
-    return;
-  }
-
-  kHasConfigured = YES;
-
-  ASYNC_BEGIN
-
-  self.mockDelegate = [[SWKMockDelegate alloc] init];
-
-  [Superwall configureWithApiKey:@"pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2"];
-  Superwall.sharedInstance.delegate = self.mockDelegate;
-
-  // Set status
-  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
-
-  // Begin fetching products for use in other test cases
-  [[SWKStoreKitHelper shared] fetchCustomProductsWithCompletionHandler:^{
-    ASYNC_FULFILL
-  }];
-
-  ASYNC_END
+  [self.configuration setupWithCompletionHandler:^{}];
 }
 
 - (void)tearDown {
-  ASYNC_BEGIN
-
-  // Reset status
-  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
-
-  // Dismiss any view controllers
-  [self dismissViewControllersWithCompletionHandler:^{
-    ASYNC_FULFILL
-  }];
-
-  // Remove delegate observers
-  [self.mockDelegate removeObservers];
-
-  ASYNC_END
+  [self.configuration tearDownWithCompletionHandler:^{}];
 }
 
 - (void)test0 {

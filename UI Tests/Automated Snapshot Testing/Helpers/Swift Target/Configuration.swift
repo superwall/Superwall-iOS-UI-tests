@@ -1,5 +1,5 @@
 //
-//  Configurations-Swift.swift
+//  Configuration.swift
 //  UI Tests
 //
 //  Created by Bryan Dubno on 3/6/23.
@@ -8,24 +8,31 @@
 import XCTest
 import SuperwallKit
 
-protocol TestConfiguration {
-  func setup() async
-  func tearDown() async
+extension SnapshotTests_Swift {
+  var configuration: TestConfiguration {
+    return Self.configuration
+  }
+
+  static let configuration: TestConfiguration = {
+    switch Constants.configurationType {
+      case "automatic":
+        return Configuration.Automatic()
+      default:
+        fatalError("Could not find Swift test configuration type")
+    }
+  }()
 }
 
 struct Configuration {
-  struct Constants {
-    // https://superwall.com/applications/1270
-    static let apiKey = "pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2"
-  }
-
   struct State {
     static var hasConfigured: Bool = false
   }
 }
 
+// MARK: - Automatic configuration
+
 extension Configuration {
-  struct Automatic: TestConfiguration {
+  class Automatic: TestConfiguration {
     func setup() async {
       // Using this approach over using the class setup() function because it's not async
       guard State.hasConfigured == false else { return }
@@ -44,8 +51,10 @@ extension Configuration {
   }
 }
 
+// MARK: - Purchase controller configuration
+
 extension Configuration {
-  struct PurchaseController: TestConfiguration {
+  class PurchaseController: TestConfiguration {
     func setup() async {
       Superwall.configure(apiKey: Constants.apiKey, options: SuperwallOptions())
 

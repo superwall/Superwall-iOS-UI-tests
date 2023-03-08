@@ -11,11 +11,11 @@ import SuperwallKit
 final class SnapshotTests_Swift: XCTestCase {
 
   override func setUp() async throws {
-    await Constants.configuration.setup()
+    await configuration.setup()
   }
 
   override func tearDown() async throws {
-    await Constants.configuration.tearDown()
+    await configuration.tearDown()
   }
 
   // Uses the identify function. Should see the name 'Jack' in the paywall.
@@ -445,23 +445,4 @@ final class SnapshotTests_Swift: XCTestCase {
   // Test localization based on system settings
   // Test localized paywall when available and unavailable using Superwall options
   // Swipe to dismiss a modal view and make sure new tracks function afterwards
-}
-
-// MARK: - Constants
-
-extension SnapshotTests_Swift {
-  struct Constants {
-    static let paywallPresentationDelay: TimeInterval = 8.0
-    static let paywallPresentationFailureDelay: TimeInterval = 16.0
-
-    static let configuration: TestConfiguration = {
-      let configurationType = ProcessInfo.processInfo.environment["configurationType"]!
-      switch configurationType {
-        case "automatic":
-          return Configuration.Automatic()
-        default:
-          fatalError("Could not find test configuration type")
-      }
-    }()
-  }
 }
