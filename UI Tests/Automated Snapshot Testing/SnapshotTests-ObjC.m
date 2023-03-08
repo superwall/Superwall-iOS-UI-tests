@@ -360,8 +360,6 @@ static NSTimeInterval kPaywallPresentationFailureDelay;
 
 // Clusterfucks by Jake™
 - (void)test15 {
-  XCTSkip("https://linear.app/superwall/issue/SW-1683/look-into-why-ui-tests-are-failing");
-
   ASYNC_BEGIN_WITH(3)
 
   // Present paywall
@@ -464,12 +462,70 @@ static NSTimeInterval kPaywallPresentationFailureDelay;
   ASYNC_END
 }
 
-- (void)test18 {
-  XCTSkip(@"Wait on Swift passing");
-}
+//- (void)test18 {
+//  
+//}
 
+// Clusterfucks by Jake™
 - (void)test19 {
-  XCTSkip(@"Wait on Swift passing");
+//  XCTSkip("https://linear.app/superwall/issue/SW-1690/[bug]-possible-thread-issue-preventing-track-from-presenting-paywall");
+//  return;
+
+  ASYNC_BEGIN_WITH(4)
+
+  // Set identity
+  [[Superwall sharedInstance] identifyWithUserId:@"test19a"];
+  [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Jack"}];
+
+  [[Superwall sharedInstance] reset];
+  [[Superwall sharedInstance] reset];
+  [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+
+  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+    ASYNC_TEST_ASSERT(0)
+
+    // Dismiss any view controllers
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+      [[Superwall sharedInstance] getTrackResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
+
+        // Dismiss any view controllers
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+          // Show a paywall
+          [[Superwall sharedInstance] trackWithEvent:@"present_always"];
+
+          // Assert that paywall was displayed
+          [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+            ASYNC_TEST_ASSERT(0)
+
+            // Dismiss any view controllers
+            [weakSelf dismissViewControllersWithCompletionHandler:^{
+              // Assert that no paywall is displayed as a result of the Superwall-owned paywall_close standard event.
+              ASYNC_TEST_ASSERT(0)
+
+              // Dismiss any view controllers
+              [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+                // Set identity
+                [[Superwall sharedInstance] identifyWithUserId:@"test19b"];
+                [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Jack"}];
+
+                // Set new identity
+                [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
+                [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Kate"}];
+                [[Superwall sharedInstance] trackWithEvent:@"present_data"];
+
+                ASYNC_TEST_ASSERT(kPaywallPresentationDelay)
+              }];
+            }];
+          }];
+        }];
+      }];
+    }];
+  }];
+
+  ASYNC_END
 }
 
 - (void)test_getTrackResult_paywall {

@@ -319,13 +319,15 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
 //  func test18() async throws {
-//    
+//
 //  }
 
   // Clusterfucks by Jake™
   func test19() async throws {
+    throw XCTSkip("https://linear.app/superwall/issue/SW-1690/[bug]-possible-thread-issue-preventing-track-from-presenting-paywall")
+
     // Set identity
-    Superwall.shared.identify(userId: "test3")
+    Superwall.shared.identify(userId: "test19a")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     Superwall.shared.reset()
@@ -358,11 +360,11 @@ final class SnapshotTests_Swift: XCTestCase {
     await dismissViewControllers()
 
     // Set identity
-    Superwall.shared.identify(userId: "test1a")
+    Superwall.shared.identify(userId: "test19b")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     // Set new identity
-    Superwall.shared.identify(userId: "test1b")
+    Superwall.shared.identify(userId: "test19c")
     Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
     Superwall.shared.track(event: "present_data")
 
