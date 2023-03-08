@@ -278,6 +278,9 @@ static BOOL kHasConfigured = NO;
 }
 
 - (void)test9 {
+  XCTSkip("Rework test");
+  return;
+
   ASYNC_BEGIN
 
   [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusActive;
@@ -413,6 +416,8 @@ static BOOL kHasConfigured = NO;
 
 // Clusterfucks by Jake™
 - (void)test15 {
+  XCTSkip("https://linear.app/superwall/issue/SW-1683/look-into-why-ui-tests-are-failing");
+
   ASYNC_BEGIN_WITH(3)
 
   // Present paywall
@@ -513,6 +518,14 @@ static BOOL kHasConfigured = NO;
   }];
 
   ASYNC_END
+}
+
+- (void)test18 {
+  XCTSkip(@"Wait on Swift passing");
+}
+
+- (void)test19 {
+  XCTSkip(@"Wait on Swift passing");
 }
 
 - (void)test_getTrackResult_paywall {

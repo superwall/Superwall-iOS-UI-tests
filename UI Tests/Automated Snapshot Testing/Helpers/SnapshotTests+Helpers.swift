@@ -18,10 +18,6 @@ extension XCTestCase {
 }
 
 @objc public extension XCTestCase {
-  @objc func resetRecording() {
-    isRecording = true
-  }
-
   func assert(after timeInterval: TimeInterval, testName: String = #function, precision: Bool = true, prefix: String = "Swift") async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
@@ -43,17 +39,33 @@ extension XCTestCase {
       expectation?.fulfill()
     }
   }
+}
 
+// MARK: - Helpers
+
+@objc public extension XCTestCase {
   @objc func sleep(timeInterval: TimeInterval) async {
-    await Task.sleep(timeInterval: timeInterval)
+    await Self.sleep(timeInterval: timeInterval)
   }
 
   @objc func wait(expectation: XCTestExpectation) {
+    Self.wait(expectation: expectation)
+  }
+
+  func dismissViewControllers() async {
+    await Self.dismissViewControllers()
+  }
+
+  @objc static func sleep(timeInterval: TimeInterval) async {
+    await Task.sleep(timeInterval: timeInterval)
+  }
+
+  @objc static func wait(expectation: XCTestExpectation) {
     // swiftlint:disable:next main_thread
     _ = XCTWaiter.wait(for: [expectation], timeout: Constants.defaultTimeout)
   }
 
-  func dismissViewControllers() async {
+  static func dismissViewControllers() async {
     return await withCheckedContinuation { continuation in
       DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
         let presentedViewController = Superwall.shared.presentedViewController?.presentedViewController

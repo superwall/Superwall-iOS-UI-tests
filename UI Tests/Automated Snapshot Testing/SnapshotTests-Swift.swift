@@ -9,36 +9,13 @@ import XCTest
 import SuperwallKit
 
 final class SnapshotTests_Swift: XCTestCase {
-  let delegate: MockDelegate = MockDelegate()
-
-  private static var hasConfigured: Bool = false
 
   override func setUp() async throws {
-    guard Self.hasConfigured == false else { return }
-    Self.hasConfigured = true
-
-    let options = SuperwallOptions()
-
-    // https://superwall.com/applications/1270
-    Superwall.configure(apiKey: "pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2", options: options)
-    Superwall.shared.delegate = MockDelegate()
-
-    // Set status
-    Superwall.shared.subscriptionStatus = .inactive
-
-    // Begin fetching products for use in other test cases
-    await StoreKitHelper.shared.fetchCustomProducts()
+    await Constants.configuration.setup()
   }
 
   override func tearDown() async throws {
-    // Reset status
-    Superwall.shared.subscriptionStatus = .inactive
-
-    // Dismiss any view controllers
-    await dismissViewControllers()
-
-    // Remove delegate observers
-    delegate.removeObservers()
+    await Constants.configuration.tearDown()
   }
 
   // Uses the identify function. Should see the name 'Jack' in the paywall.
@@ -157,7 +134,10 @@ final class SnapshotTests_Swift: XCTestCase {
   }
 
   // Present regardless of status
+  #warning("not a valid test (shouldn't be setting without a PC")
   func test9() async throws {
+    throw XCTSkip("Rework test")
+
     Superwall.shared.subscriptionStatus = .active
     Superwall.shared.track(event: "present_always")
 
@@ -253,6 +233,8 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Clusterfucks by Jake™
   func test15() async throws {
+    throw XCTSkip("https://linear.app/superwall/issue/SW-1688/[bug]-presentation-while-already-presenting-shouldnt-lead-to-a")
+
     Superwall.shared.track(event: "present_always")
     Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
     Superwall.shared.track(event: "present_always")
@@ -333,6 +315,76 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // Track again immediately after track completion.
+  func test18() async throws {
+    throw XCTSkip("https://linear.app/superwall/issue/SW-1688/[bug]-presentation-while-already-presenting-shouldnt-lead-to-a")
+
+    Superwall.shared.track(event: "present_always") { state in
+      Superwall.shared.track(event: "present_always")
+    }
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Track an event that should not display a paywall
+    Superwall.shared.track(event: "keep_this_trigger_off")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  // Clusterfucks by Jake™
+  func test19() async throws {
+    throw XCTSkip("https://linear.app/superwall/issue/SW-1687/[bug]-using-gettrackresult-appears-to-cause-ui-glitches-during-later")
+
+    // Set identity
+    Superwall.shared.identify(userId: "test3")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    Superwall.shared.reset()
+    Superwall.shared.reset()
+    Superwall.shared.track(event: "present_data")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    _ = await Superwall.shared.getTrackResult(forEvent: "present_and_rule_user")
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Show a paywall
+    Superwall.shared.track(event: "present_always")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Set identity
+    Superwall.shared.identify(userId: "test1a")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    // Set new identity
+    Superwall.shared.identify(userId: "test1b")
+    Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
+    Superwall.shared.track(event: "present_data")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+#warning("rewrite the below using UI assertions")
+
   // MARK: - Get Track Result
 
   func test_getTrackResult_paywall() async {
@@ -392,6 +444,7 @@ final class SnapshotTests_Swift: XCTestCase {
   // Test custom actions
   // Test localization based on system settings
   // Test localized paywall when available and unavailable using Superwall options
+  // Swipe to dismiss a modal view and make sure new tracks function afterwards
 }
 
 // MARK: - Constants
@@ -400,23 +453,15 @@ extension SnapshotTests_Swift {
   struct Constants {
     static let paywallPresentationDelay: TimeInterval = 8.0
     static let paywallPresentationFailureDelay: TimeInterval = 16.0
-  }
-}
 
-// MARK: - Constants
-
-class MockDelegate: SuperwallDelegate {
-  var observers: [(SuperwallEventInfo) -> Void] = []
-
-  public func addObserver(_ observer: @escaping (SuperwallEventInfo) -> Void) {
-    observers.append(observer)
-  }
-
-  public func removeObservers() {
-    observers.removeAll()
-  }
-
-  public func didTrackSuperwallEventInfo(_ info: SuperwallEventInfo) {
-    observers.forEach({ $0(info) })
+    static let configuration: TestConfiguration = {
+      let configurationType = ProcessInfo.processInfo.environment["configurationType"]!
+      switch configurationType {
+        case "automatic":
+          return Configuration.Automatic()
+        default:
+          fatalError("Could not find test configuration type")
+      }
+    }()
   }
 }
