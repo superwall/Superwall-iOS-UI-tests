@@ -233,8 +233,6 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Clusterfucks by Jake™
   func test15() async throws {
-    throw XCTSkip("https://linear.app/superwall/issue/SW-1688/[bug]-presentation-while-already-presenting-shouldnt-lead-to-a")
-
     Superwall.shared.track(event: "present_always")
     Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
     Superwall.shared.track(event: "present_always")
@@ -256,7 +254,12 @@ final class SnapshotTests_Swift: XCTestCase {
     await dismissViewControllers()
 
     Superwall.shared.track(event: "present_always") { state in
-      Superwall.shared.track(event: "present_always")
+      switch state {
+        case .presented(_):
+          Superwall.shared.track(event: "present_always")
+        default:
+          return
+      }
     }
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -315,29 +318,12 @@ final class SnapshotTests_Swift: XCTestCase {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Track again immediately after track completion.
-  func test18() async throws {
-    throw XCTSkip("https://linear.app/superwall/issue/SW-1688/[bug]-presentation-while-already-presenting-shouldnt-lead-to-a")
-
-    Superwall.shared.track(event: "present_always") { state in
-      Superwall.shared.track(event: "present_always")
-    }
-
-    await assert(after: Constants.paywallPresentationDelay)
-
-    // Dismiss any view controllers
-    await dismissViewControllers()
-
-    // Track an event that should not display a paywall
-    Superwall.shared.track(event: "keep_this_trigger_off")
-
-    await assert(after: Constants.paywallPresentationDelay)
-  }
+//  func test18() async throws {
+//    
+//  }
 
   // Clusterfucks by Jake™
   func test19() async throws {
-    throw XCTSkip("https://linear.app/superwall/issue/SW-1687/[bug]-using-gettrackresult-appears-to-cause-ui-glitches-during-later")
-
     // Set identity
     Superwall.shared.identify(userId: "test3")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
