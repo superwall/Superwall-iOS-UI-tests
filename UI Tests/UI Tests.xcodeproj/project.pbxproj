@@ -907,7 +907,7 @@
 			repositoryURL = "https://github.com/superwall-me/SuperwallKit-iOS";
 			requirement = {
 				kind = revision;
-				revision = fc1ee71a23ebd459815d7040664f609ed8fd2766;
+				revision = 9f93421585d3dc54a26abad3440d93323e6c214d;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
