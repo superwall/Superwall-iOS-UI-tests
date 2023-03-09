@@ -222,6 +222,7 @@ static NSTimeInterval kPaywallPresentationFailureDelay;
 }
 
 - (void)test9 {
+//  [self canRunWithTest:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__]];
   XCTSkip("Rework test");
   return;
 

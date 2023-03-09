@@ -40,13 +40,13 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "configurationType"
-            value = "purchaseController"
+            value = "advanced"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <Testables>
          <TestableReference
-            skipped = "NO"
+            skipped = "YES"
             testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"

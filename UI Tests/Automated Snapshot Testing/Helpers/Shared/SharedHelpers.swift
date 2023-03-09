@@ -12,9 +12,22 @@ import SuperwallKit
 
 @testable import UI_Tests
 
+// MARK: - TestConfiguration
+
+@objc(SWKTestConfiguration)
+public protocol TestConfiguration: AnyObject {
+  func setup() async
+  func tearDown() async
+}
+
 // MARK: - XCTestCase
 
 @objc public extension XCTestCase {
+  @objc func canRun(test: String = #function) {
+    // -[SnapshotTests_ObjC test9] or test9()
+    print("[TEST_NAME] \(test)")
+  }
+
   func assert(after timeInterval: TimeInterval, testName: String = #function, precision: Bool = true, prefix: String = "Swift") async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)

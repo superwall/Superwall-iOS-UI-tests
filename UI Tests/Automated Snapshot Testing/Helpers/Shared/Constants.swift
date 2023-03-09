@@ -7,12 +7,6 @@
 
 import Foundation
 
-@objc(SWKTestConfiguration)
-public protocol TestConfiguration: AnyObject {
-  func setup() async
-  func tearDown() async
-}
-
 @objc(SWKConstants)
 public class Constants: NSObject {
   // https://superwall.com/applications/1270

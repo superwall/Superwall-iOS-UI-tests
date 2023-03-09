@@ -17,6 +17,8 @@ extension SnapshotTests_Swift {
     switch Constants.configurationType {
       case "automatic":
         return Configuration.Automatic()
+      case "advanced":
+        return Configuration.Advanced()
       default:
         fatalError("Could not find Swift test configuration type")
     }
@@ -38,7 +40,7 @@ extension Configuration {
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
 
-      Superwall.configure(apiKey: Constants.apiKey, options: SuperwallOptions())
+      Superwall.configure(apiKey: Constants.apiKey)
 
       // Begin fetching products for use in other test cases
       await StoreKitHelper.shared.fetchCustomProducts()
@@ -51,12 +53,23 @@ extension Configuration {
   }
 }
 
-// MARK: - Purchase controller configuration
+// MARK: - Advanced configuration
 
 extension Configuration {
-  class PurchaseController: TestConfiguration {
+  class Advanced: TestConfiguration {
+    private(set) var mockPurchaseController: MockPurchaseController!
+
     func setup() async {
-      Superwall.configure(apiKey: Constants.apiKey, options: SuperwallOptions())
+      // Using this approach over using the class setup() function because it's not async
+      guard State.hasConfigured == false else { return }
+      State.hasConfigured = true
+
+      #warning("Hopefully moving this out of here?")
+      await MainActor.run(body: {
+        mockPurchaseController = MockPurchaseController()
+      })
+
+      Superwall.configure(apiKey: Constants.apiKey, purchaseController: mockPurchaseController)
 
       // Set status
       Superwall.shared.subscriptionStatus = .inactive
@@ -72,8 +85,8 @@ extension Configuration {
       // Dismiss any view controllers
       await XCTestCase.dismissViewControllers()
 
-      // Remove delegate observers
-//      delegate.removeObservers()
+      // Reset the mock purchases controller
+      await mockPurchaseController.reset()
     }
   }
 }
@@ -93,5 +106,34 @@ class MockDelegate: SuperwallDelegate {
 
   public func didTrackSuperwallEventInfo(_ info: SuperwallEventInfo) {
     observers.forEach({ $0(info) })
+  }
+}
+
+import StoreKit
+
+class MockPurchaseController: PurchaseController {
+  private struct Constants {
+    static let defaultPurchaseResult: PurchaseResult = .cancelled
+    static let defaultRestorePurchasesResult: Bool = false
+  }
+
+  var purchaseResult: PurchaseResult = Constants.defaultPurchaseResult
+  var restorePurchasesResult: Bool = Constants.defaultRestorePurchasesResult
+
+  func purchase(product: SKProduct) async -> PurchaseResult {
+    await MainActor.run(body: {
+      return purchaseResult
+    })
+  }
+
+  func restorePurchases() async -> Bool {
+    await MainActor.run(body: {
+      return restorePurchasesResult
+    })
+  }
+
+  func reset() {
+    purchaseResult = Constants.defaultPurchaseResult
+    restorePurchasesResult = Constants.defaultRestorePurchasesResult
   }
 }

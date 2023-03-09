@@ -136,6 +136,8 @@ final class SnapshotTests_Swift: XCTestCase {
   // Present regardless of status
   #warning("not a valid test (shouldn't be setting without a PC")
   func test9() async throws {
+//    canRun()
+
     throw XCTSkip("Rework test")
 
     Superwall.shared.subscriptionStatus = .active
