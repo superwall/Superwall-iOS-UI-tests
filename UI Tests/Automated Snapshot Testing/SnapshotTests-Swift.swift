@@ -326,8 +326,6 @@ final class SnapshotTests_Swift: XCTestCase {
 
   // Clusterfucks by Jake™
   func test19() async throws {
-    throw XCTSkip("https://linear.app/superwall/issue/SW-1690/[bug]-possible-thread-issue-preventing-track-from-presenting-paywall")
-
     // Set identity
     Superwall.shared.identify(userId: "test19a")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
