@@ -86,7 +86,7 @@ extension Configuration {
       await XCTestCase.dismissViewControllers()
 
       // Reset the mock purchases controller
-      mockPurchaseController.reset()
+      await mockPurchaseController.reset()
     }
   }
 }
