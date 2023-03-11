@@ -1,6 +1,6 @@
 //
 //  Constants.swift
-//  Automated Snapshot ObjC
+//  UI Tests
 //
 //  Created by Bryan Dubno on 3/7/23.
 //

@@ -1,29 +1,11 @@
 //
-//  Configuration.swift
+//  Configuration_Swift.swift
 //  UI Tests
 //
 //  Created by Bryan Dubno on 3/6/23.
 //
 
-import XCTest
 import SuperwallKit
-
-extension SnapshotTests_Swift {
-  var configuration: TestConfiguration {
-    return Self.configuration
-  }
-
-  static let configuration: TestConfiguration = {
-    switch Constants.configurationType {
-      case "automatic":
-        return Configuration.Automatic()
-      case "advanced":
-        return Configuration.Advanced()
-      default:
-        fatalError("Could not find Swift test configuration type")
-    }
-  }()
-}
 
 struct Configuration {
   struct State {
@@ -48,7 +30,7 @@ extension Configuration {
 
     func tearDown() async {
       // Dismiss any view controllers
-      await XCTestCase.dismissViewControllers()
+      await UITestsBase.dismissViewControllers()
     }
   }
 }
@@ -83,7 +65,7 @@ extension Configuration {
       Superwall.shared.subscriptionStatus = .inactive
 
       // Dismiss any view controllers
-      await XCTestCase.dismissViewControllers()
+      await UITestsBase.dismissViewControllers()
 
       // Reset the mock purchases controller
       await mockPurchaseController.reset()
@@ -108,6 +90,27 @@ class MockDelegate: SuperwallDelegate {
     observers.forEach({ $0(info) })
   }
 }
+
+// MARK: - UITests_Swift convenience
+
+extension UITests_Swift {
+  var configuration: TestConfiguration {
+    return Self.configuration
+  }
+
+  static let configuration: TestConfiguration = {
+    switch Constants.configurationType {
+      case "automatic":
+        return Configuration.Automatic()
+      case "advanced":
+        return Configuration.Advanced()
+      default:
+        fatalError("Could not find Swift test configuration type")
+    }
+  }()
+}
+
+// MARK: - MockPurchaseController
 
 import StoreKit
 
