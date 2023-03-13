@@ -73,7 +73,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
   [[Superwall sharedInstance] trackWithEvent:@"present_data"];
 
   TEST_ASSERT(kPaywallPresentationDelay)
@@ -84,11 +84,11 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set identity
   [[Superwall sharedInstance] identifyWithUserId:@"test1a"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
 
   // Set new identity.
   [[Superwall sharedInstance] identifyWithUserId:@"test1b"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Kate" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Kate" }];
   [[Superwall sharedInstance] trackWithEvent:@"present_data"];
 
   TEST_ASSERT(kPaywallPresentationDelay)
@@ -99,7 +99,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set identity
   [[Superwall sharedInstance] identifyWithUserId:@"test2"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
 
   // Reset the user identity
   [[Superwall sharedInstance] reset];
@@ -114,7 +114,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set identity
   [[Superwall sharedInstance] identifyWithUserId:@"test3"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
 
   // Reset the user identity twice
   [[Superwall sharedInstance] reset];
@@ -179,7 +179,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
+  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
   [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
 
   // Assert after a delay
@@ -201,7 +201,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
+  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
   [[Superwall sharedInstance] trackWithEvent:@"present_and_rule_user"];
 
   TEST_ASSERT(kPaywallPresentationDelay);
@@ -269,7 +269,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3);
 
   // Add user attribute
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Claire" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Claire" }];
   [[Superwall sharedInstance] trackWithEvent:@"present_data"];
 
   [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
@@ -287,7 +287,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Add new user attribute
-          [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name": @"Sawyer" }];
+          [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Sawyer" }];
           [[Superwall sharedInstance] trackWithEvent:@"present_data"];
 
           TEST_ASSERT(kPaywallPresentationDelay)
@@ -396,7 +396,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
 
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
   [[Superwall sharedInstance] trackWithEvent:@"present_data"];
 
   [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
@@ -405,7 +405,7 @@ static id<SWKTestConfiguration> kConfiguration;
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Set identity
       [[Superwall sharedInstance] identifyWithUserId:@"test2"];
-      [[Superwall sharedInstance] setUserAttributesDictionary:@{ @"first_name" : @"Jack" }];
+      [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
 
       // Reset the user identity
       [[Superwall sharedInstance] reset];
@@ -438,7 +438,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set identity
   [[Superwall sharedInstance] identifyWithUserId:@"test19a"];
-  [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Jack"}];
+  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Jack"}];
 
   [[Superwall sharedInstance] reset];
   [[Superwall sharedInstance] reset];
@@ -472,11 +472,11 @@ static id<SWKTestConfiguration> kConfiguration;
 
                 // Set identity
                 [[Superwall sharedInstance] identifyWithUserId:@"test19b"];
-                [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Jack"}];
+                [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Jack"}];
 
                 // Set new identity
                 [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
-                [[Superwall sharedInstance] setUserAttributesDictionary:@{@"first_name": @"Kate"}];
+                [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
                 [[Superwall sharedInstance] trackWithEvent:@"present_data"];
 
                 TEST_ASSERT(kPaywallPresentationDelay)

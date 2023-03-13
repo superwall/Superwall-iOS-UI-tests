@@ -274,7 +274,7 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-    await assert(after: Constants.paywallPresentationDelay)
+    await assert(after: Constants.paywallPresentationDelay, precision: .transparency)
   }
 
   // Clusterfucks by Jake™

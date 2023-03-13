@@ -27,7 +27,7 @@ class Automated_UI_Testing: XCTestCase {
 
       case .assert(let testName, let precision):
         let image = app.screenshot().image
-        assertSnapshot(matching: image, as: .image(precision: precision), testName: testName)
+        assertSnapshot(matching: image, as: .image(perceptualPrecision: precision), testName: testName)
         Communicator.shared.send(.finishedAsserting)
         return
 
