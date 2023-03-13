@@ -8,72 +8,82 @@
 import UIKit
 import SuperwallKit
 
-// MARK: - UITestsBase
-
-public class UITestsBase: NSObject {}
-
 // MARK: - TestConfiguration
 
 @objc(SWKTestConfiguration)
-public protocol TestConfiguration: AnyObject {
+public protocol TestConfiguration: NSObjectProtocol {
   func setup() async
   func tearDown() async
 }
 
-// MARK: - UITestsBase
+// MARK: - UITests
 
-@objc public extension UITestsBase {
-  @objc func canRun(test: String = #function) {
-    // -[SnapshotTests_ObjC test9] or test9()
-    print("[TEST_NAME] \(test)")
+public extension NSObject {
+  @objc(SWKPrecisionValue)
+  enum PrecisionValue: Int {
+    case `default`
+
+    // Use this value when needing to compare against a screenshot with a video
+    case video
+
+    // Use this value when needed to compare against a screenshot that contains elements with some degree of transparency (like a `UIAlertController`)
+    case transparency
+
+    public var rawValue: Int {
+      switch self {
+        case .default:
+          return 100
+        case .video:
+          return 98
+        case .transparency:
+          return 98
+        default:
+          fatalError("Undefined precision value")
+      }
+    }
   }
 
-  func assert(after timeInterval: TimeInterval, testName: String = #function, prefix: String = "Swift") async {
+  func assert(after timeInterval: TimeInterval, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift") async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
 
     await MainActor.run(body: {
       let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
-      Communicator.shared.send(.assert(testName: testName))
+      Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0))
     })
 
-    await sleep(timeInterval: 3.0)
+    await wait(for: .finishedAsserting)
   }
 
-  //  func assert(after timeInterval: TimeInterval, testName: String = #function, precision: Bool = true, prefix: String = "Swift") async {
-  //    if timeInterval > 0 {
-  //      await sleep(timeInterval: timeInterval)
-  //    }
-  //    await MainActor.run {
-  //      #warning("consider removing")
-  ////      let precisionValue: Float = precision ? 1.0 : 0.95
-  //      let precisionValue: Float = 0.95
-  //      assertSnapshot(matching: UIScreen.main.snapshotImage(), as: .image(precision: precisionValue), testName: "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))")
-  //    }
-  //  }
-  //
-  //  @available(swift, obsoleted: 1.0)
-  //  @objc func assert(after timeInterval: TimeInterval, fulfill expectation: XCTestExpectation?, testName: String, precision: Bool = true) {
-  //    Task {
-  //      // Transform: "-[SnapshotTests_ObjC test0]_block_invoke" -> "0"
-  //      let testName = testName.replacingOccurrences(of: "-[SnapshotTests_ObjC ", with: "").replacingOccurrences(of: "test", with: "").components(separatedBy: "]").first!
-  //      await assert(after: timeInterval, testName: testName, precision: precision, prefix: "ObjC")
-  //      expectation?.fulfill()
-  //    }
-  //  }
+  @available(swift, obsoleted: 1.0)
+  @objc func assert(after timeInterval: TimeInterval, testName: String, precision: PrecisionValue) async {
+    // Transform: "-[UITests_ObjC test0WithCompletionHandler:]" -> "0" OR "-[UITests_ObjC test11WithCompletionHandler:]_block_invoke_2" -> "11"
+
+    let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
+
+    await assert(after: timeInterval, precision: precision, testName: modifiedTestName, prefix: "ObjC")
+  }
+
+  @objc func skip(_ message: String) {
+    Communicator.shared.send(.skip(message: message))
+  }
+
+  @objc func touch(_ point: CGPoint) {
+    Communicator.shared.send(.touch(point: point))
+  }
+
+  @objc func relaunch() {
+    Communicator.shared.send(.relaunchApp)
+  }
 }
 
-// MARK: - UITestsBase Helpers
+// MARK: - UITests Helpers
 
-@objc public extension UITestsBase {
+@objc public extension NSObject {
   @objc func sleep(timeInterval: TimeInterval) async {
     await Self.sleep(timeInterval: timeInterval)
   }
-
-  //  @objc func wait(expectation: XCTestExpectation) {
-  //    Self.wait(expectation: expectation)
-  //  }
 
   func dismissViewControllers() async {
     await Self.dismissViewControllers()
@@ -82,11 +92,6 @@ public protocol TestConfiguration: AnyObject {
   @objc static func sleep(timeInterval: TimeInterval) async {
     await Task.sleep(timeInterval: timeInterval)
   }
-
-  //  @objc static func wait(expectation: XCTestExpectation) {
-  //    // swiftlint:disable:next main_thread
-  //    _ = XCTWaiter.wait(for: [expectation], timeout: Constants.defaultTimeout)
-  //  }
 
   static func dismissViewControllers() async {
     return await withCheckedContinuation { continuation in

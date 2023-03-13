@@ -8,5 +8,4 @@
 #import <Foundation/Foundation.h>
 
 @interface UITests_ObjC : NSObject
-
 @end

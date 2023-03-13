@@ -11,16 +11,37 @@ import Swifter
 class Communicator {
   static let shared: Communicator = Communicator()
 
-  #warning("separate out into parent and runner actions")
-  enum Action: Codable {
+#warning("separate out into parent and runner actions")
+  enum Action: Codable, Equatable {
     // Test app tells the parent
     case runTest(number: Int)
+    case finishedAsserting
 
     // Parent tells the test app
-    case launchApp
+    case relaunchApp
     case endTest
-    case assert(testName: String)
+    case assert(testName: String, precision: Float)
+    case skip(message: String)
     case touch(point: CGPoint)
+
+    static func == (lhs: Action, rhs: Action) -> Bool {
+      switch (lhs, rhs) {
+        case (.runTest, .runTest):
+          return true
+        case (.finishedAsserting, .finishedAsserting):
+          return true
+        case (.relaunchApp, .relaunchApp):
+          return true
+        case (.endTest, .endTest):
+          return true
+        case (.assert, .assert):
+          return true
+        case (.touch, .touch):
+          return true
+        default:
+          return false
+      }
+    }
   }
 
   private struct Constants {
@@ -85,6 +106,22 @@ class Communicator {
       print("Invalid URL")
     }
   }
+
+  // MARK: - NotificationCenter
+
+  func wait(for action: Communicator.Action) async {
+    await Waiter().wait(for: action)
+  }
+
+  private class Waiter {
+    func wait(for action: Action) async {
+      let notifications = NotificationCenter.default.notifications(named: .receivedResponse)
+      for await notification in notifications {
+        guard let _ = notification.object as? Communicator.Action else { return }
+        return
+      }
+    }
+  }
 }
 
 extension NSNotification.Name {
@@ -92,6 +129,12 @@ extension NSNotification.Name {
 }
 
 // MARK: - Extensions
+
+extension NSObject {
+  func wait(for action: Communicator.Action) async {
+    await Communicator.shared.wait(for: action)
+  }
+}
 
 extension Data {
   func decodedAction() -> Communicator.Action? {

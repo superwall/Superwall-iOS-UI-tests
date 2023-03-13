@@ -29,6 +29,8 @@
 		54CAAD3729BC5176008D728C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3629BC5176008D728C /* Extensions.swift */; };
 		54CAAD3829BC5257008D728C /* Communicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD2429BC045C008D728C /* Communicator.swift */; };
 		54CAAD3929BC5C47008D728C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3629BC5176008D728C /* Extensions.swift */; };
+		54CAAD3B29BEAABE008D728C /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3A29BEAABE008D728C /* Tests.swift */; };
+		54CAAD4229BEC0A1008D728C /* Testable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3C29BEBB34008D728C /* Testable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +63,9 @@
 		54CAAD0A29BBD0A0008D728C /* Automated_UI_Testing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Automated_UI_Testing.swift; sourceTree = "<group>"; };
 		54CAAD2429BC045C008D728C /* Communicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Communicator.swift; sourceTree = "<group>"; };
 		54CAAD3629BC5176008D728C /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		54CAAD3A29BEAABE008D728C /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		54CAAD3C29BEBB34008D728C /* Testable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Testable.swift; sourceTree = "<group>"; };
+		54CAAD4029BEBE03008D728C /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		54FBDA3E299AE4A700D85C66 /* UITests_ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITests_ObjC.m; sourceTree = "<group>"; };
 		54FBDA40299AE4C500D85C66 /* UITests_Swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITests_Swift.swift; sourceTree = "<group>"; };
 		54FBDA42299AE53000D85C66 /* UITestsHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestsHelpers.swift; sourceTree = "<group>"; };
@@ -138,11 +143,13 @@
 				540E79362989B16600EE1425 /* AppDelegate.swift */,
 				540E79382989B16600EE1425 /* SceneDelegate.swift */,
 				54039A8B299C271B005AF6B3 /* RootViewController.swift */,
+				54CAAD4129BEC087008D728C /* Testable */,
 				540BF6602993172A005A8600 /* UI Tests */,
 				54039A8A299B2710005AF6B3 /* Helpers */,
 				540E79442989B16600EE1425 /* Info.plist */,
 				540E793F2989B16600EE1425 /* Assets.xcassets */,
 				540E79522989B1A900EE1425 /* Products.storekit */,
+				54CAAD4029BEBE03008D728C /* BridgingHeader.h */,
 				540E793C2989B16600EE1425 /* Main.storyboard */,
 				540E79412989B16600EE1425 /* LaunchScreen.storyboard */,
 			);
@@ -155,6 +162,15 @@
 				54CAAD0A29BBD0A0008D728C /* Automated_UI_Testing.swift */,
 			);
 			path = "Automated UI Testing";
+			sourceTree = "<group>";
+		};
+		54CAAD4129BEC087008D728C /* Testable */ = {
+			isa = PBXGroup;
+			children = (
+				54CAAD3C29BEBB34008D728C /* Testable.swift */,
+				54CAAD3A29BEAABE008D728C /* Tests.swift */,
+			);
+			path = Testable;
 			sourceTree = "<group>";
 		};
 		54FBDA47299AE7B900D85C66 /* Frameworks */ = {
@@ -284,6 +300,7 @@
 				540E79372989B16600EE1425 /* AppDelegate.swift in Sources */,
 				540E79392989B16600EE1425 /* SceneDelegate.swift in Sources */,
 				54CAAD2A29BC4CAE008D728C /* UITests_ObjC.m in Sources */,
+				54CAAD4229BEC0A1008D728C /* Testable.swift in Sources */,
 				54039A8C299C271B005AF6B3 /* RootViewController.swift in Sources */,
 				54CAAD2E29BC4CFD008D728C /* StoreKitHelper.swift in Sources */,
 				54CAAD3729BC5176008D728C /* Extensions.swift in Sources */,
@@ -301,6 +318,7 @@
 				54CAAD3829BC5257008D728C /* Communicator.swift in Sources */,
 				54CAAD3929BC5C47008D728C /* Extensions.swift in Sources */,
 				54CAAD0B29BBD0A0008D728C /* Automated_UI_Testing.swift in Sources */,
+				54CAAD3B29BEAABE008D728C /* Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,6 +493,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.superwall.UI-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/UI Tests/BridgingHeader.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -508,6 +527,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.superwall.UI-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/UI Tests/BridgingHeader.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -650,6 +670,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.superwall.UI-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/UI Tests/BridgingHeader.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

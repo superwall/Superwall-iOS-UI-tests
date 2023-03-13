@@ -6,7 +6,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "UI_Tests-Swift.h"
+
 #import "Configuration_ObjC.h"
+#import "UITests_ObjC.h"
 
 @import SuperwallKit;
 
@@ -28,70 +31,31 @@ static BOOL kHasConfigured = NO;
 
 @end
 
-// MARK: - Configurations
-
-@interface SWKConfigurationAutomatic : NSObject <SWKTestConfiguration>
-@end
-
-// MARK: -
-
-@implementation UITests_ObjC (Additions)
-
-static id<SWKTestConfiguration> kConfiguration;
-
-- (id<SWKTestConfiguration>)configuration {
-  if (!kConfiguration) {
-    NSString *configurationType = SWKConstants.configurationType;
-    if ([configurationType isEqualToString:@"automatic"]) {
-      kConfiguration = [SWKConfigurationAutomatic new];
-    } else {
-      NSAssert(NO, @"Could not find ObjC test configuration type");
-    }
-  }
-
-  return kConfiguration;
-}
-
-@end
-
 // MARK: - Automatic configuration
+
+@interface SWKConfigurationAutomatic()
+@end
 
 @implementation SWKConfigurationAutomatic
 
 - (void)setupWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
-//  // Make sure setup has not been called
-//  if (SWKConfigurationState.hasConfigured) { return; }
-//  SWKConfigurationState.hasConfigured = YES;
-//
-//  ASYNC_BEGIN
-//
-//  [Superwall configureWithApiKey:SWKConstants.apiKey];
-//
-//  // Set status
-////  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
-//
-//  // Begin fetching products for use in other test cases
-//  [[SWKStoreKitHelper shared] fetchCustomProductsWithCompletionHandler:^{
-//    ASYNC_FULFILL
-//  }];
-//
-//  ASYNC_END
-//  completionHandler();
+  // Make sure setup has not been called
+  if (SWKConfigurationState.hasConfigured) { return; }
+  SWKConfigurationState.hasConfigured = YES;
+
+  [Superwall configureWithApiKey:SWKConstants.apiKey];
+
+  // Begin fetching products for use in other test cases
+  [[SWKStoreKitHelper shared] fetchCustomProductsWithCompletionHandler:^{
+    completionHandler();
+  }];
 }
 
 - (void)tearDownWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
-//  ASYNC_BEGIN
-//
-//  // Reset status
-////  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
-//
-//  // Dismiss any view controllers
-//  [XCTestCase dismissViewControllersWithCompletionHandler:^{
-//    ASYNC_FULFILL
-//  }];
-//
-//  ASYNC_END
-//  completionHandler();
+  // Dismiss any view controllers
+  [self dismissViewControllersWithCompletionHandler:^{
+    completionHandler();
+  }];
 }
 
 @end

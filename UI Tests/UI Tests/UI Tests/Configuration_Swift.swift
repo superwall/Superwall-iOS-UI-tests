@@ -16,7 +16,7 @@ struct Configuration {
 // MARK: - Automatic configuration
 
 extension Configuration {
-  class Automatic: TestConfiguration {
+  class Automatic: NSObject, TestConfiguration {
     func setup() async {
       // Using this approach over using the class setup() function because it's not async
       guard State.hasConfigured == false else { return }
@@ -30,7 +30,7 @@ extension Configuration {
 
     func tearDown() async {
       // Dismiss any view controllers
-      await UITestsBase.dismissViewControllers()
+      await dismissViewControllers()
     }
   }
 }
@@ -38,7 +38,7 @@ extension Configuration {
 // MARK: - Advanced configuration
 
 extension Configuration {
-  class Advanced: TestConfiguration {
+  class Advanced: NSObject, TestConfiguration {
     private(set) var mockPurchaseController: MockPurchaseController!
 
     func setup() async {
@@ -65,7 +65,7 @@ extension Configuration {
       Superwall.shared.subscriptionStatus = .inactive
 
       // Dismiss any view controllers
-      await UITestsBase.dismissViewControllers()
+      await NSObject.dismissViewControllers()
 
       // Reset the mock purchases controller
       await mockPurchaseController.reset()
