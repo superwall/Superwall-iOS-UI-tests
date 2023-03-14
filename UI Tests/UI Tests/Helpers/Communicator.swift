@@ -20,7 +20,7 @@ class Communicator {
     // Parent tells the test app
     case relaunchApp
     case endTest
-    case assert(testName: String, precision: Float)
+    case assert(testName: String, precision: Float, captureStatusBar: Bool = true, captureHomeIndicator: Bool = true)
     case skip(message: String)
     case touch(point: CGPoint)
 

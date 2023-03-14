@@ -125,6 +125,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_ASSERT(kPaywallPresentationDelay)
 }
 
+#warning crop home indicator
 - (void)test4WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
 

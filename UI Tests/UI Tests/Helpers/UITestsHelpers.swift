@@ -21,6 +21,7 @@ public protocol TestConfiguration: NSObjectProtocol {
 public extension NSObject {
   @objc(SWKPrecisionValue)
   enum PrecisionValue: Int {
+    // The percentage a pixel must match the source pixel to be considered a match. (98-99% mimics the precision of the human eye)
     case `default`
 
     // Use this value when needing to compare against a screenshot with a video
@@ -32,25 +33,25 @@ public extension NSObject {
     public var rawValue: Int {
       switch self {
         case .default:
-          return 100
+          return 98
         case .video:
-          return 98
+          return 97
         case .transparency:
-          return 98
+          return 97
         default:
           fatalError("Undefined precision value")
       }
     }
   }
 
-  func assert(after timeInterval: TimeInterval, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift") async {
+  func assert(after timeInterval: TimeInterval, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureStatusBar: Bool = true, captureHomeIndicator: Bool = true) async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
 
     await MainActor.run(body: {
       let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
-      Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0))
+      Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureStatusBar: captureStatusBar, captureHomeIndicator: captureHomeIndicator))
     })
 
     await wait(for: .finishedAsserting)

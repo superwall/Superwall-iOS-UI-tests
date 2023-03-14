@@ -71,7 +71,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: 1.0)
     Superwall.shared.track(event: "present_video")
 
-    await assert(after: 2.0, precision: .video)
+    await assert(after: 2.0, precision: .video, captureHomeIndicator: false)
   }
 
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
@@ -364,9 +364,7 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   func test20() async throws {
-    skip("Skipping until I figure out how to set status bar")
-    return
-
+    // Present paywall with URLs
     Superwall.shared.track(event: "present_urls")
 
     await assert(after: Constants.paywallPresentationDelay)
@@ -374,11 +372,14 @@ final class UITests_Swift: NSObject, Testable {
     // Position of the perform button to open a URL in Safari
     let point = CGPoint(x: 358, y: 177)
     touch(point)
-    
-    await assert(after: Constants.paywallPresentationDelay)
 
+    // Verify that Safari has opened.
+    await assert(after: Constants.paywallPresentationDelay, captureStatusBar: false)
+
+    // Relaunch the parent app.
     relaunch()
 
+    // Ensure nothing has changed.
     await assert(after: Constants.paywallPresentationDelay)
   }
 
