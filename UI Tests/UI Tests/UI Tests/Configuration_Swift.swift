@@ -46,10 +46,7 @@ extension Configuration {
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
 
-      #warning("Hopefully moving this out of here?")
-      await MainActor.run(body: {
-        mockPurchaseController = MockPurchaseController()
-      })
+      mockPurchaseController = MockPurchaseController()
 
       Superwall.configure(apiKey: Constants.apiKey, purchaseController: mockPurchaseController)
 
@@ -68,7 +65,7 @@ extension Configuration {
       await NSObject.dismissViewControllers()
 
       // Reset the mock purchases controller
-      await mockPurchaseController.reset()
+      mockPurchaseController.reset()
     }
   }
 }
@@ -124,15 +121,11 @@ class MockPurchaseController: PurchaseController {
   var restorePurchasesResult: Bool = Constants.defaultRestorePurchasesResult
 
   func purchase(product: SKProduct) async -> PurchaseResult {
-    await MainActor.run(body: {
-      return purchaseResult
-    })
+    return purchaseResult
   }
 
   func restorePurchases() async -> Bool {
-    await MainActor.run(body: {
-      return restorePurchasesResult
-    })
+    return restorePurchasesResult
   }
 
   func reset() {

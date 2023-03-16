@@ -7,8 +7,15 @@
 
 import XCTest
 import SnapshotTesting
+import StoreKitTest
 
 class Automated_UI_Testing: XCTestCase {
+  lazy var app: XCUIApplication = {
+    let app = XCUIApplication()
+    return app
+  }()
+  let expectation = XCTestExpectation(description: "Expectation for the run of the test")
+  var skip: XCTSkip? = nil
 
   struct Constants {
     typealias LaunchEnvironment = [String: String]
@@ -44,6 +51,7 @@ class Automated_UI_Testing: XCTestCase {
       case .relaunchApp:
         app.activate()
 
+
       case .runTest(_):
         return
       case .finishedAsserting:
@@ -51,21 +59,12 @@ class Automated_UI_Testing: XCTestCase {
     }
   }
 
-  lazy var app: XCUIApplication = {
-    let app = XCUIApplication()
-    return app
-  }()
-
-  func launchApp() async {
-    await MainActor.run(body: {
-      app.launchEnvironment = Constants.launchEnvironment
-      app.launch()
-      _ = app.wait(for: .runningForeground, timeout: 60)
-    })
+  @MainActor
+  func launchApp() {
+    app.launchEnvironment = Constants.launchEnvironment
+    app.launch()
+    _ = app.wait(for: .runningForeground, timeout: 60)
   }
-
-  let expectation = XCTestExpectation(description: "Expectation for the run of the test")
-  var skip: XCTSkip? = nil
 
   func performSDKTest(number: Int) async throws {
     let observer = NotificationCenter.default.addObserver(forName: .receivedResponse, object: nil, queue: .main) { [weak self] notification in
@@ -77,13 +76,17 @@ class Automated_UI_Testing: XCTestCase {
 
     await launchApp()
 
+    let session = try? SKTestSession(configurationFileNamed: "Products")
+    session?.resetToDefaultState()
+    session?.clearTransactions()
+
     Communicator.shared.send(.runTest(number: number))
 
     wait(for: [expectation], timeout: 1000)
 
     NotificationCenter.default.removeObserver(observer)
 
-    if let skip = skip {
+    if let skip {
       throw skip
     }
   }

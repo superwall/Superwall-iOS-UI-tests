@@ -31,6 +31,7 @@
 		54CAAD3929BC5C47008D728C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3629BC5176008D728C /* Extensions.swift */; };
 		54CAAD3B29BEAABE008D728C /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3A29BEAABE008D728C /* Tests.swift */; };
 		54CAAD4229BEC0A1008D728C /* Testable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3C29BEBB34008D728C /* Testable.swift */; };
+		8845B67829C1F98F001B0013 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 540E79522989B1A900EE1425 /* Products.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -285,6 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8845B67829C1F98F001B0013 /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -734,7 +736,7 @@
 			repositoryURL = "https://github.com/superwall-me/SuperwallKit-iOS";
 			requirement = {
 				kind = revision;
-				revision = 3f79a9aa96486b84c50ba217588a76e2d137507c;
+				revision = 8930ebdf358d5081502f507fcd34deb6ad0613d4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

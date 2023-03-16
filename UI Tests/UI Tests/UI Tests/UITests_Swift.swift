@@ -383,6 +383,38 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  /// Present the paywall and purchase
+  func test21() async throws {
+    skip("Skipping until we can reset transactions")
+    // Present paywall
+    Superwall.shared.track(event: "present_data") { state in
+      print(state)
+    }
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    try? await Task.sleep(for: .seconds(3))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    try? await Task.sleep(for: .seconds(3))
+
+    // Tap the Subscribe button
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Try to present paywall again
+    Superwall.shared.track(event: "present_data")
+
+    // Ensure the paywall doesn't present.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
 #warning("rewrite the below using UI assertions")
 
 //  // MARK: - Get Track Result

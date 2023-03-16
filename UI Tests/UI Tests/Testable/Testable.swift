@@ -31,34 +31,36 @@ import Foundation
   func test18() async throws
   func test19() async throws
   func test20() async throws
+  func test21() async throws
 }
 
 extension RootViewController {
   func performTest(_ testNumber: Int, on testable: Testable) async throws {
     switch testNumber {
-      case 0: try await testable.test0()
-      case 1: try await testable.test1()
-      case 2: try await testable.test2()
-      case 3: try await testable.test3()
-      case 4: try await testable.test4()
-      case 5: try await testable.test5()
-      case 6: try await testable.test6()
-      case 7: try await testable.test7()
-      case 8: try await testable.test8()
-      case 9: try await testable.test9()
-      case 10: try await testable.test10()
-      case 11: try await testable.test11()
-      case 12: try await testable.test12()
-      case 13: try await testable.test13()
-      case 14: try await testable.test14()
-      case 15: try await testable.test15()
-      case 16: try await testable.test16()
-      case 17: try await testable.test17()
-      case 18: try await testable.test18()
-      case 19: try await testable.test19()
-      case 20: try await testable.test20()
-      default:
-        fatalError("Test has not been defined above.")
+    case 0: try await testable.test0()
+    case 1: try await testable.test1()
+    case 2: try await testable.test2()
+    case 3: try await testable.test3()
+    case 4: try await testable.test4()
+    case 5: try await testable.test5()
+    case 6: try await testable.test6()
+    case 7: try await testable.test7()
+    case 8: try await testable.test8()
+    case 9: try await testable.test9()
+    case 10: try await testable.test10()
+    case 11: try await testable.test11()
+    case 12: try await testable.test12()
+    case 13: try await testable.test13()
+    case 14: try await testable.test14()
+    case 15: try await testable.test15()
+    case 16: try await testable.test16()
+    case 17: try await testable.test17()
+    case 18: try await testable.test18()
+    case 19: try await testable.test19()
+    case 20: try await testable.test20()
+    case 21: try await testable.test21()
+    default:
+      fatalError("Test has not been defined above.")
     }
   }
 }
