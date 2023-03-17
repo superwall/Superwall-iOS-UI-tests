@@ -396,13 +396,13 @@ final class UITests_Swift: NSObject, Testable {
     let purchaseButton = CGPoint(x: 196, y: 750)
     touch(purchaseButton)
 
-    try? await Task.sleep(for: .seconds(3))
+    try await Task.sleep(for: .seconds(3))
 
     // Tap the Subscribe button
     let subscribeButton = CGPoint(x: 196, y: 766)
     touch(subscribeButton)
 
-    try? await Task.sleep(for: .seconds(3))
+    try await Task.sleep(for: .seconds(3))
 
     // Tap the Subscribe button
     let okButton = CGPoint(x: 196, y: 495)
@@ -413,6 +413,21 @@ final class UITests_Swift: NSObject, Testable {
 
     // Ensure the paywall doesn't present.
     await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Track an event shortly after another one is beginning to present. The session should not be cancelled out.
+  func test22() async throws {
+    skip("Skipping until we can read didTrackSuperwallEventInfo params")
+
+    // TODO: Maybe clear attributes here? Don't want rules matching
+
+    Superwall.shared.track(event: "present_data")
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(200)) {
+      Superwall.shared.track(event: "present_and_rule_user")
+    }
+
+    // TODO: Need to read the output of the didTrackSuperwallEventInfo params and check that trigger_session_id, experiment_id, and variant_id isn't nil.
   }
 
 #warning("rewrite the below using UI assertions")

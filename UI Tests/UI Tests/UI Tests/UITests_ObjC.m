@@ -494,6 +494,14 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_SKIP(@"Write from Swift version")
 }
 
+- (void)test21WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Write from Swift version")
+}
+
+- (void)test22WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Write from Swift version")
+}
+
 //- (void)test_getTrackResult_paywall {
 //  [[Superwall sharedInstance] getTrackResultForEvent:@"present_data" completionHandler:^(SWKTrackResult * _Nonnull result) {
 //    switch (result.value) {
