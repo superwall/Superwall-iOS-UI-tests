@@ -54,6 +54,8 @@ static BOOL kHasConfigured = NO;
 - (void)tearDownWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
   // Dismiss any view controllers
   [self dismissViewControllersWithCompletionHandler:^{
+    [[Superwall sharedInstance] reset];
+
     completionHandler();
   }];
 }

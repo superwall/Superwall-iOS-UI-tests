@@ -30,6 +30,7 @@ class Automated_UI_Testing: XCTestCase {
     switch action {
 
       case .endTest:
+        clearStoreKitTransactions()
         expectation.fulfill()
 
       case .assert(let testName, let precision, let captureStatusBar, let captureHomeIndicator):
@@ -66,6 +67,16 @@ class Automated_UI_Testing: XCTestCase {
     _ = app.wait(for: .runningForeground, timeout: 60)
   }
 
+  private lazy var storeKitTestSession: SKTestSession = {
+    let session = try! SKTestSession(configurationFileNamed: "Products")
+    return session
+  }()
+
+  func clearStoreKitTransactions() {
+    storeKitTestSession.resetToDefaultState()
+    storeKitTestSession.clearTransactions()
+  }
+
   func performSDKTest(number: Int) async throws {
     let observer = NotificationCenter.default.addObserver(forName: .receivedResponse, object: nil, queue: .main) { [weak self] notification in
       guard let action = notification.object as? Communicator.Action else { return }
@@ -75,10 +86,6 @@ class Automated_UI_Testing: XCTestCase {
     print("Instructing parent app to start test #\(number) with \(Constants.launchEnvironment["configurationType"]!)")
 
     await launchApp()
-
-    let session = try? SKTestSession(configurationFileNamed: "Products")
-    session?.resetToDefaultState()
-    session?.clearTransactions()
 
     Communicator.shared.send(.runTest(number: number))
 

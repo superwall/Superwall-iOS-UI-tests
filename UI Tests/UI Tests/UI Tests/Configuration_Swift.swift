@@ -5,6 +5,7 @@
 //  Created by Bryan Dubno on 3/6/23.
 //
 
+import StoreKitTest
 import SuperwallKit
 
 struct Configuration {
@@ -31,6 +32,9 @@ extension Configuration {
     func tearDown() async {
       // Dismiss any view controllers
       await dismissViewControllers()
+
+      // Reset identity and user data
+      Superwall.shared.reset()
     }
   }
 }
@@ -66,6 +70,9 @@ extension Configuration {
 
       // Reset the mock purchases controller
       mockPurchaseController.reset()
+
+      // Reset identity and user data
+      Superwall.shared.reset()
     }
   }
 }

@@ -383,26 +383,21 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  /// Present the paywall and purchase
+  /// Present the paywall and purchase; then make sure the paywall doesn't get presented again after the purchase
   func test21() async throws {
-    skip("Skipping until we can reset transactions")
-    // Present paywall
-    Superwall.shared.track(event: "present_data") { state in
-      print(state)
-    }
+    Superwall.shared.track(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
 
+    // Purchase on the paywall
     let purchaseButton = CGPoint(x: 196, y: 750)
     touch(purchaseButton)
 
-    try await Task.sleep(for: .seconds(3))
+    await assert(after: Constants.paywallPresentationDelay, )
 
     // Tap the Subscribe button
     let subscribeButton = CGPoint(x: 196, y: 766)
     touch(subscribeButton)
-
-    try await Task.sleep(for: .seconds(3))
 
     // Tap the Subscribe button
     let okButton = CGPoint(x: 196, y: 495)
