@@ -1,2 +1,4 @@
-
-UI Tests/UI Tests.xcodeproj/xcuserdata/bryandubno.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+xcuserdata/
+DerivedData/
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+build/*
