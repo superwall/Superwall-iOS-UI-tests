@@ -44,26 +44,26 @@ public extension NSObject {
     }
   }
 
-  func assert(after timeInterval: TimeInterval, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureStatusBar: Bool = true, captureHomeIndicator: Bool = true) async {
+  func assert(after timeInterval: TimeInterval, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureArea: CaptureArea = .fullScreen) async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
 
     await MainActor.run(body: {
       let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
-      Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureStatusBar: captureStatusBar, captureHomeIndicator: captureHomeIndicator))
+      Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
     })
 
     await wait(for: .finishedAsserting)
   }
 
   @available(swift, obsoleted: 1.0)
-  @objc func assert(after timeInterval: TimeInterval, testName: String, precision: PrecisionValue) async {
+  @objc func assert(after timeInterval: TimeInterval, testName: String, precision: PrecisionValue, captureArea: CaptureAreaObjC = CaptureAreaObjC.fullScreen) async {
     // Transform: "-[UITests_ObjC test0WithCompletionHandler:]" -> "0" OR "-[UITests_ObjC test11WithCompletionHandler:]_block_invoke_2" -> "11"
 
     let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
 
-    await assert(after: timeInterval, precision: precision, testName: modifiedTestName, prefix: "ObjC")
+    await assert(after: timeInterval, precision: precision, testName: modifiedTestName, prefix: "ObjC", captureArea: captureArea.transform)
   }
 
   @objc func skip(_ message: String) {

@@ -19,10 +19,10 @@ TEST_START_NUM_ASSERTS(1);
 __weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_create(); for (NSInteger i = 0; i < numAsserts; i++){ dispatch_group_enter(group); } dispatch_group_notify(group, dispatch_get_main_queue(), ^{ completionHandler(nil); });
 
 #define TEST_ASSERT(delay) \
-[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:SWKPrecisionValueDefault completionHandler:^{ dispatch_group_leave(group); }];
+[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:SWKPrecisionValueDefault captureArea:[SWKCaptureArea fullScreen] completionHandler:^{ dispatch_group_leave(group); }];
 
 #define TEST_ASSERT_WITH_PRECISION(delay, precisionValue) \
-[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:precisionValue completionHandler:^{ dispatch_group_leave(group); }]
+[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:precisionValue captureArea:[SWKCaptureArea fullScreen] completionHandler:^{ dispatch_group_leave(group); }]
 
 #define TEST_SKIP(message) \
 [self skip:message]; return;

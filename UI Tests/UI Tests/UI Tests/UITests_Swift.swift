@@ -71,7 +71,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: 1.0)
     Superwall.shared.track(event: "present_video")
 
-    await assert(after: 2.0, precision: .video, captureHomeIndicator: false)
+    await assert(after: 2.0, precision: .video, captureArea: .safeArea(captureHomeIndicator: false))
   }
 
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
@@ -374,7 +374,7 @@ final class UITests_Swift: NSObject, Testable {
     touch(point)
 
     // Verify that Safari has opened.
-    await assert(after: Constants.paywallPresentationDelay, captureStatusBar: false)
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .safari)
 
     // Relaunch the parent app.
     relaunch()
@@ -387,19 +387,24 @@ final class UITests_Swift: NSObject, Testable {
   func test21() async throws {
     Superwall.shared.track(event: "present_data")
 
+    // Assert that paywall appears
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
     let purchaseButton = CGPoint(x: 196, y: 750)
     touch(purchaseButton)
 
-    await assert(after: Constants.paywallPresentationDelay, )
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
     let subscribeButton = CGPoint(x: 196, y: 766)
     touch(subscribeButton)
 
-    // Tap the Subscribe button
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
@@ -423,6 +428,36 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     // TODO: Need to read the output of the didTrackSuperwallEventInfo params and check that trigger_session_id, experiment_id, and variant_id isn't nil.
+  }
+
+  /// Case: Unsubscribed user, register event without a gating handler
+  /// Result: paywall should display
+  func test23() async throws {
+
+  }
+
+  /// Case: Subscribed user, register event without a gating handler
+  /// Result: paywall should NOT display
+  func test24() async throws {
+
+  }
+
+  /// Case: Unsubscribed user, register event without a gating handler, user subscribes, after dismiss register another event without a gating handler
+  /// Result: paywall should display, after user subscribes, don't show another paywall
+  func test25() async throws {
+
+  }
+
+  /// Case: Unsubscribed user, register event with a gating handler
+  /// Result: paywall should display, code in gating closure should not execute
+  func test26() async throws {
+
+  }
+
+  /// Case: Subscribed user, register event with a gating handler
+  /// Result: paywall should NOT display, code in gating closure should execute
+  func test27() async throws {
+
   }
 
 #warning("rewrite the below using UI assertions")

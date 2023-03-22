@@ -28,14 +28,13 @@ class Automated_UI_Testing: XCTestCase {
 
   func handle(_ action: Communicator.Action) {
     switch action {
-
       case .endTest:
         clearStoreKitTransactions()
         expectation.fulfill()
 
-      case .assert(let testName, let precision, let captureStatusBar, let captureHomeIndicator):
+      case .assert(let testName, let precision, let captureArea):
         // If Xcode 14.1/14.2 bug ever gets fixed, use `simctl` to set a consistent status bar instead (https://www.jessesquires.com/blog/2022/12/14/simctrl-status_bar-broken/)
-        let image = app.screenshot().image.captureStatusBar(captureStatusBar).captureHomeIndicator(captureHomeIndicator)
+        let image = captureArea.image(from: app.screenshot().image)
         assertSnapshot(matching: image, as: .image(perceptualPrecision: precision), testName: testName)
         Communicator.shared.send(.finishedAsserting)
         return
@@ -51,7 +50,6 @@ class Automated_UI_Testing: XCTestCase {
 
       case .relaunchApp:
         app.activate()
-
 
       case .runTest(_):
         return
@@ -96,49 +94,5 @@ class Automated_UI_Testing: XCTestCase {
     if let skip {
       throw skip
     }
-  }
-}
-
-extension UIImage {
-  func captureStatusBar(_ captureStatusBar: Bool) -> UIImage {
-    return captureStatusBar ? self : withoutStatusBar
-  }
-
-  func captureHomeIndicator(_ captureHomeIndicator: Bool) -> UIImage {
-    return captureHomeIndicator ? self : withoutHomeIndicator
-  }
-
-  var withoutStatusBar: UIImage {
-    guard let cgImage = cgImage else {
-      fatalError("Error creating `withoutStatusBar` image")
-    }
-
-    let iPhone14ProStatusBarInset = 59.0
-    let yOffset = iPhone14ProStatusBarInset * scale
-    let rect = CGRect(x: 0, y: Int(yOffset), width: cgImage.width, height: cgImage.height - Int(yOffset))
-
-    if let croppedCGImage = cgImage.cropping(to: rect) {
-      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
-      return image
-    }
-
-    fatalError("Error creating `withoutStatusBar` image")
-  }
-
-  var withoutHomeIndicator: UIImage {
-    guard let cgImage = cgImage else {
-      fatalError("Error creating `withoutHomeIndicator` image")
-    }
-
-    let iPhone14ProHomeIndicatorInset = 34.0
-    let yOffset = iPhone14ProHomeIndicatorInset * scale
-    let rect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height - Int(yOffset))
-
-    if let croppedCGImage = cgImage.cropping(to: rect) {
-      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
-      return image
-    }
-
-    fatalError("Error creating `withoutHomeIndicator` image")
   }
 }

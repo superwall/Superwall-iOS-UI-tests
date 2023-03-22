@@ -20,7 +20,7 @@ class Communicator {
     // Parent tells the test app
     case relaunchApp
     case endTest
-    case assert(testName: String, precision: Float, captureStatusBar: Bool = true, captureHomeIndicator: Bool = true)
+    case assert(testName: String, precision: Float, captureArea: CaptureArea)
     case skip(message: String)
     case touch(point: CGPoint)
 
@@ -124,6 +124,47 @@ class Communicator {
   }
 }
 
+public enum CaptureArea: Codable {
+  case fullScreen
+  case safeArea(captureStatusBar: Bool = true, captureHomeIndicator: Bool = true)
+  case safari // consistent frame for grabbing external Safari content
+  case custom(frame: CGRect)
+
+  func image(from image: UIImage) -> UIImage {
+    switch self {
+      case .fullScreen:
+        return image
+      case .safeArea(captureStatusBar: let captureStatusBar, captureHomeIndicator: let captureHomeIndicator):
+        return image.captureStatusBar(captureStatusBar).captureHomeIndicator(captureHomeIndicator)
+      case .safari:
+        return image.captureStatusBar(false).cropped(to: .init(origin: .zero, size: .init(width: 393, height: 655)))
+      case .custom(frame: let frame):
+        return image.cropped(to: frame)
+    }
+  }
+}
+
+@objc(SWKCaptureArea)
+public class CaptureAreaObjC: NSObject {
+  @objc public static let fullScreen: CaptureAreaObjC = CaptureAreaObjC(.fullScreen)
+  @objc public static let safari: CaptureAreaObjC = CaptureAreaObjC(.safari)
+
+  let transform: CaptureArea
+
+  public init(_ captureArea: CaptureArea) {
+    self.transform = captureArea
+    super.init()
+  }
+
+  @objc public convenience init(captureStatusBar: Bool, captureHomeIndicator: Bool) {
+    self.init(.safeArea(captureStatusBar: captureStatusBar, captureHomeIndicator: captureHomeIndicator))
+  }
+
+  @objc public convenience init(frame: CGRect) {
+    self.init(.custom(frame: frame))
+  }
+}
+
 extension NSNotification.Name {
   static let receivedResponse = NSNotification.Name("receivedResponse")
 }
@@ -168,5 +209,64 @@ extension HttpRequest {
     set {
       body = newValue.bytes
     }
+  }
+}
+
+extension UIImage {
+  func captureStatusBar(_ captureStatusBar: Bool) -> UIImage {
+    return captureStatusBar ? self : withoutStatusBar
+  }
+
+  func captureHomeIndicator(_ captureHomeIndicator: Bool) -> UIImage {
+    return captureHomeIndicator ? self : withoutHomeIndicator
+  }
+
+  func cropped(to frame: CGRect) -> UIImage {
+    guard let cgImage = cgImage else {
+      fatalError("Error creating `cropped` image")
+    }
+
+    let rect = CGRect(x: frame.minX * scale, y: frame.minY * scale, width: frame.width * scale, height: frame.height * scale)
+
+    if let croppedCGImage = cgImage.cropping(to: rect) {
+      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
+      return image
+    }
+
+    fatalError("Error creating `cropped` image")
+  }
+
+  var withoutStatusBar: UIImage {
+    guard let cgImage = cgImage else {
+      fatalError("Error creating `withoutStatusBar` image")
+    }
+
+    let iPhone14ProStatusBarInset = 59.0
+    let yOffset = iPhone14ProStatusBarInset * scale
+    let rect = CGRect(x: 0, y: Int(yOffset), width: cgImage.width, height: cgImage.height - Int(yOffset))
+
+    if let croppedCGImage = cgImage.cropping(to: rect) {
+      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
+      return image
+    }
+
+    fatalError("Error creating `withoutStatusBar` image")
+  }
+
+  var withoutHomeIndicator: UIImage {
+    guard let cgImage = cgImage else {
+      fatalError("Error creating `withoutHomeIndicator` image")
+    }
+
+    let iPhone14ProHomeIndicatorInset = 34.0
+    let yOffset = iPhone14ProHomeIndicatorInset * scale
+    let rect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height - Int(yOffset))
+
+    if let croppedCGImage = cgImage.cropping(to: rect) {
+      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
+      return image
+    }
+
+    fatalError("Error creating `withoutHomeIndicator` image")
   }
 }
