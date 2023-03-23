@@ -433,19 +433,60 @@ final class UITests_Swift: NSObject, Testable {
   /// Case: Unsubscribed user, register event without a gating handler
   /// Result: paywall should display
   func test23() async throws {
+    // Register event
+    Superwall.shared.register(event: "register_nongated_paywall")
 
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Case: Subscribed user, register event without a gating handler
   /// Result: paywall should NOT display
   func test24() async throws {
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
+    // Register event
+    Superwall.shared.register(event: "register_nongated_paywall")
+
+    // Assert that paywall DOES not appear
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Case: Unsubscribed user, register event without a gating handler, user subscribes, after dismiss register another event without a gating handler
   /// Result: paywall should display, after user subscribes, don't show another paywall
   func test25() async throws {
+    Superwall.shared.register(event: "register_nongated_paywall")
 
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 684)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Wait for dismiss
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Try to present paywall again
+    Superwall.shared.register(event: "register_nongated_paywall")
+
+    // Ensure the paywall doesn't present.
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Case: Unsubscribed user, register event with a gating handler
@@ -459,6 +500,9 @@ final class UITests_Swift: NSObject, Testable {
   func test27() async throws {
 
   }
+
+  /// Case: Airplane Mode
+  /// Lifecycle handler
 
 #warning("rewrite the below using UI assertions")
 

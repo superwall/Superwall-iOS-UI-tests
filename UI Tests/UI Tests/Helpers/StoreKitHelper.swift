@@ -14,6 +14,11 @@ public class StoreKitHelper: NSObject {
 
   private(set) var products = [SKProduct]()
 
+  override init() {
+    super.init()
+    SKPaymentQueue.default().add(self)
+  }
+
   @objc public var monthlyProduct: SKProduct? {
     return products.first(where: { $0.productIdentifier == Constants.monthlyProductIdentifier })
   }
@@ -39,6 +44,20 @@ public class StoreKitHelper: NSObject {
       }
     }
   }
+
+  var mostRecentTransactionState: ((SKPaymentTransactionState) -> Void)?
+
+  @objc public func purchase(product: SKProduct) async -> SKPaymentTransactionState{
+    let payment = SKPayment(product: product)
+    SKPaymentQueue.default().add(payment)
+
+    return await withCheckedContinuation { continuation in
+      mostRecentTransactionState = { [weak self] state in
+        continuation.resume(returning: state)
+        self?.mostRecentTransactionState = nil
+      }
+    }
+  }
 }
 
 extension StoreKitHelper {
@@ -54,5 +73,16 @@ extension StoreKitHelper: SKProductsRequestDelegate {
       products = response.products
       mostRecentFetch?()
     }
+  }
+}
+
+extension StoreKitHelper: SKPaymentTransactionObserver {
+  public func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+    guard
+      let transaction = transactions.first,
+      let mostRecentTransactionState = mostRecentTransactionState,
+      [.purchasing].contains(transaction.transactionState) == false
+    else { return }
+    mostRecentTransactionState(transaction.transactionState)
   }
 }

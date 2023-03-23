@@ -5,6 +5,7 @@
 //  Created by Bryan Dubno on 3/6/23.
 //
 
+import StoreKit
 import StoreKitTest
 import SuperwallKit
 
@@ -36,6 +37,11 @@ extension Configuration {
       // Reset identity and user data
       Superwall.shared.reset()
     }
+
+    #warning("add to objc")
+    func mockSubscribedUser(productIdentifier: String) async {
+      activateSubscriber(productIdentifier: productIdentifier)
+    }
   }
 }
 
@@ -43,16 +49,16 @@ extension Configuration {
 
 extension Configuration {
   class Advanced: NSObject, TestConfiguration {
-    private(set) var mockPurchaseController: MockPurchaseController!
+    private(set) var purchaseController: AdvancedPurchaseController!
 
     func setup() async {
       // Using this approach over using the class setup() function because it's not async
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
 
-      mockPurchaseController = MockPurchaseController()
+      purchaseController = AdvancedPurchaseController()
 
-      Superwall.configure(apiKey: Constants.apiKey, purchaseController: mockPurchaseController)
+      Superwall.configure(apiKey: Constants.apiKey, purchaseController: purchaseController)
 
       // Set status
       Superwall.shared.subscriptionStatus = .inactive
@@ -68,11 +74,34 @@ extension Configuration {
       // Dismiss any view controllers
       await NSObject.dismissViewControllers()
 
-      // Reset the mock purchases controller
-      mockPurchaseController.reset()
-
       // Reset identity and user data
       Superwall.shared.reset()
+    }
+
+#warning("add to objc")
+    func mockSubscribedUser(productIdentifier: String) async {
+      Superwall.shared.subscriptionStatus = .active
+    }
+  }
+
+  #warning("add to objc")
+  class AdvancedPurchaseController: PurchaseController {
+    func purchase(product: SKProduct) async -> PurchaseResult {
+      let transactionState = await StoreKitHelper.shared.purchase(product: product)
+      switch transactionState {
+        case .purchased, .restored:
+          Superwall.shared.subscriptionStatus = .active
+          return .purchased
+        case .failed:
+          return .failed(NSError() as Error)
+        default:
+          return .cancelled
+      }
+    }
+
+    func restorePurchases() async -> Bool {
+      // no-op
+      return true
     }
   }
 }
@@ -112,31 +141,4 @@ extension UITests_Swift {
         fatalError("Could not find Swift test configuration type")
     }
   }()
-}
-
-// MARK: - MockPurchaseController
-
-import StoreKit
-
-class MockPurchaseController: PurchaseController {
-  private struct Constants {
-    static let defaultPurchaseResult: PurchaseResult = .cancelled
-    static let defaultRestorePurchasesResult: Bool = false
-  }
-
-  var purchaseResult: PurchaseResult = Constants.defaultPurchaseResult
-  var restorePurchasesResult: Bool = Constants.defaultRestorePurchasesResult
-
-  func purchase(product: SKProduct) async -> PurchaseResult {
-    return purchaseResult
-  }
-
-  func restorePurchases() async -> Bool {
-    return restorePurchasesResult
-  }
-
-  func reset() {
-    purchaseResult = Constants.defaultPurchaseResult
-    restorePurchasesResult = Constants.defaultRestorePurchasesResult
-  }
 }

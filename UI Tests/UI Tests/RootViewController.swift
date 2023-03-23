@@ -47,5 +47,13 @@ class RootViewController: UIViewController {
 
     Communicator.shared.send(.endTest)
   }
+
+  override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
+    return [.bottom]
+  }
+
+  override var prefersHomeIndicatorAutoHidden: Bool {
+    return true
+  }
 }
 

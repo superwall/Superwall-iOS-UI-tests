@@ -23,6 +23,7 @@ class Communicator {
     case assert(testName: String, precision: Float, captureArea: CaptureArea)
     case skip(message: String)
     case touch(point: CGPoint)
+    case activateSubscriber(productIdentifier: String)
 
     static func == (lhs: Action, rhs: Action) -> Bool {
       switch (lhs, rhs) {
@@ -36,7 +37,11 @@ class Communicator {
           return true
         case (.assert, .assert):
           return true
+        case (.skip, .skip):
+          return true
         case (.touch, .touch):
+          return true
+        case (.activateSubscriber, .activateSubscriber):
           return true
         default:
           return false

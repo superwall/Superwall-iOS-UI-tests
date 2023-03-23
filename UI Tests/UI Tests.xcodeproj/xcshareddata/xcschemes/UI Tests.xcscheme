@@ -46,12 +46,12 @@
          <EnvironmentVariable
             key = "configurationType"
             value = "automatic"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "configurationType"
             value = "advanced"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "configurationType"

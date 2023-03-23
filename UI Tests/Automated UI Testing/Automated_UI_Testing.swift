@@ -48,6 +48,9 @@ class Automated_UI_Testing: XCTestCase {
         let coordinate = normalized.withOffset(CGVector(dx: point.x, dy: point.y))
         coordinate.tap()
 
+      case .activateSubscriber(let productIdentifier):
+        try! storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
+
       case .relaunchApp:
         app.activate()
 

@@ -14,6 +14,7 @@ import SuperwallKit
 public protocol TestConfiguration: NSObjectProtocol {
   func setup() async
   func tearDown() async
+  func mockSubscribedUser(productIdentifier: String) async
 }
 
 // MARK: - UITests
@@ -76,6 +77,10 @@ public extension NSObject {
 
   @objc func relaunch() {
     Communicator.shared.send(.relaunchApp)
+  }
+
+  @objc func activateSubscriber(productIdentifier: String) {
+    Communicator.shared.send(.activateSubscriber(productIdentifier: productIdentifier))
   }
 }
 
