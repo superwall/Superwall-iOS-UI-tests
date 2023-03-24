@@ -451,7 +451,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
 
-      [[Superwall sharedInstance] getTrackResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
+      [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
 
         // Dismiss any view controllers
         [weakSelf dismissViewControllersWithCompletionHandler:^{
@@ -503,7 +503,7 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 //- (void)test_getTrackResult_paywall {
-//  [[Superwall sharedInstance] getTrackResultForEvent:@"present_data" completionHandler:^(SWKTrackResult * _Nonnull result) {
+//  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKTrackResult * _Nonnull result) {
 //    switch (result.value) {
 //      case SWKTrackValuePaywall:
 //        break;
@@ -514,25 +514,25 @@ static id<SWKTestConfiguration> kConfiguration;
 //}
 //
 //- (void)test_getTrackResult_eventNotFound {
-//  [[Superwall sharedInstance] getTrackResultForEvent:@"a_random_madeup_event" completionHandler:^(SWKTrackResult * _Nonnull result) {
+//  [[Superwall sharedInstance] getPresentationResultForEvent:@"a_random_madeup_event" completionHandler:^(SWKTrackResult * _Nonnull result) {
 //    XCTAssertEqual(result.value, SWKTrackValueEventNotFound);
 //  }];
 //}
 //
 //- (void)test_getTrackResult_noRuleMatch {
-//  [[Superwall sharedInstance] getTrackResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
+//  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
 //    XCTAssertEqual(result.value, SWKTrackValueNoRuleMatch);
 //  }];
 //}
 //
 //- (void)test_getTrackResult_paywallNotAvailable {
-//  [[Superwall sharedInstance] getTrackResultForEvent:@"incorrect_product_identifier" completionHandler:^(SWKTrackResult * _Nonnull result) {
+//  [[Superwall sharedInstance] getPresentationResultForEvent:@"incorrect_product_identifier" completionHandler:^(SWKTrackResult * _Nonnull result) {
 //    XCTAssertEqual(result.value, SWKTrackValuePaywallNotAvailable);
 //  }];
 //}
 //
 //- (void)test_getTrackResult_holdout {
-//  [[Superwall sharedInstance] getTrackResultForEvent:@"holdout" completionHandler:^(SWKTrackResult * _Nonnull result) {
+//  [[Superwall sharedInstance] getPresentationResultForEvent:@"holdout" completionHandler:^(SWKTrackResult * _Nonnull result) {
 //    switch (result.value) {
 //      case SWKTrackValueHoldout:
 //        break;

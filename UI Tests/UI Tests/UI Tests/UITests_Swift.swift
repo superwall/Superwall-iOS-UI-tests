@@ -331,7 +331,7 @@ final class UITests_Swift: NSObject, Testable {
     // Dismiss any view controllers
     await dismissViewControllers()
 
-    _ = await Superwall.shared.getTrackResult(forEvent: "present_and_rule_user")
+    _ = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user")
 
     // Dismiss any view controllers
     await dismissViewControllers()
@@ -508,8 +508,8 @@ final class UITests_Swift: NSObject, Testable {
 
 //  // MARK: - Get Track Result
 //
-//  func test_getTrackResult_paywall() async throws {
-//    let result = await Superwall.shared.getTrackResult(forEvent: "present_data")
+//  func test_getPresentationResult_paywall() async throws {
+//    let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
 //    switch result {
 //    case .paywall:
 //      break
@@ -518,23 +518,23 @@ final class UITests_Swift: NSObject, Testable {
 //    }
 //  }
 //
-//  func test_getTrackResult_eventNotFound() async throws {
-//    let result = await Superwall.shared.getTrackResult(forEvent: "a_random_madeup_event")
+//  func test_getPresentationResult_eventNotFound() async throws {
+//    let result = await Superwall.shared.getPresentationResult(forEvent: "a_random_madeup_event")
 //    XCTAssertEqual(result, .eventNotFound)
 //  }
 //
-//  func test_getTrackResult_noRuleMatch() async throws {
-//    let result = await Superwall.shared.getTrackResult(forEvent: "present_and_rule_user")
+//  func test_getPresentationResult_noRuleMatch() async throws {
+//    let result = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user")
 //    XCTAssertEqual(result, .noRuleMatch)
 //  }
 //
-//  func test_getTrackResult_paywallNotAvailable() async throws {
-//    let result = await Superwall.shared.getTrackResult(forEvent: "incorrect_product_identifier")
+//  func test_getPresentationResult_paywallNotAvailable() async throws {
+//    let result = await Superwall.shared.getPresentationResult(forEvent: "incorrect_product_identifier")
 //    XCTAssertEqual(result, .paywallNotAvailable)
 //  }
 //
-//  func test_getTrackResult_holdout() async throws {
-//    let result = await Superwall.shared.getTrackResult(forEvent: "holdout")
+//  func test_getPresentationResult_holdout() async throws {
+//    let result = await Superwall.shared.getPresentationResult(forEvent: "holdout")
 //    switch result {
 //    case .holdout:
 //      break
