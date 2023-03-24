@@ -492,14 +492,46 @@ final class UITests_Swift: NSObject, Testable {
   /// Case: Unsubscribed user, register event with a gating handler
   /// Result: paywall should display, code in gating closure should not execute
   func test26() async throws {
+    Superwall.shared.register(event: "register_gated_paywall") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
 
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let purchaseButton = CGPoint(x: 352, y: 65)
+    touch(purchaseButton)
+
+    // Assert that nothing else appars appears
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .safeArea(captureHomeIndicator: false))
   }
 
   /// Case: Subscribed user, register event with a gating handler
   /// Result: paywall should NOT display, code in gating closure should execute
   func test27() async throws {
+    // Mock user as `subscribed`
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
+    Superwall.shared.register(event: "register_gated_paywall") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert that alert controller appears appears
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .safeArea(captureHomeIndicator: false))
   }
+
+  #warning("change all to remove home indicator")
 
   /// Case: Airplane Mode
   /// Lifecycle handler

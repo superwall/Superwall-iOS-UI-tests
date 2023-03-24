@@ -9,11 +9,14 @@ import UIKit
 import SuperwallKit
 
 class RootViewController: UIViewController {
+  static var shared: RootViewController!
 
   let communicator = Communicator.shared
 
   override func viewDidLoad() {
     super.viewDidLoad()
+
+    RootViewController.shared = self
     
     NotificationCenter.default.addObserver(forName: .receivedResponse, object: nil, queue: .main) { [weak self] notification in
       guard let action = notification.object as? Communicator.Action else { return }
