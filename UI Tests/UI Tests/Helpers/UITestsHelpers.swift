@@ -34,11 +34,11 @@ public extension NSObject {
     public var rawValue: Int {
       switch self {
         case .default:
-          return 98
+          return 92
         case .video:
-          return 97
+          return 90
         case .transparency:
-          return 97
+          return 90
         default:
           fatalError("Undefined precision value")
       }
