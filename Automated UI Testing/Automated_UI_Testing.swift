@@ -84,7 +84,7 @@ class Automated_UI_Testing: XCTestCase {
       self?.handle(action)
     }
 
-    print("Instructing parent app to start test #\(number) with \(Constants.launchEnvironment["configurationType"]!)")
+    print("Instructing parent app to start test #\(number) with \(Constants.launchEnvironment["configurationType"]!) in \(Constants.launchEnvironment["language"]!)")
 
     await launchApp()
 
