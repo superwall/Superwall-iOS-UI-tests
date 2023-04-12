@@ -1,4 +1,4 @@
-name: Xcode Build on Push from superwall-me/Superwall-iOS
+name: Run UI Tests from superwall-me/Superwall-iOS dispatch
 
 on:
   repository_dispatch:
