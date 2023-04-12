@@ -1,0 +1,26 @@
+name: Xcode Build on Push from superwall-me/Superwall-iOS
+
+on:
+  repository_dispatch:
+    types: [branch-push]
+
+jobs:
+  xcode_build:
+    runs-on: macos-12
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
+      with:
+        repository: superwall-me/Superwall-iOS
+        ref: ${{ github.event.client_payload.ref }}
+
+    - name: Set up Xcode
+      run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+    - name: Run Xcode build
+      run: |
+        xcodebuild test -project "UI Tests.xcodeproj" \
+        -scheme "UI Tests -swift -automatic" \
+        -sdk iphonesimulator \
+        -destination 'platform=iOS Simulator,name=iPhone 14 Pro,OS=16.2'
