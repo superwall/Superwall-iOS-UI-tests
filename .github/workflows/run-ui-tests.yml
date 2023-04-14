@@ -1,26 +1,34 @@
 name: Run UI Tests from superwall-me/Superwall-iOS dispatch
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [branch-push]
 
 jobs:
   xcode_build:
     runs-on: macos-12
+    env:
+      PROJECT: "UI Tests.xcodeproj"
+      SCHEME: "UI Tests -swift -automatic"
+      SDK: iphonesimulator
+      DESTINATION: 'platform=iOS Simulator,name=iPhone 14 Pro,OS=16.2'
+      DERIVED_DATA_PATH: build_output
 
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
       with:
-        repository: superwall-me/Superwall-iOS
-        ref: ${{ github.event.client_payload.ref }}
+        ref: ${{ github.event.client_payload.sha }}
 
     - name: Set up Xcode
       run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-    - name: Run Xcode build
+    - name: Run UI Tests
       run: |
-        xcodebuild test -project "UI Tests.xcodeproj" \
-        -scheme "UI Tests -swift -automatic" \
-        -sdk iphonesimulator \
-        -destination 'platform=iOS Simulator,name=iPhone 14 Pro,OS=16.2'
+        xcodebuild test -project "${{ env.PROJECT }}" \
+        -scheme "${{ env.SCHEME }}" \
+        -sdk "${{ env.SDK }}" \
+        -destination "${{ env.DESTINATION }}" \
+        -derivedDataPath "${{ env.DERIVED_DATA_PATH }}" \
+        -verbose
