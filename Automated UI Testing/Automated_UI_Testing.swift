@@ -68,10 +68,7 @@ class Automated_UI_Testing: XCTestCase {
     _ = app.wait(for: .runningForeground, timeout: 60)
   }
 
-  private lazy var storeKitTestSession: SKTestSession = {
-    let session = try! SKTestSession(configurationFileNamed: "Products")
-    return session
-  }()
+  private let storeKitTestSession = try! SKTestSession(configurationFileNamed: "Products")
 
   func clearStoreKitTransactions() {
     storeKitTestSession.resetToDefaultState()

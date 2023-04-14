@@ -69,10 +69,17 @@ extension StoreKitHelper {
 
 extension StoreKitHelper: SKProductsRequestDelegate {
   public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-    if !response.products.isEmpty {
-      products = response.products
-      mostRecentFetch?()
+    guard response.products.isEmpty == false else {
+      assertionFailure("Failed to receive products in StoreKit helper")
+      return
     }
+
+    products = response.products
+    mostRecentFetch?()
+  }
+
+  public func request(_ request: SKRequest, didFailWithError error: Error) {
+    assertionFailure("Failed to receive products in StoreKit helper")
   }
 }
 
