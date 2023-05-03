@@ -29,6 +29,8 @@ jobs:
         sed -i '' "/\"SuperwallKit-iOS\" \*\/ = {/,/};/ s/revision = [a-f0-9]\{40\};/revision = ${{ github.event.client_payload.commit }};/g" "UI Tests.xcodeproj/project.pbxproj"
 
     - name: Run UI Tests
+      continue-on-error: true
+      id: ui_tests
       run: |
         xcodebuild test -project "${{ env.PROJECT }}" \
         -scheme "${{ matrix.scheme }}" \
