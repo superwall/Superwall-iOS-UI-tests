@@ -21,6 +21,7 @@ class Communicator {
     case relaunchApp
     case endTest
     case assert(testName: String, precision: Float, captureArea: CaptureArea)
+    case assertValue(testName: String, value: String)
     case skip(message: String)
     case touch(point: CGPoint)
     case activateSubscriber(productIdentifier: String)
@@ -36,6 +37,8 @@ class Communicator {
         case (.endTest, .endTest):
           return true
         case (.assert, .assert):
+          return true
+        case (.assertValue, .assertValue):
           return true
         case (.skip, .skip):
           return true

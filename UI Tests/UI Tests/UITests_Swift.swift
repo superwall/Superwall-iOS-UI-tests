@@ -531,17 +531,51 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .safeArea(captureHomeIndicator: false))
   }
 
+  // Presentation result: `paywall`
   func test28() async {
-    skip("Rework test")
-    return
-
-//    #warning("write a test for this")
-//    let result = await Superwall.shared.getPresentationResult(forEvent: "register_gated_paywall")
-//
-//    print("test")
+    let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
+    await assert(value: result.description)
   }
 
-  #warning("change all to remove home indicator")
+  // Presentation result: `noRuleMatch`
+  func test29() async {
+    Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
+    let result = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user")
+    await assert(value: result.description)
+  }
+
+  // Presentation result: `eventNotFound`
+  func test30() async {
+    let result = await Superwall.shared.getPresentationResult(forEvent: "some_random_not_found_event")
+    await assert(value: result.description)
+  }
+
+  // Presentation result: `holdOut`
+  func test31() async {
+    let result = await Superwall.shared.getPresentationResult(forEvent: "holdout")
+    await assert(value: result.description)
+  }
+
+  // Presentation result: `userIsSubscribed`
+  func test32() async {
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+
+    let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
+    await assert(value: result.description)
+  }
+
+  /// Call identify twice with the same ID before presenting a paywall
+  func test33() async {
+    // Set identity
+    Superwall.shared.identify(userId: "test30")
+    Superwall.shared.identify(userId: "test30")
+
+    Superwall.shared.track(event: "present_data")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
 
   /// Case: Airplane Mode
   /// Lifecycle handler
@@ -608,4 +642,24 @@ final class UITests_Swift: NSObject, Testable {
   // Test localization based on system settings (-AppleLocale fr_FR)
   // Test localized paywall when available and unavailable using Superwall options
   // Swipe to dismiss a modal view and make sure new tracks function afterwards
+}
+
+
+extension PresentationResult: CustomStringConvertible {
+  public var description: String {
+    switch self {
+      case .eventNotFound:
+        return "eventNotFound"
+      case .noRuleMatch:
+        return "noRuleMatch"
+      case .paywall(_):
+        return "paywall"
+      case .holdout(_):
+        return "holdout"
+      case .userIsSubscribed:
+        return "userIsSubscribed"
+      case .paywallNotAvailable:
+        return "paywallNotAvailable"
+    }
+  }
 }

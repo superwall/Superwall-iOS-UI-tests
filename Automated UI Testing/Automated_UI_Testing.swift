@@ -39,6 +39,11 @@ class Automated_UI_Testing: XCTestCase {
         Communicator.shared.send(.finishedAsserting)
         return
 
+      case .assertValue(let testName, let value):
+        assertSnapshot(matching: value, as: .json, testName: testName)
+        Communicator.shared.send(.finishedAsserting)
+        return
+
       case .skip(let message):
         skip = XCTSkip(message)
         expectation.fulfill()

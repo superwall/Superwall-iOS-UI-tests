@@ -45,7 +45,7 @@ public extension NSObject {
     }
   }
 
-  func assert(after timeInterval: TimeInterval, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureArea: CaptureArea = .fullScreen) async {
+  func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureArea: CaptureArea = .fullScreen) async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
@@ -58,6 +58,19 @@ public extension NSObject {
     await wait(for: .finishedAsserting)
   }
 
+  func assert(value: String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Swift") async {
+    if timeInterval > 0 {
+      await sleep(timeInterval: timeInterval)
+    }
+
+    await MainActor.run(body: {
+      let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
+      Communicator.shared.send(.assertValue(testName: testName, value: value))
+    })
+
+    await wait(for: .finishedAsserting)
+  }
+
   @available(swift, obsoleted: 1.0)
   @objc func assert(after timeInterval: TimeInterval, testName: String, precision: PrecisionValue, captureArea: CaptureAreaObjC = CaptureAreaObjC.fullScreen) async {
     // Transform: "-[UITests_ObjC test0WithCompletionHandler:]" -> "0" OR "-[UITests_ObjC test11WithCompletionHandler:]_block_invoke_2" -> "11"
@@ -65,6 +78,13 @@ public extension NSObject {
     let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
 
     await assert(after: timeInterval, precision: precision, testName: modifiedTestName, prefix: "ObjC", captureArea: captureArea.transform)
+  }
+
+  @available(swift, obsoleted: 1.0)
+  @objc func assert(value: String, after timeInterval: TimeInterval, testName: String) async {
+    let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
+
+    await assert(value: value, after: timeInterval, testName: testName, prefix: "ObjC")
   }
 
   @objc func skip(_ message: String) {
