@@ -92,7 +92,8 @@ class Automated_UI_Testing: XCTestCase {
 
     Communicator.shared.send(.runTest(number: number))
 
-    wait(for: [expectation], timeout: 1000)
+    // 5 minute timeout
+    wait(for: [expectation], timeout: 300)
 
     NotificationCenter.default.removeObserver(observer)
 
