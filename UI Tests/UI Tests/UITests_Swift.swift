@@ -531,6 +531,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .safeArea(captureHomeIndicator: false))
   }
 
+  func test28() async {
+    skip("Rework test")
+    return
+
+//    #warning("write a test for this")
+//    let result = await Superwall.shared.getPresentationResult(forEvent: "register_gated_paywall")
+//
+//    print("test")
+  }
+
   #warning("change all to remove home indicator")
 
   /// Case: Airplane Mode

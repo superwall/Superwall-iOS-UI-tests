@@ -99,9 +99,8 @@ extension Configuration {
       }
     }
 
-    func restorePurchases() async -> Bool {
-      // no-op
-      return true
+    func restorePurchases() async -> RestorationResult {
+      return .restored
     }
   }
 }

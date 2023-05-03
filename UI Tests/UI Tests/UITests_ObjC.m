@@ -451,7 +451,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
 
-      [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
+      [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
 
         // Dismiss any view controllers
         [weakSelf dismissViewControllersWithCompletionHandler:^{
