@@ -8,9 +8,11 @@ on:
 jobs:
   xcode_build:
     runs-on: macos-12
+    strategy:
+      matrix:
+        scheme: ["UI Tests -swift -automatic"]
     env:
       PROJECT: "UI Tests.xcodeproj"
-      SCHEME: "UI Tests -swift -automatic"
       SDK: iphonesimulator
       DESTINATION: 'platform=iOS Simulator,name=iPhone 14 Pro,OS=16.2'
       DERIVED_DATA_PATH: build_output
@@ -18,17 +20,27 @@ jobs:
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.client_payload.sha }}
 
     - name: Set up Xcode
       run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
+    - name: Update SPM dependency revision in project.pbxproj
+      run: |
+        sed -i '' "/\"SuperwallKit-iOS\" \*\/ = {/,/};/ s/revision = [a-f0-9]\{40\};/revision = ${{ github.event.client_payload.commit }};/g" "UI Tests.xcodeproj/project.pbxproj"
+
     - name: Run UI Tests
       run: |
         xcodebuild test -project "${{ env.PROJECT }}" \
-        -scheme "${{ env.SCHEME }}" \
+        -scheme "${{ matrix.scheme }}" \
         -sdk "${{ env.SDK }}" \
         -destination "${{ env.DESTINATION }}" \
         -derivedDataPath "${{ env.DERIVED_DATA_PATH }}" \
         -verbose
+      
+    - name: Send test results to Slack
+      uses: slackapi/slack-github-action@v1.14.0
+      with:
+        channel-id: "C052Z9LP61G"
+        slack-message: ${{ steps.ui_tests.outputs.test_output }}
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
