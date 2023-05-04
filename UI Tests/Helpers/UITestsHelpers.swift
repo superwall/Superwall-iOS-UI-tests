@@ -45,7 +45,7 @@ public extension NSObject {
     }
   }
 
-  func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureArea: CaptureArea = .fullScreen) async {
+  func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureArea: CaptureArea = .safeArea(captureHomeIndicator: false)) async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }

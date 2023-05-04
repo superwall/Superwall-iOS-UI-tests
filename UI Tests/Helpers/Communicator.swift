@@ -155,6 +155,7 @@ public enum CaptureArea: Codable {
 
 @objc(SWKCaptureArea)
 public class CaptureAreaObjC: NSObject {
+  @objc public static let safeAreaNoHomeIndicator: CaptureAreaObjC = CaptureAreaObjC(.safeArea(captureHomeIndicator: false))
   @objc public static let fullScreen: CaptureAreaObjC = CaptureAreaObjC(.fullScreen)
   @objc public static let safari: CaptureAreaObjC = CaptureAreaObjC(.safari)
 

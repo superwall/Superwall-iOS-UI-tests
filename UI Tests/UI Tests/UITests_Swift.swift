@@ -71,12 +71,12 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: 1.0)
     Superwall.shared.register(event: "present_video")
 
-    await assert(after: 2.0, precision: .video, captureArea: .safeArea(captureHomeIndicator: false))
+    await assert(after: 2.0, precision: .video)
   }
 
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
   func test5() async throws {
-    skip("Paywall overrides not available in register")
+    skip("FINISH")
     return
 
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
@@ -86,8 +86,8 @@ final class UITests_Swift: NSObject, Testable {
     let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
     let paywallOverrides = PaywallOverrides(products: products)
 
-    // TODO: Paywall overrides not available:
-    // Superwall.shared.register(event: "present_products", paywallOverrides: paywallOverrides)
+    let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides)
+
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -513,7 +513,7 @@ final class UITests_Swift: NSObject, Testable {
     touch(purchaseButton)
 
     // Assert that nothing else appars appears
-    await assert(after: Constants.paywallPresentationDelay, captureArea: .safeArea(captureHomeIndicator: false))
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Case: Subscribed user, register event with a gating handler
@@ -532,7 +532,7 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     // Assert that alert controller appears appears
-    await assert(after: Constants.paywallPresentationDelay, captureArea: .safeArea(captureHomeIndicator: false))
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Presentation result: `paywall`
