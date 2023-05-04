@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-12
     strategy:
       matrix:
-        scheme: ["UI Tests -swift -automatic"]
+        scheme: ["UI Tests -demo", "UI Tests -swift -automatic"]
     env:
       PROJECT: "UI Tests.xcodeproj"
       SDK: iphonesimulator
@@ -26,23 +26,41 @@ jobs:
 
     - name: Update SPM dependency revision in project.pbxproj
       run: |
+        # Use sed to update the revision of the "SuperwallKit-iOS" SPM dependency in the project.pbxproj file.
+        # The sed command searches for the block of text that starts with "\"SuperwallKit-iOS\" */ = {" and ends with "};"
+        # Within this block, it replaces the existing revision hash with the commit hash provided in the GitHub event payload.
         sed -i '' "/\"SuperwallKit-iOS\" \*\/ = {/,/};/ s/revision = [a-f0-9]\{40\};/revision = ${{ github.event.client_payload.commit }};/g" "UI Tests.xcodeproj/project.pbxproj"
-
+      
     - name: Run UI Tests
       continue-on-error: true
       id: ui_tests
       run: |
+        # Run the xcodebuild test command and extract the test suite summary.
+        # Write the summary to a temporary file named test_output.txt and print it to the console.
         xcodebuild test -project "${{ env.PROJECT }}" \
         -scheme "${{ matrix.scheme }}" \
         -sdk "${{ env.SDK }}" \
         -destination "${{ env.DESTINATION }}" \
         -derivedDataPath "${{ env.DERIVED_DATA_PATH }}" \
-        -verbose
-      
+        -verbose | grep -m 1 'Test Suite .* \(passed\|failed\) at' -A 1 | head -n 2 | tee test_output.txt
+
     - name: Send test results to Slack
-      uses: slackapi/slack-github-action@v1.14.0
-      with:
-        channel-id: "C052Z9LP61G"
-        slack-message: ${{ steps.ui_tests.outputs.test_output }}
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      run: |
+        # Read the contents of the test_output.txt file.
+        test_output=$(cat test_output.txt)
+        # Determine whether the tests passed or failed.
+        if [[ $test_output == *"passed"* ]]; then
+          # If the tests passed, prepend the message with a green checkmark emoji.
+          emoji="✅"
+        else
+          # If the tests failed, prepend the message with a red alarm emoji.
+          emoji="🚨"
+        fi
+        # Prepend the emoji and the scheme variable to the test output.
+        full_message="*$emoji Scheme: ${{ matrix.scheme }}*\n_${{ github.event.client_payload.author }} (${{ github.event.client_payload.commit }})_\n$test_output"
+        # Prepare the JSON payload with the full message as a "section" block with "mrkdwn" text.
+        payload="{\"blocks\": [{\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"$full_message\"}}]}"
+        # Print the payload for debugging purposes.
+        echo "Payload: $payload"
+        # Send the message to Slack using the Incoming Webhook URL from the secret.
+        curl -X POST -H 'Content-type: application/json' --data "$payload" ${{ secrets.SLACK_WEBHOOK_URL }}
