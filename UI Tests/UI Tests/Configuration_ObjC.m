@@ -60,4 +60,10 @@ static BOOL kHasConfigured = NO;
   }];
 }
 
+- (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier completionHandler:(void (^ _Nonnull)(void))completionHandler {
+  [self activateSubscriberWithProductIdentifier:productIdentifier];
+  completionHandler();
+}
+
+
 @end

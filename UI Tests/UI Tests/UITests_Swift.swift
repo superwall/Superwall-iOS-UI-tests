@@ -76,9 +76,6 @@ final class UITests_Swift: NSObject, Testable {
 
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
   func test5() async throws {
-    skip("FINISH")
-    return
-
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
     }
@@ -86,8 +83,15 @@ final class UITests_Swift: NSObject, Testable {
     let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
     let paywallOverrides = PaywallOverrides(products: products)
 
-    let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides)
-
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides) {
+      DispatchQueue.main.async {
+        viewController.presentationWillBegin()
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true) {
+          viewController.presentationDidFinish()
+        }
+      }
+    }
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -101,7 +105,6 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
-#warning("File a ticket if not fixed in latest")
   func test7() async throws {
     Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
@@ -129,14 +132,10 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Present regardless of status
-  #warning("not a valid test (shouldn't be setting without a PC")
   func test9() async throws {
-//    canRun()
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
-    skip("Rework test")
-    return
-
-    Superwall.shared.subscriptionStatus = .active
     Superwall.shared.register(event: "present_always")
 
     await assert(after: Constants.paywallPresentationDelay)

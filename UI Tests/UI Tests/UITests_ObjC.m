@@ -144,7 +144,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 #warning https://linear.app/superwall/issue/SW-1632/add-objc-initialiser-for-paywallproducts
 - (void)test5WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Paywall Overrides don't work with register")
+  TEST_SKIP(@"Paywall Overrides don't work in ObjC")
 // TEST_START
 //
 //  SKProduct *primary = SWKStoreKitHelper.shared.monthlyProduct;
@@ -166,7 +166,6 @@ static id<SWKTestConfiguration> kConfiguration;
 //  TEST_ASSERT(kPaywallPresentationDelay)
 }
 
-#warning https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work
 - (void)test6WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
 
@@ -210,13 +209,13 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test9WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-//  [self canRunWithTest:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__]];
-  TEST_SKIP(@"Rework test");
+  TEST_START
 
-//  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusActive;
-//  [[Superwall sharedInstance] trackWithEvent:@"present_always"];
-//
-//  ASYNC_TEST_ASSERT(kPaywallPresentationDelay);
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+    [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+
+    TEST_ASSERT(kPaywallPresentationDelay);
+  }];
 }
 
 // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.

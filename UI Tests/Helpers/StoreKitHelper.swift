@@ -61,9 +61,10 @@ public class StoreKitHelper: NSObject {
 }
 
 extension StoreKitHelper {
-  struct Constants {
-    static let monthlyProductIdentifier = "com.ui_tests.custom_monthly"
-    static let annualProductIdentifier = "com.ui_tests.custom_annual"
+  @objc(SWKStoreKitHelperConstants)
+  class Constants: NSObject {
+    @objc static let monthlyProductIdentifier = "com.ui_tests.custom_monthly"
+    @objc static let annualProductIdentifier = "com.ui_tests.custom_annual"
   }
 }
 

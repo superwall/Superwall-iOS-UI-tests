@@ -38,7 +38,6 @@ extension Configuration {
       Superwall.shared.reset()
     }
 
-    #warning("add to objc")
     func mockSubscribedUser(productIdentifier: String) async {
       activateSubscriber(productIdentifier: productIdentifier)
     }
