@@ -77,6 +77,8 @@ final class UITests_Swift: NSObject, Testable {
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
   func test5() async throws {
     skip("Paywall overrides not available in register")
+    return
+
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
     }
@@ -144,6 +146,8 @@ final class UITests_Swift: NSObject, Testable {
 #warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
   func test10() async throws {
     skip("Paywall overrides not available in register")
+    return
+
     // Present the paywall.
     Superwall.shared.register(event: "present_products")
 
@@ -260,14 +264,16 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Present an alert on Superwall.presentedViewController from the onPresent callback
-  @MainActor
   func test16() async throws {
     let handler = PaywallPresentationHandler()
     handler.onPresent { _ in
-      let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
-      let action = UIAlertAction(title: "OK", style: .default)
-      alertController.addAction(action)
-      Superwall.shared.presentedViewController?.present(alertController, animated: false)
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        
+        Superwall.shared.presentedViewController?.present(alertController, animated: false)
+      }
     }
     Superwall.shared.register(event: "present_always", handler: handler)
 
@@ -415,6 +421,7 @@ final class UITests_Swift: NSObject, Testable {
   /// Track an event shortly after another one is beginning to present. The session should not be cancelled out.
   func test22() async throws {
     skip("Skipping until we can read didTrackSuperwallEventInfo params")
+    return
 
     // TODO: Maybe clear attributes here? Don't want rules matching
 

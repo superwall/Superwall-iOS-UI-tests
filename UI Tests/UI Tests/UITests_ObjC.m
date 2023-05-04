@@ -384,16 +384,15 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   SWKPaywallPresentationHandler *handler = [[SWKPaywallPresentationHandler alloc] init];
-
-// TODO: HJANDLER STUFF
-  [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
   [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert" message:@"This is an alert message" preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
-    [alertController addAction:okAction];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert" message:@"This is an alert message" preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:okAction];
 
-    UIViewController *presentingViewController = [Superwall sharedInstance].presentedViewController;
-    [presentingViewController presentViewController:alertController animated:NO completion:nil];
+      UIViewController *presentingViewController = [Superwall sharedInstance].presentedViewController;
+      [presentingViewController presentViewController:alertController animated:NO completion:nil];
+    });
   }];
 
   [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
