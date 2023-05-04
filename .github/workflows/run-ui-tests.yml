@@ -30,19 +30,21 @@ jobs:
         # The sed command searches for the block of text that starts with "\"SuperwallKit-iOS\" */ = {" and ends with "};"
         # Within this block, it replaces the existing revision hash with the commit hash provided in the GitHub event payload.
         sed -i '' "/\"SuperwallKit-iOS\" \*\/ = {/,/};/ s/revision = [a-f0-9]\{40\};/revision = ${{ github.event.client_payload.commit }};/g" "UI Tests.xcodeproj/project.pbxproj"
-      
+        
     - name: Run UI Tests
       continue-on-error: true
       id: ui_tests
       run: |
-        # Run the xcodebuild test command and extract the test suite summary.
-        # Write the summary to a temporary file named test_output.txt and print it to the console.
+        # Run the xcodebuild test command and duplicate the output to a temporary file named full_output.txt.
         xcodebuild test -project "${{ env.PROJECT }}" \
         -scheme "${{ matrix.scheme }}" \
         -sdk "${{ env.SDK }}" \
         -destination "${{ env.DESTINATION }}" \
         -derivedDataPath "${{ env.DERIVED_DATA_PATH }}" \
-        -verbose | grep -m 1 'Test Suite .* \(passed\|failed\) at' -A 1 | head -n 2 | tee test_output.txt
+        -verbose | tee full_output.txt
+        # Use grep to extract the test suite summary from the full_output.txt file.
+        # Write the summary to a temporary file named test_output.txt.
+        grep -m 1 'Test Suite .* \(passed\|failed\) at' -A 1 full_output.txt | head -n 2 > test_output.txt
 
     - name: Send test results to Slack
       run: |
