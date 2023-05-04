@@ -14,7 +14,7 @@ final class UITests_Swift: NSObject, Testable {
   func test0() async throws {
     Superwall.shared.identify(userId: "test0")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -28,7 +28,7 @@ final class UITests_Swift: NSObject, Testable {
     // Set new identity
     Superwall.shared.identify(userId: "test1b")
     Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -40,7 +40,7 @@ final class UITests_Swift: NSObject, Testable {
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
 
     Superwall.shared.reset()
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -53,7 +53,7 @@ final class UITests_Swift: NSObject, Testable {
 
     Superwall.shared.reset()
     Superwall.shared.reset()
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -61,7 +61,7 @@ final class UITests_Swift: NSObject, Testable {
   // This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
   func test4() async throws {
     // Present the paywall.
-    Superwall.shared.track(event: "present_video")
+    Superwall.shared.register(event: "present_video")
 
     // Dismiss after 4 seconds
     await sleep(timeInterval: 4.0)
@@ -69,13 +69,14 @@ final class UITests_Swift: NSObject, Testable {
 
     // Present again after 1 second
     await sleep(timeInterval: 1.0)
-    Superwall.shared.track(event: "present_video")
+    Superwall.shared.register(event: "present_video")
 
     await assert(after: 2.0, precision: .video, captureArea: .safeArea(captureHomeIndicator: false))
   }
 
   // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
   func test5() async throws {
+    skip("Paywall overrides not available in register")
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
     }
@@ -83,7 +84,8 @@ final class UITests_Swift: NSObject, Testable {
     let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
     let paywallOverrides = PaywallOverrides(products: products)
 
-    Superwall.shared.track(event: "present_products", paywallOverrides: paywallOverrides)
+    // TODO: Paywall overrides not available:
+    // Superwall.shared.register(event: "present_products", paywallOverrides: paywallOverrides)
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -91,7 +93,7 @@ final class UITests_Swift: NSObject, Testable {
   // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
   func test6() async throws {
     // Present the paywall.
-    Superwall.shared.track(event: "present_products")
+    Superwall.shared.register(event: "present_products")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -101,7 +103,7 @@ final class UITests_Swift: NSObject, Testable {
   func test7() async throws {
     Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
-    Superwall.shared.track(event: "present_and_rule_user")
+    Superwall.shared.register(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -110,7 +112,7 @@ final class UITests_Swift: NSObject, Testable {
 
     // Remove those attributes.
     Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
-    Superwall.shared.track(event: "present_and_rule_user")
+    Superwall.shared.register(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -119,7 +121,7 @@ final class UITests_Swift: NSObject, Testable {
   func test8() async throws {
     Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 12 ])
-    Superwall.shared.track(event: "present_and_rule_user")
+    Superwall.shared.register(event: "present_and_rule_user")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -133,7 +135,7 @@ final class UITests_Swift: NSObject, Testable {
     return
 
     Superwall.shared.subscriptionStatus = .active
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -141,8 +143,9 @@ final class UITests_Swift: NSObject, Testable {
   // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
 #warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
   func test10() async throws {
+    skip("Paywall overrides not available in register")
     // Present the paywall.
-    Superwall.shared.track(event: "present_products")
+    Superwall.shared.register(event: "present_products")
 
     // Assert original products.
     await assert(after: Constants.paywallPresentationDelay)
@@ -158,7 +161,8 @@ final class UITests_Swift: NSObject, Testable {
     let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
     let paywallOverrides = PaywallOverrides(products: products)
 
-    Superwall.shared.track(event: "present_products", paywallOverrides: paywallOverrides)
+    // TODO: Paywall Overrides not available:
+    // Superwall.shared.register(event: "present_products", paywallOverrides: paywallOverrides)
 
     // Assert override products.
     await assert(after: Constants.paywallPresentationDelay)
@@ -167,7 +171,7 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     // Present the paywall.
-    Superwall.shared.track(event: "present_products")
+    Superwall.shared.register(event: "present_products")
 
     // Assert original products.
     await assert(after: Constants.paywallPresentationDelay)
@@ -176,7 +180,7 @@ final class UITests_Swift: NSObject, Testable {
   // Clear a specific user attribute.
   func test11() async throws {
     Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -184,7 +188,7 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     Superwall.shared.setUserAttributes([ "first_name": nil ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -192,27 +196,27 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     Superwall.shared.setUserAttributes([ "first_name": "Sawyer" ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Test trigger: off
   func test12() async throws {
-    Superwall.shared.track(event: "keep_this_trigger_off")
+    Superwall.shared.register(event: "keep_this_trigger_off")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Test trigger: not in the dashboard
   func test13() async throws {
-    Superwall.shared.track(event: "i_just_made_this_up_and_it_dne")
+    Superwall.shared.register(event: "i_just_made_this_up_and_it_dne")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Test trigger: not-allowed standard event (paywall_close)
   func test14() async throws {
     // Show a paywall
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
 
     // Assert that paywall was displayed
     await assert(after: Constants.paywallPresentationDelay)
@@ -226,9 +230,9 @@ final class UITests_Swift: NSObject, Testable {
 
   // Clusterfucks by Jake™
   func test15() async throws {
-    Superwall.shared.track(event: "present_always")
-    Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
+    Superwall.shared.register(event: "present_always", params: ["some_param_1": "hello"])
+    Superwall.shared.register(event: "present_always")
 
     // Assert that paywall was displayed
     await assert(after: Constants.paywallPresentationDelay)
@@ -236,9 +240,9 @@ final class UITests_Swift: NSObject, Testable {
     // Dismiss any view controllers
     await dismissViewControllers()
 
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
     Superwall.shared.identify(userId: "1111")
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
 
     // Assert that paywall was displayed
     await assert(after: Constants.paywallPresentationDelay)
@@ -246,33 +250,26 @@ final class UITests_Swift: NSObject, Testable {
     // Dismiss any view controllers
     await dismissViewControllers()
 
-    Superwall.shared.track(event: "present_always") { state in
-      switch state {
-        case .presented(_):
-          Superwall.shared.track(event: "present_always")
-        default:
-          return
-      }
+    let handler = PaywallPresentationHandler()
+    handler.onPresent { _ in
+      Superwall.shared.register(event: "present_always")
     }
+    Superwall.shared.register(event: "present_always", handler: handler)
 
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Present an alert on Superwall.presentedViewController from the onPresent callback
+  @MainActor
   func test16() async throws {
-    Superwall.shared.track(event: "present_always") { state in
-      switch state {
-        case .presented(_):
-          DispatchQueue.main.async {
-            let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
-            let action = UIAlertAction(title: "OK", style: .default)
-            alertController.addAction(action)
-            Superwall.shared.presentedViewController?.present(alertController, animated: false)
-          }
-        default:
-          return
-      }
+    let handler = PaywallPresentationHandler()
+    handler.onPresent { _ in
+      let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+      let action = UIAlertAction(title: "OK", style: .default)
+      alertController.addAction(action)
+      Superwall.shared.presentedViewController?.present(alertController, animated: false)
     }
+    Superwall.shared.register(event: "present_always", handler: handler)
 
     await assert(after: Constants.paywallPresentationDelay, precision: .transparency)
   }
@@ -281,7 +278,7 @@ final class UITests_Swift: NSObject, Testable {
   func test17() async throws {
     Superwall.shared.identify(userId: "test0")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     // Assert Jack displayed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -295,7 +292,7 @@ final class UITests_Swift: NSObject, Testable {
     // Reset the user identity
     Superwall.shared.reset()
 
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     // Assert no name displayed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -303,9 +300,9 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     // Present paywall
-    Superwall.shared.track(event: "present_always")
-    Superwall.shared.track(event: "present_always", params: ["some_param_1": "hello"])
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
+    Superwall.shared.register(event: "present_always", params: ["some_param_1": "hello"])
+    Superwall.shared.register(event: "present_always")
 
     // Assert Present Always paywall displayed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -324,7 +321,7 @@ final class UITests_Swift: NSObject, Testable {
 
     Superwall.shared.reset()
     Superwall.shared.reset()
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -337,7 +334,7 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     // Show a paywall
-    Superwall.shared.track(event: "present_always")
+    Superwall.shared.register(event: "present_always")
 
     // Assert that paywall was displayed
     await assert(after: Constants.paywallPresentationDelay)
@@ -358,14 +355,14 @@ final class UITests_Swift: NSObject, Testable {
     // Set new identity
     Superwall.shared.identify(userId: "test19c")
     Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
 
   func test20() async throws {
     // Present paywall with URLs
-    Superwall.shared.track(event: "present_urls")
+    Superwall.shared.register(event: "present_urls")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -385,7 +382,7 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Present the paywall and purchase; then make sure the paywall doesn't get presented again after the purchase
   func test21() async throws {
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     // Assert that paywall appears
     await assert(after: Constants.paywallPresentationDelay)
@@ -409,7 +406,7 @@ final class UITests_Swift: NSObject, Testable {
     touch(okButton)
 
     // Try to present paywall again
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     // Ensure the paywall doesn't present.
     await assert(after: Constants.paywallPresentationDelay)
@@ -421,10 +418,10 @@ final class UITests_Swift: NSObject, Testable {
 
     // TODO: Maybe clear attributes here? Don't want rules matching
 
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(200)) {
-      Superwall.shared.track(event: "present_and_rule_user")
+      Superwall.shared.register(event: "present_and_rule_user")
     }
 
     // TODO: Need to read the output of the didTrackSuperwallEventInfo params and check that trigger_session_id, experiment_id, and variant_id isn't nil.
@@ -571,7 +568,7 @@ final class UITests_Swift: NSObject, Testable {
     Superwall.shared.identify(userId: "test30")
     Superwall.shared.identify(userId: "test30")
 
-    Superwall.shared.track(event: "present_data")
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
