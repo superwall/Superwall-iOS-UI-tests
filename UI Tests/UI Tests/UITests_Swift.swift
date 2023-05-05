@@ -85,11 +85,8 @@ final class UITests_Swift: NSObject, Testable {
 
     if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides) {
       DispatchQueue.main.async {
-        viewController.presentationWillBegin()
         viewController.modalPresentationStyle = .fullScreen
-        RootViewController.shared.present(viewController, animated: true) {
-          viewController.presentationDidFinish()
-        }
+        RootViewController.shared.present(viewController, animated: true)
       }
     }
 

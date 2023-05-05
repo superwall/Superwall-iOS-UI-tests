@@ -142,28 +142,29 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
-#warning https://linear.app/superwall/issue/SW-1632/add-objc-initialiser-for-paywallproducts
 - (void)test5WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Paywall Overrides don't work in ObjC")
-// TEST_START
-//
-//  SKProduct *primary = SWKStoreKitHelper.shared.monthlyProduct;
-//  SKProduct *secondary = SWKStoreKitHelper.shared.annualProduct;
-//
-//  if (!primary || !secondary) {
-//    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
-//    return;
-//  }
-//
-//  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
-//  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
-//
-//  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-//  ////  PaywallOverrides *paywallOverrides = [[PaywallOverrides alloc] initWithProducts:products];
-//  //
-//  [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
-//
-//  TEST_ASSERT(kPaywallPresentationDelay)
+  TEST_START
+
+  SKProduct *primary = SWKStoreKitHelper.shared.monthlyProduct;
+  SKProduct *secondary = SWKStoreKitHelper.shared.annualProduct;
+
+  if (!primary || !secondary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
+  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
+
+  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProducts:products];
+
+  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+    result.paywallViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [[RootViewController shared] presentViewController:result.paywallViewController animated:true completion:^{}];
+  }];
+
+  TEST_ASSERT(kPaywallPresentationDelay)
 }
 
 - (void)test6WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
