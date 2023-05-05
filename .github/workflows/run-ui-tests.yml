@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-12
     strategy:
       matrix:
-        scheme: ["UI Tests -swift -automatic", "UI Tests -swift -advanced"]
+        scheme: ["UI Tests -swift -automatic", "UI Tests -swift -advanced", "UI Tests -objc -automatic", "UI Tests -objc -advanced"]
     env:
       PROJECT: "UI Tests.xcodeproj"
       SDK: iphonesimulator
