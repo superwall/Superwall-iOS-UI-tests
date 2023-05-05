@@ -84,7 +84,7 @@ public extension NSObject {
   @objc func assert(value: String, after timeInterval: TimeInterval, testName: String) async {
     let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
 
-    await assert(value: value, after: timeInterval, testName: testName, prefix: "ObjC")
+    await assert(value: value, after: timeInterval, testName: modifiedTestName, prefix: "ObjC")
   }
 
   @objc func skip(_ message: String) {
@@ -132,6 +132,53 @@ public extension NSObject {
           }
         }
       }
+    }
+  }
+}
+
+// MARK: - PresentationResult
+
+extension PresentationValueObjc {
+  public var description: String {
+    switch self {
+      case .eventNotFound:
+        return "eventNotFound"
+      case .noRuleMatch:
+        return "noRuleMatch"
+      case .paywall:
+        return "paywall"
+      case .holdout:
+        return "holdout"
+      case .userIsSubscribed:
+        return "userIsSubscribed"
+      case .paywallNotAvailable:
+        return "paywallNotAvailable"
+    }
+  }
+}
+
+@objc (SWKPresentationValueObjcHelper)
+class PresentationValueObjcHelper: NSObject {
+  @objc static func description(_ value: PresentationValueObjc) -> String {
+    return value.description
+  }
+}
+
+extension PresentationResult: CustomStringConvertible {
+  public var description: String {
+    switch self {
+      case .eventNotFound:
+        return PresentationValueObjc.eventNotFound.description
+      case .noRuleMatch:
+        return PresentationValueObjc.noRuleMatch.description
+      case .paywall(_):
+        return PresentationValueObjc.paywall.description
+      case .holdout(_):
+        return PresentationValueObjc.holdout.description
+      case .paywallNotAvailable:
+        return PresentationValueObjc.paywallNotAvailable.description
+      case .userIsSubscribed:
+        return PresentationValueObjc.userIsSubscribed.description
     }
   }
 }

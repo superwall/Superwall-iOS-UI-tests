@@ -173,6 +173,10 @@ public class CaptureAreaObjC: NSObject {
   @objc public convenience init(frame: CGRect) {
     self.init(.custom(frame: frame))
   }
+
+  @objc public static func custom(frame: CGRect) -> CaptureAreaObjC {
+    return CaptureAreaObjC(.custom(frame: frame))
+  }
 }
 
 extension NSNotification.Name {

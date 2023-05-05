@@ -27,6 +27,15 @@ TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeI
 #define TEST_ASSERT_DELAY(delay) \
 TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
 
+#define TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, completionHandlerValue) \
+[weakSelf assertWithValue:value after:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
+
+#define TEST_ASSERT_DELAY_VALUE(delay, value) \
+TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, ^{})
+
+#define TEST_ASSERT_VALUE(value) \
+TEST_ASSERT_DELAY_VALUE(0, value)
+
 #define TEST_SKIP(message) \
 [self skip:message]; return;
 
@@ -503,12 +512,228 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test21WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Write from Swift version")
+  TEST_START_NUM_ASSERTS(3)
+
+  // Register event to present the paywall
+  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(196, 750);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    CGRect customFrame = CGRectMake(0, 488, 393, 300);
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(196, 766);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+        CGPoint okButton = CGPointMake(196, 495);
+        [weakSelf touch:okButton];
+
+        // Try to present paywall again
+        [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+
+        // Ensure the paywall doesn't present.
+        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      }];
+    }));
+  }));
 }
 
 - (void)test22WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_SKIP(@"Write from Swift version")
 }
+
+- (void)test23WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Register event
+  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+}
+
+- (void)test24WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Mock user as subscribed
+  [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+    // Register event
+    [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+
+    // Assert that paywall DOES not appear
+    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  }];
+}
+
+- (void)test25WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Register event
+  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(196, 684);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    CGRect customFrame = CGRectMake(0, 488, 393, 300);
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(196, 766);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+        CGPoint okButton = CGPointMake(196, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for dismiss
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+          // Try to present paywall again
+          [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+
+          // Ensure the paywall doesn't present.
+          TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+        }));
+      }];
+    }));
+  }));
+}
+
+- (void)test26WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that alert appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint purchaseButton = CGPointMake(352, 65);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that nothing else appears
+    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  }));
+}
+
+- (void)test27WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Mock user as `subscribed`
+  [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+    // Register event and present an alert controller
+    [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+      dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                                 message:@"This is an alert message"
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alertController addAction:action];
+        [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+      });
+    }];
+
+    // Assert that alert controller appears
+    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  }];
+}
+
+- (void)test28WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Get the presentation result for the specified event
+  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+    // Assert the value of the result's description
+    NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+    TEST_ASSERT_VALUE(value);
+  }];
+}
+
+- (void)test29WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Remove user attributes
+  [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
+
+  // Get the presentation result for the specified event
+  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+    // Assert the value of the result's description
+    NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+    TEST_ASSERT_VALUE(value);
+  }];
+}
+
+- (void)test30WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Get the presentation result for the specified event
+  [[Superwall sharedInstance] getPresentationResultForEvent:@"some_random_not_found_event" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+    // Assert the value of the result's description
+    NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+    TEST_ASSERT_VALUE(value);
+  }];
+}
+
+- (void)test31WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Get the presentation result for the specified event
+  [[Superwall sharedInstance] getPresentationResultForEvent:@"holdout" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+    // Assert the value of the result's description
+    NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+    TEST_ASSERT_VALUE(value);
+  }];
+}
+
+- (void)test32WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Mock user as subscribed
+  [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+    // Get the presentation result for the specified event
+    [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+      // Assert the value of the result's description
+      NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+      TEST_ASSERT_VALUE(value);
+    }];
+  }];
+}
+
+- (void)test33WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Set identity
+  [[Superwall sharedInstance] identifyWithUserId:@"test33"];
+  [[Superwall sharedInstance] identifyWithUserId:@"test33"];
+
+  // Register event
+  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+
+  // Assert after a delay
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+}
+
 
 //- (void)test_getTrackResult_paywall {
 //  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKTrackResult * _Nonnull result) {
