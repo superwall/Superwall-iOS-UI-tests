@@ -18,11 +18,14 @@ TEST_START_NUM_ASSERTS(1);
 #define TEST_START_NUM_ASSERTS(numAsserts) \
 __weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_create(); for (NSInteger i = 0; i < numAsserts; i++){ dispatch_group_enter(group); } dispatch_group_notify(group, dispatch_get_main_queue(), ^{ completionHandler(nil); });
 
-#define TEST_ASSERT(delay) \
-[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:SWKPrecisionValueDefault captureArea:[SWKCaptureArea safeAreaNoHomeIndicator] completionHandler:^{ dispatch_group_leave(group); }];
+#define TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, captureAreaValue, completionHandlerValue) \
+[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:SWKPrecisionValueDefault captureArea:captureAreaValue completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
 
-#define TEST_ASSERT_WITH_PRECISION(delay, precisionValue) \
-[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:precisionValue captureArea:[SWKCaptureArea safeAreaNoHomeIndicator] completionHandler:^{ dispatch_group_leave(group); }]
+#define TEST_ASSERT_DELAY_COMPLETION(delay, completionHandlerValue) \
+TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeIndicator], completionHandlerValue)
+
+#define TEST_ASSERT_DELAY(delay) \
+TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
 
 #define TEST_SKIP(message) \
 [self skip:message]; return;
@@ -76,7 +79,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  TEST_ASSERT(kPaywallPresentationDelay)
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
 }
 
 - (void)test1WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -91,7 +94,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Kate" }];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  TEST_ASSERT(kPaywallPresentationDelay)
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
 }
 
 - (void)test2WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -106,7 +109,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  TEST_ASSERT(kPaywallPresentationDelay)
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
 }
 
 - (void)test3WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -122,21 +125,23 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  TEST_ASSERT(kPaywallPresentationDelay)
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
 }
 
-#warning crop home indicator
 - (void)test4WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
 
   [[Superwall sharedInstance] registerWithEvent:@"present_video"];
 
+  // Wait 4 seconds before dismissing the video
   [self sleepWithTimeInterval:4.0 completionHandler:^{
     [[Superwall sharedInstance] dismissWithCompletion:^{
+      // Once the video has been dismissed, wait 1 second before dismissing again
       [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
         [[Superwall sharedInstance] registerWithEvent:@"present_video"];
 
-        TEST_ASSERT_WITH_PRECISION(2.0, SWKPrecisionValueVideo);
+        // Assert that the video has started from the 0 sec mark (video simply counts from 0sec to 2sec and only displays those 2 values)
+        TEST_ASSERT_DELAY(2.0);
       }];
     }];
   }];
@@ -172,7 +177,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Present the paywall.
   [[Superwall sharedInstance] registerWithEvent:@"present_products"];
 
-  TEST_ASSERT(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
 }
 
 - (void)test7WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -184,17 +189,15 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
 
   // Assert after a delay
-  [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    TEST_ASSERT(0);
-
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Remove those attributes.
       [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
       [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
 
-      TEST_ASSERT(kPaywallPresentationDelay);
+      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
     }];
-  }];
+  }));
 }
 
 - (void)test8WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -205,7 +208,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
   [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
 
-  TEST_ASSERT(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
 }
 
 - (void)test9WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -214,7 +217,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
     [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-    TEST_ASSERT(kPaywallPresentationDelay);
+    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
   }];
 }
 
@@ -275,29 +278,25 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Claire" }];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    // Assert that the first name is displayed
-    TEST_ASSERT(0);
-
+  // Assert that the first name is displayed
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Remove user attribute
       [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
       [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-        // Assert that the first name is NOT displayed
-        TEST_ASSERT(0);
-
+      // Assert that the first name is NOT displayed
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Add new user attribute
           [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Sawyer" }];
           [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-          TEST_ASSERT(kPaywallPresentationDelay)
+          TEST_ASSERT_DELAY(kPaywallPresentationDelay)
         }];
-      }];
+      }));
     }];
-  }];
+  }));
 }
 
 // Test trigger: off
@@ -305,7 +304,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   [[Superwall sharedInstance] registerWithEvent:@"keep_this_trigger_off"];
-  TEST_ASSERT(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
 }
 
 // Test trigger: not in the dashboard
@@ -313,7 +312,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   [[Superwall sharedInstance] registerWithEvent:@"i_just_made_this_up_and_it_dne"];
-  TEST_ASSERT(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
 }
 
 // Test trigger: not-allowed standard event (paywall_close)
@@ -322,15 +321,13 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    // After delay, assert that there was a presentation
-    TEST_ASSERT(0);
-
+  // After delay, assert that there was a presentation
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
-      TEST_ASSERT(kPaywallPresentationDelay);
+      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
     }];
-  }];
+  }));
 }
 
 // Clusterfucks by Jake™
@@ -342,11 +339,8 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] registerWithEvent:@"present_always" params:@{@"some_param_1": @"hello"}];
   [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-  // Wait and assert.
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    // After delay, assert that there was a presentation
-    TEST_ASSERT(0);
-
+  // After delay, assert that there was a presentation
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
 
@@ -354,11 +348,8 @@ static id<SWKTestConfiguration> kConfiguration;
       [[Superwall sharedInstance] identifyWithUserId:@"1111"];
       [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-      // Wait and assert.
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-        // After delay, assert that there was a presentation
-        TEST_ASSERT(0);
-
+      // After delay, assert that there was a presentation
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Dismiss any view controllers
         [weakSelf dismissViewControllersWithCompletionHandler:^{
 
@@ -367,15 +358,15 @@ static id<SWKTestConfiguration> kConfiguration;
             [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
              // Wait and assert.
-             TEST_ASSERT(kPaywallPresentationDelay);
+             TEST_ASSERT_DELAY(kPaywallPresentationDelay);
           }];
 
           // Present paywall
           [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
         }];
-      }];
+      }));
     }];
-  }];
+  }));
 }
 
 // Present an alert on Superwall.presentedViewController from the onPresent callback
@@ -396,7 +387,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
 
-  TEST_ASSERT_WITH_PRECISION(kPaywallPresentationDelay, SWKPrecisionValueTransparency);
+  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
 }
 
 // Clusterfucks by Jake™
@@ -407,9 +398,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    TEST_ASSERT(0)
-
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Set identity
       [[Superwall sharedInstance] identifyWithUserId:@"test2"];
@@ -420,20 +409,18 @@ static id<SWKTestConfiguration> kConfiguration;
 
       [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-        TEST_ASSERT(0)
-
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Present paywall
           [[Superwall sharedInstance] registerWithEvent:@"present_always"];
           [[Superwall sharedInstance] registerWithEvent:@"present_always" params:@{@"some_param_1": @"hello"}];
           [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-          TEST_ASSERT(kPaywallPresentationDelay);
+          TEST_ASSERT_DELAY(kPaywallPresentationDelay);
         }];
-      }];
+      }));
     }];
-  }];
+  }));
 }
 
 - (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -452,9 +439,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] reset];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-    TEST_ASSERT(0)
-
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
 
@@ -467,38 +452,54 @@ static id<SWKTestConfiguration> kConfiguration;
           [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
           // Assert that paywall was displayed
-          [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-            TEST_ASSERT(0)
-
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Dismiss any view controllers
             [weakSelf dismissViewControllersWithCompletionHandler:^{
               // Assert that no paywall is displayed as a result of the Superwall-owned paywall_close standard event.
-              TEST_ASSERT(0)
+              TEST_ASSERT_DELAY_COMPLETION(0, (^{
+                // Dismiss any view controllers
+                [weakSelf dismissViewControllersWithCompletionHandler:^{
 
-              // Dismiss any view controllers
-              [weakSelf dismissViewControllersWithCompletionHandler:^{
+                  // Set identity
+                  [[Superwall sharedInstance] identifyWithUserId:@"test19b"];
+                  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Jack"}];
 
-                // Set identity
-                [[Superwall sharedInstance] identifyWithUserId:@"test19b"];
-                [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Jack"}];
+                  // Set new identity
+                  [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
+                  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
+                  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
 
-                // Set new identity
-                [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
-                [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
-                [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-
-                TEST_ASSERT(kPaywallPresentationDelay)
-              }];
+                  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+                }];
+              }));
             }];
-          }];
+          }));
         }];
       }];
     }];
-  }];
+  }));
 }
 
 - (void)test20WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Write from Swift version")
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present paywall with URLs
+  [[Superwall sharedInstance] registerWithEvent:@"present_urls"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Position of the perform button to open a URL in Safari
+    CGPoint point = CGPointMake(358, 177);
+    [weakSelf touch:point];
+
+    // Verify that Safari has opened.
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea safari], ^{
+      // Relaunch the parent app.
+      [weakSelf relaunch];
+
+      // Ensure nothing has changed.
+      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    });
+  }));
 }
 
 - (void)test21WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
