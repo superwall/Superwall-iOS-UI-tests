@@ -365,6 +365,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  /// Verify that external URLs can be opened in native Safari from paywall
   func test20() async throws {
     // Present paywall with URLs
     Superwall.shared.register(event: "present_urls")
