@@ -1,0 +1,31 @@
+{
+  "pins" : [
+    {
+      "identity" : "superwallkit-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/superwall-me/SuperwallKit-iOS",
+      "state" : {
+        "branch" : "develop",
+        "revision" : "ec79844d0f3f67e1306c1c6da253a525d0f8b917"
+      }
+    },
+    {
+      "identity" : "swift-snapshot-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
+      "state" : {
+        "revision" : "f5489a273ddd57239fd68b9889b3b541bdcbfa3a"
+      }
+    },
+    {
+      "identity" : "swifter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/httpswift/swifter",
+      "state" : {
+        "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
+        "version" : "1.5.0"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -48,14 +48,12 @@ extension Configuration {
 
 extension Configuration {
   class Advanced: NSObject, TestConfiguration {
-    private(set) var purchaseController: AdvancedPurchaseController!
+    let purchaseController: AdvancedPurchaseController = AdvancedPurchaseController()
 
     func setup() async {
       // Using this approach over using the class setup() function because it's not async
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
-
-      purchaseController = AdvancedPurchaseController()
 
       Superwall.configure(apiKey: Constants.apiKey, purchaseController: purchaseController)
 
@@ -77,13 +75,11 @@ extension Configuration {
       Superwall.shared.reset()
     }
 
-#warning("add to objc")
     func mockSubscribedUser(productIdentifier: String) async {
       Superwall.shared.subscriptionStatus = .active
     }
   }
 
-  #warning("add to objc")
   class AdvancedPurchaseController: PurchaseController {
     func purchase(product: SKProduct) async -> PurchaseResult {
       let transactionState = await StoreKitHelper.shared.purchase(product: product)

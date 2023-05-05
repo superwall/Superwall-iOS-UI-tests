@@ -365,6 +365,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  /// Verify that external URLs can be opened in native Safari from paywall
   func test20() async throws {
     // Present paywall with URLs
     Superwall.shared.register(event: "present_urls")
@@ -504,14 +505,14 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-    // Assert that paywall appears
+    // Assert that alert appears
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Close the paywall
+    // Close the alert
     let purchaseButton = CGPoint(x: 352, y: 65)
     touch(purchaseButton)
 
-    // Assert that nothing else appars appears
+    // Assert that nothing else appears
     await assert(after: Constants.paywallPresentationDelay)
   }
 
@@ -571,8 +572,8 @@ final class UITests_Swift: NSObject, Testable {
   /// Call identify twice with the same ID before presenting a paywall
   func test33() async {
     // Set identity
-    Superwall.shared.identify(userId: "test30")
-    Superwall.shared.identify(userId: "test30")
+    Superwall.shared.identify(userId: "test33")
+    Superwall.shared.identify(userId: "test33")
 
     Superwall.shared.register(event: "present_data")
 
@@ -645,24 +646,4 @@ final class UITests_Swift: NSObject, Testable {
   // Test localization based on system settings (-AppleLocale fr_FR)
   // Test localized paywall when available and unavailable using Superwall options
   // Swipe to dismiss a modal view and make sure new tracks function afterwards
-}
-
-
-extension PresentationResult: CustomStringConvertible {
-  public var description: String {
-    switch self {
-      case .eventNotFound:
-        return "eventNotFound"
-      case .noRuleMatch:
-        return "noRuleMatch"
-      case .paywall(_):
-        return "paywall"
-      case .holdout(_):
-        return "holdout"
-      case .userIsSubscribed:
-        return "userIsSubscribed"
-      case .paywallNotAvailable:
-        return "paywallNotAvailable"
-    }
-  }
 }

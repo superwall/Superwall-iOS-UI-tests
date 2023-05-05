@@ -10,7 +10,8 @@ import StoreKit
 
 @objc(SWKStoreKitHelper)
 public class StoreKitHelper: NSObject {
-  @objc public static let shared: StoreKitHelper = StoreKitHelper()
+  @objc(sharedInstance)
+  public static let shared: StoreKitHelper = StoreKitHelper()
 
   private(set) var products = [SKProduct]()
 
