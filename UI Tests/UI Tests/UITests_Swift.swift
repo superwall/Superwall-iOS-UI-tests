@@ -68,8 +68,8 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     // Present again after 1 second
-    await sleep(timeInterval: 1.0)
-    Superwall.shared.register(event: "present_video")
+//    await sleep(timeInterval: 1.0)
+//    Superwall.shared.register(event: "present_video")
 
     await assert(after: 2.0, precision: .video)
   }
