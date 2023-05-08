@@ -16,4 +16,4 @@ jobs:
     steps:
       - name: Run curl commands
         run: |
-          curl ${{ secrets.BITRISE_URL }} -L --data '{"hook_info":{"type":"bitrise","build_trigger_token":"${{ secrets.TOKEN }}"},"build_params":{"branch":"main","workflow_id":"primary","environments":[{"mapped_to":"IOS_SDK_COMMIT_HASH","value":"${{ github.event.client_payload.commit }}","is_expand":true},{"mapped_to":"SCHEME","value":"${{ matrix.scheme }}","is_expand":true}]},"triggered_by":"curl"}'
+          curl ${{ secrets.BITRISE_URL }} -L --data '{"hook_info":{"type":"bitrise","build_trigger_token":"${{ secrets.BITRISE_TOKEN }}"},"build_params":{"branch":"main","workflow_id":"primary","environments":[{"mapped_to":"IOS_SDK_COMMIT_HASH","value":"${{ github.event.client_payload.commit }}","is_expand":true},{"mapped_to":"SCHEME","value":"${{ matrix.scheme }}","is_expand":true}]},"triggered_by":"curl"}'
