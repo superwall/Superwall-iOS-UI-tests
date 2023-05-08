@@ -12,9 +12,9 @@ final class UITests_Swift: NSObject, Testable {
 
   // Uses the identify function. Should see the name 'Jack' in the paywall.
   func test0() async throws {
-//    Superwall.shared.identify(userId: "test0")
-//    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
-//    Superwall.shared.register(event: "present_data")
+    Superwall.shared.identify(userId: "test0")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    Superwall.shared.register(event: "present_data")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
