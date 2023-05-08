@@ -32,7 +32,6 @@ public extension NSObject {
     case transparency
 
     public var rawValue: Int {
-      return 100
       switch self {
         case .default:
           return 92
