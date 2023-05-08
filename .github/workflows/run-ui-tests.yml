@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        scheme: ["UI Tests -demo"]
+        scheme: ["UI Tests -swift -automatic", "UI Tests -swift -advanced", "UI Tests -objc -automatic", "UI Tests -objc -advanced"]
 
     steps:
       - name: Run curl commands
