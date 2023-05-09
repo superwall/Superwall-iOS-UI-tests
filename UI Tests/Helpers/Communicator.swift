@@ -52,8 +52,6 @@ class Communicator {
 
     static let runnerConfiguration = Configuration(serverPath: "/toRunner", port: 8090)
     static let parentConfiguration = Configuration(serverPath: "/toParent", port: 8091)
-
-    static let requestIdentifier = "requestidentifier"
   }
 
   struct Configuration {
@@ -65,7 +63,6 @@ class Communicator {
       var request = URLRequest(url: url)
       request.httpMethod = "POST"
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-      request.setValue(action.identifier, forHTTPHeaderField: Constants.requestIdentifier)
       request.httpBody = action.data
 
       return request
@@ -82,7 +79,6 @@ class Communicator {
         switch action?.invocation {
           case .completed(let action):
             guard let self = self else { return }
-            let identifier = request.headers.first(where: { $0.key == Constants.requestIdentifier })!.value
             guard let completionHandler = self.completionHandlers[action.identifier] else {
               fatalError("There should have been a completion handler for this identifier")
             }
