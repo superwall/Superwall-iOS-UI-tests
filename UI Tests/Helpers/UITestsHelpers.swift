@@ -50,12 +50,9 @@ public extension NSObject {
       await sleep(timeInterval: timeInterval)
     }
 
-    await MainActor.run(body: {
-      let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
-      Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
-    })
+    let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
 
-    await wait(for: .finishedAsserting)
+    await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
   }
 
   func assert(value: String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Swift") async {
@@ -63,12 +60,9 @@ public extension NSObject {
       await sleep(timeInterval: timeInterval)
     }
 
-    await MainActor.run(body: {
-      let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
-      Communicator.shared.send(.assertValue(testName: testName, value: value))
-    })
+    let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
 
-    await wait(for: .finishedAsserting)
+    await Communicator.shared.send(.assertValue(testName: testName, value: value))
   }
 
   @available(swift, obsoleted: 1.0)
@@ -87,20 +81,27 @@ public extension NSObject {
     await assert(value: value, after: timeInterval, testName: modifiedTestName, prefix: "ObjC")
   }
 
+  #warning("make these async")
   @objc func skip(_ message: String) {
-    Communicator.shared.send(.skip(message: message))
+    Task {
+      await Communicator.shared.send(.skip(message: message))
+    }
   }
 
   @objc func touch(_ point: CGPoint) {
-    Communicator.shared.send(.touch(point: point))
+    Task {
+      await Communicator.shared.send(.touch(point: point))
+    }
   }
 
   @objc func relaunch() {
-    Communicator.shared.send(.relaunchApp)
+    Task {
+      await Communicator.shared.send(.relaunchApp)
+    }
   }
 
-  @objc func activateSubscriber(productIdentifier: String) {
-    Communicator.shared.send(.activateSubscriber(productIdentifier: productIdentifier))
+  @objc func activateSubscriber(productIdentifier: String) async {
+    await Communicator.shared.send(.activateSubscriber(productIdentifier: productIdentifier))
   }
 }
 

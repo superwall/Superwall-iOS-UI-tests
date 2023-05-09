@@ -11,44 +11,32 @@ import Swifter
 class Communicator {
   static let shared: Communicator = Communicator()
 
-#warning("separate out into parent and runner actions")
-  enum Action: Codable, Equatable {
-    // Test app tells the parent
-    case runTest(number: Int)
-    case finishedAsserting
+  struct Action: Codable, Equatable {
+    let identifier: String
+    let invocation: Action.Invocation
 
-    // Parent tells the test app
-    case relaunchApp
-    case endTest
-    case assert(testName: String, precision: Float, captureArea: CaptureArea)
-    case assertValue(testName: String, value: String)
-    case skip(message: String)
-    case touch(point: CGPoint)
-    case activateSubscriber(productIdentifier: String)
+    init(_ invocation: Communicator.Action.Invocation) {
+      self.identifier = NSUUID().uuidString
+      self.invocation = invocation
+    }
+
+#warning("separate out into parent and runner invocations")
+    indirect enum Invocation: Codable {
+      // Test app tells the parent
+      case runTest(number: Int)
+
+      // Parent tells the test app
+      case relaunchApp
+      case assert(testName: String, precision: Float, captureArea: CaptureArea)
+      case assertValue(testName: String, value: String)
+      case skip(message: String)
+      case touch(point: CGPoint)
+      case activateSubscriber(productIdentifier: String)
+      case completed(action: Action)
+    }
 
     static func == (lhs: Action, rhs: Action) -> Bool {
-      switch (lhs, rhs) {
-        case (.runTest, .runTest):
-          return true
-        case (.finishedAsserting, .finishedAsserting):
-          return true
-        case (.relaunchApp, .relaunchApp):
-          return true
-        case (.endTest, .endTest):
-          return true
-        case (.assert, .assert):
-          return true
-        case (.assertValue, .assertValue):
-          return true
-        case (.skip, .skip):
-          return true
-        case (.touch, .touch):
-          return true
-        case (.activateSubscriber, .activateSubscriber):
-          return true
-        default:
-          return false
-      }
+      return lhs.identifier == rhs.identifier
     }
   }
 
@@ -64,6 +52,8 @@ class Communicator {
 
     static let runnerConfiguration = Configuration(serverPath: "/toRunner", port: 8090)
     static let parentConfiguration = Configuration(serverPath: "/toParent", port: 8091)
+
+    static let requestIdentifier = "requestidentifier"
   }
 
   struct Configuration {
@@ -75,6 +65,7 @@ class Communicator {
       var request = URLRequest(url: url)
       request.httpMethod = "POST"
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      request.setValue(action.identifier, forHTTPHeaderField: Constants.requestIdentifier)
       request.httpBody = action.data
 
       return request
@@ -84,11 +75,28 @@ class Communicator {
   private let server = HttpServer()
 
   func start() {
-    server[Constants.sourceConfiguration.serverPath] = { request in
-      DispatchQueue.main.async {
-        NotificationCenter.default.post(name: .receivedResponse, object: request.bodyData.decodedAction())
+    server[Constants.sourceConfiguration.serverPath] = { [weak self] request in
+
+      func handle(_ request: HttpRequest) {
+        let action = request.bodyData.decodedAction()
+        switch action?.invocation {
+          case .completed(let action):
+            guard let self = self else { return }
+            let identifier = request.headers.first(where: { $0.key == Constants.requestIdentifier })!.value
+            guard let completionHandler = self.completionHandlers[action.identifier] else {
+              fatalError("There should have been a completion handler for this identifier")
+            }
+
+            DispatchQueue.main.async {
+              let action = action
+              completionHandler(action)
+            }
+          default:
+            NotificationCenter.default.post(name: .receivedActionRequest, object: action)
+        }
       }
 
+      handle(request)
       return HttpResponse.accepted
     }
 
@@ -99,8 +107,21 @@ class Communicator {
       print("Server start error: \(error)")
     }
   }
+
+  private var completionHandlers: [String: (Communicator.Action) -> Void] = [:]
   
-  func send(_ action: Action) {
+  @discardableResult func send(_ invocation: Communicator.Action.Invocation) async -> Communicator.Action {
+    return await withCheckedContinuation { continuation in
+      send(invocation) { result in
+        continuation.resume(returning: result)
+      }
+    }
+  }
+
+  private func send(_ invocation: Communicator.Action.Invocation, completion: @escaping (Communicator.Action) -> Void) {
+    let action = Communicator.Action(invocation)
+    completionHandlers[action.identifier] = completion
+
     if let urlRequest = Constants.destinationConfiguration.urlRequest(with: action) {
       let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
         if let data = data, let stringResponse = String(data: data, encoding: .utf8) {
@@ -115,22 +136,15 @@ class Communicator {
     }
   }
 
-  // MARK: - NotificationCenter
-
-  func wait(for action: Communicator.Action) async {
-    await Waiter().wait(for: action)
-  }
-
-  private class Waiter {
-    #warning("does this work??")
-    func wait(for action: Action) async {
-      let notifications = NotificationCenter.default.notifications(named: .receivedResponse)
-      for await notification in notifications {
-        guard let _ = notification.object as? Communicator.Action else { return }
-        return
-      }
+  func completed(action: Communicator.Action) {
+    Task {
+      await Communicator.shared.send(.completed(action: action))
     }
   }
+}
+
+extension NSNotification.Name {
+  static let receivedActionRequest = NSNotification.Name("receivedActionRequest")
 }
 
 public enum CaptureArea: Codable {
@@ -179,15 +193,11 @@ public class CaptureAreaObjC: NSObject {
   }
 }
 
-extension NSNotification.Name {
-  static let receivedResponse = NSNotification.Name("receivedResponse")
-}
-
 // MARK: - Extensions
 
 extension NSObject {
-  func wait(for action: Communicator.Action) async {
-    await Communicator.shared.wait(for: action)
+  func send(for invocation: Communicator.Action.Invocation) async -> Communicator.Action {
+    await Communicator.shared.send(invocation)
   }
 }
 
@@ -223,64 +233,5 @@ extension HttpRequest {
     set {
       body = newValue.bytes
     }
-  }
-}
-
-extension UIImage {
-  func captureStatusBar(_ captureStatusBar: Bool) -> UIImage {
-    return captureStatusBar ? self : withoutStatusBar
-  }
-
-  func captureHomeIndicator(_ captureHomeIndicator: Bool) -> UIImage {
-    return captureHomeIndicator ? self : withoutHomeIndicator
-  }
-
-  func cropped(to frame: CGRect) -> UIImage {
-    guard let cgImage = cgImage else {
-      fatalError("Error creating `cropped` image")
-    }
-
-    let rect = CGRect(x: frame.minX * scale, y: frame.minY * scale, width: frame.width * scale, height: frame.height * scale)
-
-    if let croppedCGImage = cgImage.cropping(to: rect) {
-      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
-      return image
-    }
-
-    fatalError("Error creating `cropped` image")
-  }
-
-  var withoutStatusBar: UIImage {
-    guard let cgImage = cgImage else {
-      fatalError("Error creating `withoutStatusBar` image")
-    }
-
-    let iPhone14ProStatusBarInset = 59.0
-    let yOffset = iPhone14ProStatusBarInset * scale
-    let rect = CGRect(x: 0, y: Int(yOffset), width: cgImage.width, height: cgImage.height - Int(yOffset))
-
-    if let croppedCGImage = cgImage.cropping(to: rect) {
-      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
-      return image
-    }
-
-    fatalError("Error creating `withoutStatusBar` image")
-  }
-
-  var withoutHomeIndicator: UIImage {
-    guard let cgImage = cgImage else {
-      fatalError("Error creating `withoutHomeIndicator` image")
-    }
-
-    let iPhone14ProHomeIndicatorInset = 34.0
-    let yOffset = iPhone14ProHomeIndicatorInset * scale
-    let rect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height - Int(yOffset))
-
-    if let croppedCGImage = cgImage.cropping(to: rect) {
-      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
-      return image
-    }
-
-    fatalError("Error creating `withoutHomeIndicator` image")
   }
 }
