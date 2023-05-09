@@ -14,7 +14,6 @@ class Automated_UI_Testing: XCTestCase {
     let app = XCUIApplication()
     return app
   }()
-  let expectation = XCTestExpectation(description: "Expectation for the run of the test")
   var skip: XCTSkip? = nil
 
   struct Constants {
@@ -27,41 +26,38 @@ class Automated_UI_Testing: XCTestCase {
   }
 
   func handle(_ action: Communicator.Action) {
-    switch action {
-      case .endTest:
-        clearStoreKitTransactions()
-        expectation.fulfill()
-
+    switch action.invocation {
       case .assert(let testName, let precision, let captureArea):
         // If Xcode 14.1/14.2 bug ever gets fixed, use `simctl` to set a consistent status bar instead (https://www.jessesquires.com/blog/2022/12/14/simctrl-status_bar-broken/)
         let image = captureArea.image(from: app.screenshot().image)
         assertSnapshot(matching: image, as: .image(precision: precision), testName: testName)
-        Communicator.shared.send(.finishedAsserting)
-        return
+        Communicator.shared.completed(action: action)
 
       case .assertValue(let testName, let value):
         assertSnapshot(matching: value, as: .json, testName: testName)
-        Communicator.shared.send(.finishedAsserting)
-        return
+        Communicator.shared.completed(action: action)
 
       case .skip(let message):
         skip = XCTSkip(message)
-        expectation.fulfill()
+        Communicator.shared.completed(action: action)
 
       case .touch(let point):
         let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
         let coordinate = normalized.withOffset(CGVector(dx: point.x, dy: point.y))
         coordinate.tap()
+        Communicator.shared.completed(action: action)
 
       case .activateSubscriber(let productIdentifier):
         try! storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
+        Communicator.shared.completed(action: action)
 
       case .relaunchApp:
         app.activate()
+        Communicator.shared.completed(action: action)
 
       case .runTest(_):
         return
-      case .finishedAsserting:
+      case .completed(_):
         return
     }
   }
@@ -81,7 +77,7 @@ class Automated_UI_Testing: XCTestCase {
   }
 
   func performSDKTest(number: Int) async throws {
-    let observer = NotificationCenter.default.addObserver(forName: .receivedResponse, object: nil, queue: .main) { [weak self] notification in
+    let observer = NotificationCenter.default.addObserver(forName: .receivedActionRequest, object: nil, queue: .main) { [weak self] notification in
       guard let action = notification.object as? Communicator.Action else { return }
       self?.handle(action)
     }
@@ -90,11 +86,12 @@ class Automated_UI_Testing: XCTestCase {
 
     await launchApp()
 
-    Communicator.shared.send(.runTest(number: number))
+    await Communicator.shared.send(.runTest(number: number))
 
-    // 5 minute timeout
-    wait(for: [expectation], timeout: 300)
+    // Clean up StoreKit
+    clearStoreKitTransactions()
 
+    // Stop listening for action requests
     NotificationCenter.default.removeObserver(observer)
 
     if let skip {

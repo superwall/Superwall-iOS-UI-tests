@@ -39,7 +39,7 @@ extension Configuration {
     }
 
     func mockSubscribedUser(productIdentifier: String) async {
-      activateSubscriber(productIdentifier: productIdentifier)
+      await activateSubscriber(productIdentifier: productIdentifier)
     }
   }
 }

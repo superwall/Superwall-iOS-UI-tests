@@ -20,24 +20,24 @@ class RootViewController: UIViewController {
 
     RootViewController.shared = self
     
-    NotificationCenter.default.addObserver(forName: .receivedResponse, object: nil, queue: .main) { [weak self] notification in
+    NotificationCenter.default.addObserver(forName: .receivedActionRequest, object: nil, queue: .main) { [weak self] notification in
       guard let action = notification.object as? Communicator.Action else { return }
       self?.handle(action)
     }
   }
 
   func handle(_ action: Communicator.Action) {
-    switch action {
+    switch action.invocation {
       case .runTest(number: let testNumber):
         Task {
-          await runTest(testNumber)
+          await runTest(testNumber, from: action)
         }
       default:
         return
     }
   }
 
-  func runTest(_ testNumber: Int) async {
+  func runTest(_ testNumber: Int, from action: Communicator.Action) async {
     print("Instructed to run test #\(testNumber) with \(Constants.configurationType) mode in \(Constants.language.description)")
 
     // Create the test case instance depending on language.
@@ -50,7 +50,7 @@ class RootViewController: UIViewController {
 
     await configuration.tearDown()
 
-    Communicator.shared.send(.endTest)
+    Communicator.shared.completed(action: action)
   }
 
   override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {

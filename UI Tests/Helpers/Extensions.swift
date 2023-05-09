@@ -71,3 +71,64 @@ extension UIScreen {
     return image
   }
 }
+
+// MARK: - UIImage
+
+extension UIImage {
+  func captureStatusBar(_ captureStatusBar: Bool) -> UIImage {
+    return captureStatusBar ? self : withoutStatusBar
+  }
+
+  func captureHomeIndicator(_ captureHomeIndicator: Bool) -> UIImage {
+    return captureHomeIndicator ? self : withoutHomeIndicator
+  }
+
+  func cropped(to frame: CGRect) -> UIImage {
+    guard let cgImage = cgImage else {
+      fatalError("Error creating `cropped` image")
+    }
+
+    let rect = CGRect(x: frame.minX * scale, y: frame.minY * scale, width: frame.width * scale, height: frame.height * scale)
+
+    if let croppedCGImage = cgImage.cropping(to: rect) {
+      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
+      return image
+    }
+
+    fatalError("Error creating `cropped` image")
+  }
+
+  var withoutStatusBar: UIImage {
+    guard let cgImage = cgImage else {
+      fatalError("Error creating `withoutStatusBar` image")
+    }
+
+    let iPhone14ProStatusBarInset = 59.0
+    let yOffset = iPhone14ProStatusBarInset * scale
+    let rect = CGRect(x: 0, y: Int(yOffset), width: cgImage.width, height: cgImage.height - Int(yOffset))
+
+    if let croppedCGImage = cgImage.cropping(to: rect) {
+      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
+      return image
+    }
+
+    fatalError("Error creating `withoutStatusBar` image")
+  }
+
+  var withoutHomeIndicator: UIImage {
+    guard let cgImage = cgImage else {
+      fatalError("Error creating `withoutHomeIndicator` image")
+    }
+
+    let iPhone14ProHomeIndicatorInset = 34.0
+    let yOffset = iPhone14ProHomeIndicatorInset * scale
+    let rect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height - Int(yOffset))
+
+    if let croppedCGImage = cgImage.cropping(to: rect) {
+      let image = UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
+      return image
+    }
+
+    fatalError("Error creating `withoutHomeIndicator` image")
+  }
+}
