@@ -10,3 +10,7 @@
 @protocol SWKTestConfiguration;
 @interface SWKConfigurationAutomatic : NSObject <SWKTestConfiguration>
 @end
+
+@protocol SWKTestConfiguration;
+@interface SWKConfigurationAdvanced : NSObject <SWKTestConfiguration>
+@end

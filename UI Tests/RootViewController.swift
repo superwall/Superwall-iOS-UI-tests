@@ -8,8 +8,10 @@
 import UIKit
 import SuperwallKit
 
-@objc class RootViewController: UIViewController {
-  @objc static var shared: RootViewController!
+@objc(SWKRootViewController)
+class RootViewController: UIViewController {
+  @objc(sharedInstance)
+  static var shared: RootViewController!
 
   let communicator = Communicator.shared
 
