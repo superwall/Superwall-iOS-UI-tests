@@ -593,7 +593,7 @@ final class UITests_Swift: NSObject, Testable {
     // Assert that paywall appears
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Call reset while it is appearing
+    // Call reset while it is still on screen
     Superwall.shared.reset()
 
     await assert(after: Constants.paywallPresentationDelay)

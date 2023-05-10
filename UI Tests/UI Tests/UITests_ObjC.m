@@ -37,7 +37,7 @@ TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, ^{})
 TEST_ASSERT_DELAY_VALUE(0, value)
 
 #define TEST_SKIP(message) \
-[self skip:message]; return;
+[self skip:message]; completionHandler(nil); return;
 
 #define FATAL_ERROR(message) \
 NSCAssert(false, message);
@@ -165,29 +165,53 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
-#warning https://linear.app/superwall/issue/SW-1632/add-objc-initialiser-for-paywallproducts
-// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
 - (void)test5WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Paywall Overrides don't work in ObjC")
-// TEST_START
-//
-//  SKProduct *primary = SWKStoreKitHelper.shared.monthlyProduct;
-//  SKProduct *secondary = SWKStoreKitHelper.shared.annualProduct;
-//
-//  if (!primary || !secondary) {
-//    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
-//    return;
-//  }
-//
-//  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
-//  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
-//
-//  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-//  ////  PaywallOverrides *paywallOverrides = [[PaywallOverrides alloc] initWithProducts:products];
-//  //
-//  [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
-//
-//  TEST_ASSERT(kPaywallPresentationDelay)
+  TEST_START
+
+  // Get the primary and secondary products
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+
+  if (!primary || !secondary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
+  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
+
+  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+
+  // Create PaywallOverrides
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProducts:products];
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [self holdStrongly:delegate];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [viewController dismissViewControllerAnimated:NO completion:nil];
+    });
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+    UIViewController *viewController = result.paywallViewController;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+
+      // Assert after a delay
+      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    } else {
+      // Handle error
+      completionHandler(result.error);
+    }
+  }];
 }
 
 // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
@@ -765,6 +789,23 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Assert after a delay
   TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+}
+
+/// Call reset while a paywall is displayed should not cause a crash
+- (void)test34WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Register event
+  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Call reset while it is still on screen
+    [[Superwall sharedInstance] reset];
+
+    // Assert after a delay
+    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  }));
 }
 
 

@@ -77,6 +77,16 @@ class Automated_UI_Testing: XCTestCase {
   }
 
   func performSDKTest(number: Int) async throws {
+    // Handle 5 minute timeout
+    let timeoutTask = Task {
+      await Task.sleep(timeInterval: 300)
+      guard Task.isCancelled == false else { return }
+      #warning("log failure better")
+      XCTFail("Timeout for test #\(number)")
+      app.terminate()
+    }
+
+    #warning("change to async sequence")
     let observer = NotificationCenter.default.addObserver(forName: .receivedActionRequest, object: nil, queue: .main) { [weak self] notification in
       guard let action = notification.object as? Communicator.Action else { return }
       self?.handle(action)
@@ -87,6 +97,9 @@ class Automated_UI_Testing: XCTestCase {
     await launchApp()
 
     await Communicator.shared.send(.runTest(number: number))
+
+    // Stop timeout
+    timeoutTask.cancel()
 
     // Clean up StoreKit
     clearStoreKitTransactions()

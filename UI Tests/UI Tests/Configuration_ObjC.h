@@ -14,3 +14,8 @@
 @protocol SWKTestConfiguration;
 @interface SWKConfigurationAdvanced : NSObject <SWKTestConfiguration>
 @end
+
+@protocol SWKPaywallViewControllerDelegate;
+@interface SWKMockPaywallViewControllerDelegate : NSObject <SWKPaywallViewControllerDelegate>
+@property (nonatomic, copy) void (^paywallViewControllerDidFinish)(SWKPaywallViewController *controller, SWKPaywallResult result);
+@end

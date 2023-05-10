@@ -32,6 +32,22 @@ static BOOL kHasConfigured = NO;
 
 @end
 
+// MARK: - SWKPaywallViewControllerDelegate
+
+@implementation SWKMockPaywallViewControllerDelegate
+
+- (void)setPaywallViewControllerDidFinish:(void (^)(SWKPaywallViewController *, SWKPaywallResult))block {
+  _paywallViewControllerDidFinish = [block copy];
+}
+
+- (void)paywallViewController:(SWKPaywallViewController *)controller didFinishWith:(enum SWKPaywallResult)result {
+  if (self.paywallViewControllerDidFinish) {
+    self.paywallViewControllerDidFinish(controller, result);
+  }
+}
+
+@end
+
 // MARK: - Automatic configuration
 
 @interface SWKConfigurationAutomatic()
