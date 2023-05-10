@@ -71,6 +71,108 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "Automated_UI_Testing/test0()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test1()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test10()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test11()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test12()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test13()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test14()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test15()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test16()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test17()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test18()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test19()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test2()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test20()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test21()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test22()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test23()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test24()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test25()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test26()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test27()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test28()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test29()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test3()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test30()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test31()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test32()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test33()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test4()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test5()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test6()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test7()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test8()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test9()">
+               </Test>
+               <Test
                   Identifier = "ParentAppTestCase">
                </Test>
             </SkippedTests>
