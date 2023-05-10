@@ -15,6 +15,20 @@ struct Configuration {
   }
 }
 
+extension Configuration {
+  class MockPaywallViewControllerDelegate: PaywallViewControllerDelegate {
+    private var paywallViewControllerDidFinish: ((PaywallViewController, PaywallResult) -> Void)?
+
+    func paywallViewControllerDidFinish(_ handler: @escaping ((PaywallViewController, PaywallResult) -> Void)) {
+      self.paywallViewControllerDidFinish = handler
+    }
+
+    func paywallViewController(_ controller: PaywallViewController, didFinishWith result: PaywallResult) {
+      paywallViewControllerDidFinish?(controller, result)
+    }
+  }
+}
+
 // MARK: - Automatic configuration
 
 extension Configuration {
@@ -31,9 +45,6 @@ extension Configuration {
     }
 
     func tearDown() async {
-      // Dismiss any view controllers
-      await dismissViewControllers()
-
       // Reset identity and user data
       Superwall.shared.reset()
     }
@@ -68,9 +79,6 @@ extension Configuration {
       // Reset status
       Superwall.shared.subscriptionStatus = .inactive
 
-      // Dismiss any view controllers
-      await NSObject.dismissViewControllers()
-
       // Reset identity and user data
       Superwall.shared.reset()
     }
@@ -100,23 +108,23 @@ extension Configuration {
   }
 }
 
-// MARK: - Mocks
-
-class MockDelegate: SuperwallDelegate {
-  var observers: [(SuperwallEventInfo) -> Void] = []
-
-  public func addObserver(_ observer: @escaping (SuperwallEventInfo) -> Void) {
-    observers.append(observer)
-  }
-
-  public func removeObservers() {
-    observers.removeAll()
-  }
-
-  public func didTrackSuperwallEventInfo(_ info: SuperwallEventInfo) {
-    observers.forEach({ $0(info) })
-  }
-}
+//// MARK: - Mocks
+//
+//class MockDelegate: SuperwallDelegate {
+//  var observers: [(SuperwallEventInfo) -> Void] = []
+//
+//  public func addObserver(_ observer: @escaping (SuperwallEventInfo) -> Void) {
+//    observers.append(observer)
+//  }
+//
+//  public func removeObservers() {
+//    observers.removeAll()
+//  }
+//
+//  public func didTrackSuperwallEventInfo(_ info: SuperwallEventInfo) {
+//    observers.forEach({ $0(info) })
+//  }
+//}
 
 // MARK: - UITests_Swift convenience
 

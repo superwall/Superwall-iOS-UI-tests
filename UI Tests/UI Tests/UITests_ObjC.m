@@ -825,31 +825,31 @@ static id<SWKTestConfiguration> kConfiguration;
 
 @end
 
-// MARK: - SWKMockDelegate
-
-@implementation SWKMockDelegate
-
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    self.observers = [[NSMutableArray alloc] init];
-  }
-
-  return self;
-}
-
-- (void)addObserver:(void (^)(SWKSuperwallEventInfo *info))block {
-  [self.observers addObject:block];
-}
-
-- (void)removeObservers {
-  [self.observers removeAllObjects];
-}
-
-- (void)didTrackSuperwallEventInfo:(SWKSuperwallEventInfo *)info {
-  [self.observers enumerateObjectsUsingBlock:^(void (^ _Nonnull observer)(SWKSuperwallEventInfo *), NSUInteger idx, BOOL * _Nonnull stop) {
-    observer(info);
-  }];
-}
-
-@end
+//// MARK: - SWKMockDelegate
+//
+//@implementation SWKMockDelegate
+//
+//- (instancetype)init {
+//  self = [super init];
+//  if (self) {
+//    self.observers = [[NSMutableArray alloc] init];
+//  }
+//
+//  return self;
+//}
+//
+//- (void)addObserver:(void (^)(SWKSuperwallEventInfo *info))block {
+//  [self.observers addObject:block];
+//}
+//
+//- (void)removeObservers {
+//  [self.observers removeAllObjects];
+//}
+//
+//- (void)didTrackSuperwallEventInfo:(SWKSuperwallEventInfo *)info {
+//  [self.observers enumerateObjectsUsingBlock:^(void (^ _Nonnull observer)(SWKSuperwallEventInfo *), NSUInteger idx, BOOL * _Nonnull stop) {
+//    observer(info);
+//  }];
+//}
+//
+//@end

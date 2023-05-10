@@ -83,13 +83,19 @@ final class UITests_Swift: NSObject, Testable {
     let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
     let paywallOverrides = PaywallOverrides(products: products)
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides) {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { viewController, result in
       DispatchQueue.main.async {
-        viewController.presentationWillBegin()
+        viewController.dismiss(animated: false)
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides, delegate: delegate) {
+      DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
-        RootViewController.shared.present(viewController, animated: true) {
-          viewController.presentationDidFinish()
-        }
+        RootViewController.shared.present(viewController, animated: true)
       }
     }
 
@@ -576,6 +582,19 @@ final class UITests_Swift: NSObject, Testable {
     Superwall.shared.identify(userId: "test33")
 
     Superwall.shared.register(event: "present_data")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Call reset while a paywall is displayed should not cause a crash
+  func test34() async {
+    Superwall.shared.register(event: "present_data")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Call reset while it is appearing
+    Superwall.shared.reset()
 
     await assert(after: Constants.paywallPresentationDelay)
   }

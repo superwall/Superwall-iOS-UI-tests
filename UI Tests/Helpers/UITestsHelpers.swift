@@ -108,6 +108,11 @@ public extension NSObject {
 // MARK: - UITests Helpers
 
 @objc public extension NSObject {
+  private static var stronglyHeldObjects: [AnyObject] = []
+  @objc func holdStrongly(_ object: AnyObject) {
+    Self.stronglyHeldObjects.append(object)
+  }
+
   @objc func sleep(timeInterval: TimeInterval) async {
     await Self.sleep(timeInterval: timeInterval)
   }
@@ -123,11 +128,23 @@ public extension NSObject {
   static func dismissViewControllers() async {
     return await withCheckedContinuation { continuation in
       DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
+        // For view controllers presented above the paywall view controller
         let presentedViewController = Superwall.shared.presentedViewController?.presentedViewController
+
         Task {
           await presentedViewController?.dismissAsync()
+
           DispatchQueue.main.async {
-            Superwall.shared.dismiss {
+            if Superwall.shared.presentedViewController != nil {
+              Superwall.shared.dismiss {
+                continuation.resume()
+              }
+            } else if RootViewController.shared.presentedViewController != nil {
+              Task {
+                await presentedViewController?.dismissAsync()
+                continuation.resume()
+              }
+            } else {
               continuation.resume()
             }
           }

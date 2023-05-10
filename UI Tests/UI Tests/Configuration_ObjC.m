@@ -53,13 +53,10 @@ static BOOL kHasConfigured = NO;
 }
 
 - (void)tearDownWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
-  // Dismiss any view controllers
-  [self dismissViewControllersWithCompletionHandler:^{
-    // Reset identity and user data
-    [[Superwall sharedInstance] reset];
+  // Reset identity and user data
+  [[Superwall sharedInstance] reset];
 
-    completionHandler();
-  }];
+  completionHandler();
 }
 
 - (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier  completionHandler:(void (^ _Nonnull)(void))completionHandler {
@@ -101,13 +98,10 @@ static BOOL kHasConfigured = NO;
   // Reset status
   [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
 
-  // Dismiss any view controllers
-  [self dismissViewControllersWithCompletionHandler:^{
-    // Reset identity and user data
-    [[Superwall sharedInstance] reset];
+  // Reset identity and user data
+  [[Superwall sharedInstance] reset];
 
-    completionHandler();
-  }];
+  completionHandler();
 }
 
 - (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier completionHandler:(void (^ _Nonnull)(void))completionHandler {

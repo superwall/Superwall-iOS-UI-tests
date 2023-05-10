@@ -168,8 +168,8 @@
 		54CAAD4129BEC087008D728C /* Testable */ = {
 			isa = PBXGroup;
 			children = (
-				54CAAD3C29BEBB34008D728C /* Testable.swift */,
 				54CAAD3A29BEAABE008D728C /* Tests.swift */,
+				54CAAD3C29BEBB34008D728C /* Testable.swift */,
 			);
 			path = Testable;
 			sourceTree = "<group>";
@@ -736,7 +736,7 @@
 			repositoryURL = "https://github.com/superwall-me/SuperwallKit-iOS";
 			requirement = {
 				kind = revision;
-				revision = 400461f97bf0784a29100e9ad9ea7c4f6e30694c;
+				revision = b49a5314c5fb313a9e8ceb64197b43337f962831;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
