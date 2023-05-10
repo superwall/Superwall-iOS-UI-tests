@@ -79,11 +79,12 @@ class Automated_UI_Testing: XCTestCase {
   func performSDKTest(number: Int) async throws {
     // Handle 5 minute timeout
     let timeoutTask = Task {
-      await Task.sleep(timeInterval: 300)
+      await Task.sleep(timeInterval: 30)
       guard Task.isCancelled == false else { return }
       #warning("log failure better")
+      print("Hit the timeout")
       XCTFail("Timeout for test #\(number)")
-      app.terminate()
+//      app.terminate()
     }
 
     #warning("change to async sequence")
