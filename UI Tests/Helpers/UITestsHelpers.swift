@@ -154,6 +154,10 @@ public extension NSObject {
   }
 }
 
+@objc class ValueDescriptionHolder: NSObject {
+  @objc var valueDescription: String = "Unset value description"
+}
+
 // MARK: - PresentationResult
 
 extension PresentationValueObjc {

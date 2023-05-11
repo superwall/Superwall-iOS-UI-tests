@@ -620,23 +620,15 @@ final class UITests_Swift: NSObject, Testable {
 
     await assert(after: Constants.paywallPresentationDelay)
   }
-//case purchased(productId: String)
-//
-///// The paywall was declined by the user pressing the close button.
-//case declined
-//
-///// The paywall was dismissed due to the user restoring their purchases.
-//case restored
 
   // Finished purchase with a result type of `purchased`
   func test35() async {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    delegate.paywallViewControllerDidFinish { [weak self] viewController, result in
-      Task { [weak self] in
-        await self?.assert(value: result.description)
-      }
+    let paywallResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      paywallResultValueHolder.valueDescription = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
@@ -667,8 +659,11 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
-    // Wait for the above delegate function to get called
+    // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
   }
 
   func test36() async throws {
