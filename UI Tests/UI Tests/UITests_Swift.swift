@@ -9,7 +9,6 @@ import UIKit
 import SuperwallKit
 
 final class UITests_Swift: NSObject, Testable {
-
   // Uses the identify function. Should see the name 'Jack' in the paywall.
   func test0() async throws {
     Superwall.shared.identify(userId: "test0")
@@ -621,7 +620,72 @@ final class UITests_Swift: NSObject, Testable {
 
     await assert(after: Constants.paywallPresentationDelay)
   }
+//case purchased(productId: String)
+//
+///// The paywall was declined by the user pressing the close button.
+//case declined
+//
+///// The paywall was dismissed due to the user restoring their purchases.
+//case restored
 
+  // Finished purchase with a result type of `purchased`
+  func test35() async {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { [weak self] viewController, result in
+      Task { [weak self] in
+        await self?.assert(value: result.description)
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Wait for the above delegate function to get called
+    await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+  }
+
+  func test36() async throws {
+
+  }
+
+  func test37() async throws {
+
+  }
+
+  func test38() async throws {
+
+  }
+
+  func test39() async throws {
+
+  }
 
   /// Case: Airplane Mode
   /// Lifecycle handler

@@ -200,3 +200,18 @@ extension PresentationResult: CustomStringConvertible {
     }
   }
 }
+
+// MARK: - PaywallResult
+
+extension PaywallResult: CustomStringConvertible {
+  public var description: String {
+    switch self {
+      case .purchased(_):
+        return "purchased"
+      case .declined:
+        return "declined"
+      case .restored:
+        return "restored"
+    }
+  }
+}
