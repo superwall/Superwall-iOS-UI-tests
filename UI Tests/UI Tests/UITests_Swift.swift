@@ -147,12 +147,8 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
-#warning("https://linear.app/superwall/issue/SW-1633/check-paywall-overrides-work")
+  // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
   func test10() async throws {
-    skip("Paywall overrides not available in register")
-    return
-
     // Present the paywall.
     Superwall.shared.register(event: "present_products")
 
@@ -170,8 +166,21 @@ final class UITests_Swift: NSObject, Testable {
     let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
     let paywallOverrides = PaywallOverrides(products: products)
 
-    // TODO: Paywall Overrides not available:
-    // Superwall.shared.register(event: "present_products", paywallOverrides: paywallOverrides)
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      DispatchQueue.main.async {
+        viewController.dismiss(animated: false)
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides, delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
 
     // Assert override products.
     await assert(after: Constants.paywallPresentationDelay)
@@ -181,6 +190,20 @@ final class UITests_Swift: NSObject, Testable {
 
     // Present the paywall.
     Superwall.shared.register(event: "present_products")
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Present manually again, but with no overrides
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
 
     // Assert original products.
     await assert(after: Constants.paywallPresentationDelay)
