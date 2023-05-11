@@ -46,6 +46,10 @@ import Foundation
   func test33() async throws
   func test34() async throws
   func test35() async throws
+  func test36() async throws
+  func test37() async throws
+  func test38() async throws
+  func test39() async throws
 }
 
 extension RootViewController {
@@ -87,6 +91,10 @@ extension RootViewController {
       case 33: try await testable.test33()
       case 34: try await testable.test34()
       case 35: try await testable.test35()
+      case 36: try await testable.test36()
+      case 37: try await testable.test37()
+      case 38: try await testable.test38()
+      case 39: try await testable.test39()
       default:
         fatalError("Test has not been defined above.")
     }

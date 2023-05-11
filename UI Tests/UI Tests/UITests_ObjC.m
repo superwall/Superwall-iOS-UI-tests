@@ -808,6 +808,30 @@ static id<SWKTestConfiguration> kConfiguration;
   }));
 }
 
+- (void)test35WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Needs impl")
+}
+
+- (void)test36WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Needs impl")
+}
+
+- (void)test37WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Needs impl")
+}
+
+- (void)test38WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Needs impl")
+}
+
+- (void)test39WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Needs impl")
+}
+
+
+//- (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+//  TEST_SKIP(@"Skipping")
+//}
 
 //- (void)test_getTrackResult_paywall {
 //  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKTrackResult * _Nonnull result) {

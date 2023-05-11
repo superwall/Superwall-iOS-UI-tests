@@ -666,21 +666,84 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallResultValueHolder.valueDescription)
   }
 
+  // Finished purchase with a result type of `declined`
   func test36() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
 
+    let paywallResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      paywallResultValueHolder.valueDescription = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 346, y: 54)
+    touch(closeButton)
+
+    // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
+    await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
   }
 
+  // Finished purchase with a result type of `restored`
   func test37() async throws {
+    skip("Skipping this test until I can accurately perform it (I need touch points in order to finish the test)")
+    return
 
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      paywallResultValueHolder.valueDescription = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "restore", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Press restore
+    let restoreButton = CGPoint(x: 200, y: 232)
+    touch(restoreButton)
+
+    // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
+    await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
   }
 
+  // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away (does it get called twice?)
   func test38() async throws {
-
+    skip("Skipping until the above are fixed")
+    return
   }
 
+  // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
   func test39() async throws {
-
+    skip("Skipping until the above are fixed")
+    return
   }
+
+  // Finished purchase with a result type of `declined` by swiping the paywall view controller away
 
   /// Case: Airplane Mode
   /// Lifecycle handler
