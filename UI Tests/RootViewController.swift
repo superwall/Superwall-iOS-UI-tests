@@ -48,9 +48,6 @@ class RootViewController: UIViewController {
 
     try? await performTest(testNumber, on: testCase)
 
-    #warning("remove this once test 34 is fixed")
-    await dismissViewControllers()
-
     await configuration.tearDown()
 
     Communicator.shared.completed(action: action)
