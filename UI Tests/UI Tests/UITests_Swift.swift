@@ -699,9 +699,6 @@ final class UITests_Swift: NSObject, Testable {
 
   // Finished purchase with a result type of `restored`
   func test37() async throws {
-    skip("Skipping this test until I can accurately perform it (I need touch points in order to finish the test)")
-    return
-
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
@@ -719,6 +716,9 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert paywall presented.
     await assert(after: Constants.paywallPresentationDelay)
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Press restore
     let restoreButton = CGPoint(x: 200, y: 232)
