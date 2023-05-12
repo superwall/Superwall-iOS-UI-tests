@@ -47,6 +47,10 @@ class Automated_UI_Testing: XCTestCase {
         coordinate.tap()
         Communicator.shared.completed(action: action)
 
+      case .swipeDown:
+        app.swipeDown(velocity: XCUIGestureVelocity.fast)
+        Communicator.shared.completed(action: action)
+
       case .activateSubscriber(let productIdentifier):
         try! storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
         Communicator.shared.completed(action: action)

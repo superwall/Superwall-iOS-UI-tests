@@ -31,6 +31,7 @@ class Communicator {
       case assertValue(testName: String, value: String)
       case skip(message: String)
       case touch(point: CGPoint)
+      case swipeDown
       case activateSubscriber(productIdentifier: String)
       case completed(action: Action)
     }

@@ -732,9 +732,60 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away (does it get called twice?)
-  func test38() async throws {
-    skip("Skipping until the above are fixed")
-    return
+  func test38() async {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      paywallResultValueHolder.valueDescription = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .pageSheet
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
+    await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
+
+    // Modify the paywall result value
+    paywallResultValueHolder.valueDescription = "empty value"
+
+    // Swipe the paywall down to dismiss
+    swipeDown()
+
+    // Assert the paywall was dismissed (and waits to see if the delegate got called)
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
   }
 
   // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
@@ -748,44 +799,13 @@ final class UITests_Swift: NSObject, Testable {
   /// Case: Airplane Mode
   /// Lifecycle handler
 
-#warning("rewrite the below using UI assertions")
-
-//  // MARK: - Get Track Result
-//
-//  func test_getPresentationResult_paywall() async throws {
-//    let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
-//    switch result {
-//    case .paywall:
-//      break
-//    default:
-//      XCTFail()
-//    }
-//  }
-//
-//  func test_getPresentationResult_eventNotFound() async throws {
-//    let result = await Superwall.shared.getPresentationResult(forEvent: "a_random_madeup_event")
-//    XCTAssertEqual(result, .eventNotFound)
-//  }
-//
-//  func test_getPresentationResult_noRuleMatch() async throws {
-//    let result = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user")
-//    XCTAssertEqual(result, .noRuleMatch)
-//  }
 //
 //  func test_getPresentationResult_paywallNotAvailable() async throws {
 //    let result = await Superwall.shared.getPresentationResult(forEvent: "incorrect_product_identifier")
 //    XCTAssertEqual(result, .paywallNotAvailable)
 //  }
 //
-//  func test_getPresentationResult_holdout() async throws {
-//    let result = await Superwall.shared.getPresentationResult(forEvent: "holdout")
-//    switch result {
-//    case .holdout:
-//      break
-//    default:
-//      XCTFail()
-//    }
-//  }
+
 
   // Missing the final case `userIsSubscribed`. This can be done when we are able to manually
   // set the subscription status using the purchaseController.

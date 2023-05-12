@@ -94,6 +94,12 @@ public extension NSObject {
     }
   }
 
+  @objc func swipeDown() {
+    Task {
+      await Communicator.shared.send(.swipeDown)
+    }
+  }
+
   @objc func relaunch() {
     Task {
       await Communicator.shared.send(.relaunchApp)
