@@ -55,6 +55,7 @@ NSCAssert(false, message);
 // Constants
 static NSTimeInterval kPaywallPresentationDelay;
 static NSTimeInterval kPaywallPresentationFailureDelay;
+static NSTimeInterval kPaywallDelegateResponseDelay;
 
 @interface UITests_ObjC () <Testable>
 @end
@@ -83,6 +84,7 @@ static id<SWKTestConfiguration> kConfiguration;
 + (void)initialize {
   kPaywallPresentationDelay = SWKConstants.paywallPresentationDelay;
   kPaywallPresentationFailureDelay = SWKConstants.paywallPresentationFailureDelay;
+  kPaywallDelegateResponseDelay = SWKConstants.paywallDelegateResponseDelay;
 }
 
 // Uses the identify function. Should see the name 'Jack' in the paywall.
@@ -271,50 +273,50 @@ static id<SWKTestConfiguration> kConfiguration;
 // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
 - (void)test10WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_SKIP(@"Paywall Overrides don't work with register")
-//
-//  TEST_START_NUM_ASSERTS(3)
-//
-//  // Present the paywall.
-//  [[Superwall sharedInstance] registerWithEvent:@"present_products"];
-//
-//  // Wait and assert.
-//  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-//    // Assert original products.
-//    TEST_ASSERT(0);
-//
-//    // Dismiss any view controllers
-//    [weakSelf dismissViewControllersWithCompletionHandler:^{
-//
-//      // Create override products
-//      SKProduct *monthlyProduct = SWKStoreKitHelper.shared.monthlyProduct;
-//      SKProduct *annualProduct = SWKStoreKitHelper.shared.annualProduct;
-//
-//      SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:monthlyProduct];
-//      SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:annualProduct];
-//
-//      SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-//
-//      // Override original products with new ones.
-//      [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
-//
-//      // Wait and assert.
-//      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
-//        // Assert override products.
-//        TEST_ASSERT(0);
-//
-//        // Dismiss any view controllers
-//        [weakSelf dismissViewControllersWithCompletionHandler:^{
-//
-//          // Present the paywall.
-//          [[Superwall sharedInstance] trackWithEvent:@"present_products"];
-//
-//          // Assert original products.
-//          TEST_ASSERT(kPaywallPresentationDelay);
-//
-//        }];
-//      }];
-//    }];
-//  }];
+  //
+  //  TEST_START_NUM_ASSERTS(3)
+  //
+  //  // Present the paywall.
+  //  [[Superwall sharedInstance] registerWithEvent:@"present_products"];
+  //
+  //  // Wait and assert.
+  //  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+  //    // Assert original products.
+  //    TEST_ASSERT(0);
+  //
+  //    // Dismiss any view controllers
+  //    [weakSelf dismissViewControllersWithCompletionHandler:^{
+  //
+  //      // Create override products
+  //      SKProduct *monthlyProduct = SWKStoreKitHelper.shared.monthlyProduct;
+  //      SKProduct *annualProduct = SWKStoreKitHelper.shared.annualProduct;
+  //
+  //      SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:monthlyProduct];
+  //      SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:annualProduct];
+  //
+  //      SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+  //
+  //      // Override original products with new ones.
+  //      [[Superwall sharedInstance] trackWithEvent:@"present_products" params:nil products:products ignoreSubscriptionStatus:NO presentationStyleOverride:SWKPaywallPresentationStyleNone onSkip:nil onPresent:nil onDismiss:nil];
+  //
+  //      // Wait and assert.
+  //      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+  //        // Assert override products.
+  //        TEST_ASSERT(0);
+  //
+  //        // Dismiss any view controllers
+  //        [weakSelf dismissViewControllersWithCompletionHandler:^{
+  //
+  //          // Present the paywall.
+  //          [[Superwall sharedInstance] trackWithEvent:@"present_products"];
+  //
+  //          // Assert original products.
+  //          TEST_ASSERT(kPaywallPresentationDelay);
+  //
+  //        }];
+  //      }];
+  //    }];
+  //  }];
 }
 
 // Clear a specific user attribute.
@@ -404,8 +406,8 @@ static id<SWKTestConfiguration> kConfiguration;
           [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
             [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-             // Wait and assert.
-             TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+            // Wait and assert.
+            TEST_ASSERT_DELAY(kPaywallPresentationDelay);
           }];
 
           // Present paywall
@@ -809,11 +811,100 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test35WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Needs impl")
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Create a ValueDescriptionHolder to store the paywall result value
+  SWKValueDescriptionHolder *paywallResultValueHolder = [SWKValueDescriptionHolder new];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
+    paywallResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+    UIViewController *viewController = result.paywallViewController;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Purchase on the paywall
+      CGPoint purchaseButton = CGPointMake(196, 750);
+      [weakSelf touch:purchaseButton];
+
+      // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+      CGRect customFrame = CGRectMake(0, 488, 393, 300);
+      TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+        // Tap the Subscribe button
+        CGPoint subscribeButton = CGPointMake(196, 766);
+        [weakSelf touch:subscribeButton];
+
+        // Wait for subscribe to occur
+        [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+          // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+          CGPoint okButton = CGPointMake(196, 495);
+          [weakSelf touch:okButton];
+
+          // Wait for the delegate function to be called
+          [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
+            // Assert paywall result value
+            NSString *value = paywallResultValueHolder.valueDescription;
+            TEST_ASSERT_VALUE(value);
+          }];
+        }];
+      }));
+    }));
+  }];
 }
 
 - (void)test36WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Needs impl")
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Create a ValueDescriptionHolder to store the paywall result value
+  SWKValueDescriptionHolder *paywallResultValueHolder = [SWKValueDescriptionHolder new];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
+    paywallResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+    UIViewController *viewController = result.paywallViewController;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Close the paywall
+      CGPoint closeButton = CGPointMake(346, 54);
+      [weakSelf touch:closeButton];
+
+      // Wait for the delegate function to be called
+      [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
+        // Assert paywall result value
+        NSString *value = paywallResultValueHolder.valueDescription;
+        TEST_ASSERT_VALUE(value);
+      }];
+    }));
+  }];
 }
 
 - (void)test37WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {

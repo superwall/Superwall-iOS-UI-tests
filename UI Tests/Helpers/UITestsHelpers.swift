@@ -45,7 +45,7 @@ public extension NSObject {
     }
   }
 
-  func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Swift", captureArea: CaptureArea = .safeArea(captureHomeIndicator: false)) async {
+  func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Test", captureArea: CaptureArea = .safeArea(captureHomeIndicator: false)) async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
@@ -55,7 +55,7 @@ public extension NSObject {
     await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
   }
 
-  func assert(value: String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Swift") async {
+  func assert(value: String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Test") async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
@@ -71,14 +71,14 @@ public extension NSObject {
 
     let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
 
-    await assert(after: timeInterval, precision: precision, testName: modifiedTestName, prefix: "ObjC", captureArea: captureArea.transform)
+    await assert(after: timeInterval, precision: precision, testName: modifiedTestName, captureArea: captureArea.transform)
   }
 
   @available(swift, obsoleted: 1.0)
   @objc func assert(value: String, after timeInterval: TimeInterval, testName: String) async {
     let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
 
-    await assert(value: value, after: timeInterval, testName: modifiedTestName, prefix: "ObjC")
+    await assert(value: value, after: timeInterval, testName: modifiedTestName)
   }
 
   #warning("make these async")
@@ -160,11 +160,19 @@ public extension NSObject {
   }
 }
 
-@objc class ValueDescriptionHolder: NSObject {
+@objc(SWKValueDescriptionHolder)
+class ValueDescriptionHolder: NSObject {
   @objc var valueDescription: String = "Value description not set"
 }
 
 // MARK: - PresentationResult
+
+@objc (SWKPresentationValueObjcHelper)
+class PresentationValueObjcHelper: NSObject {
+  @objc static func description(_ value: PresentationValueObjc) -> String {
+    return value.description
+  }
+}
 
 extension PresentationValueObjc {
   public var description: String {
@@ -182,13 +190,6 @@ extension PresentationValueObjc {
       case .paywallNotAvailable:
         return "paywallNotAvailable"
     }
-  }
-}
-
-@objc (SWKPresentationValueObjcHelper)
-class PresentationValueObjcHelper: NSObject {
-  @objc static func description(_ value: PresentationValueObjc) -> String {
-    return value.description
   }
 }
 
@@ -213,15 +214,35 @@ extension PresentationResult: CustomStringConvertible {
 
 // MARK: - PaywallResult
 
-extension PaywallResult: CustomStringConvertible {
+@objc (SWKPaywallResultValueObjcHelper)
+class PaywallResultValueObjcHelper: NSObject {
+  @objc static func description(_ value: PaywallResultObjc) -> String {
+    return value.description
+  }
+}
+
+extension PaywallResultObjc {
   public var description: String {
     switch self {
-      case .purchased(_):
+      case .purchased:
         return "purchased"
       case .declined:
         return "declined"
       case .restored:
         return "restored"
+    }
+  }
+}
+
+extension PaywallResult: CustomStringConvertible {
+  public var description: String {
+    switch self {
+      case .purchased(_):
+        return PaywallResultObjc.purchased.description
+      case .declined:
+        return PaywallResultObjc.declined.description
+      case .restored:
+        return PaywallResultObjc.restored.description
     }
   }
 }
