@@ -161,7 +161,7 @@ public extension NSObject {
 }
 
 @objc class ValueDescriptionHolder: NSObject {
-  @objc var valueDescription: String = "Unset value description"
+  @objc var valueDescription: String = "Value description not set"
 }
 
 // MARK: - PresentationResult

@@ -731,7 +731,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallResultValueHolder.valueDescription)
   }
 
-  // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away (does it get called twice?)
+  // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away
   func test38() async {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -781,7 +781,7 @@ final class UITests_Swift: NSObject, Testable {
     // Swipe the paywall down to dismiss
     swipeDown()
 
-    // Assert the paywall was dismissed (and waits to see if the delegate got called)
+    // Assert the paywall was dismissed (and waits to see if the delegate got called again)
     await assert(after: Constants.paywallPresentationDelay)
 
     // Assert paywall result value
@@ -790,8 +790,48 @@ final class UITests_Swift: NSObject, Testable {
 
   // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
   func test39() async throws {
-    skip("Skipping until the above are fixed")
-    return
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      paywallResultValueHolder.valueDescription = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "restore", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .pageSheet
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+
+    // Press restore
+    let restoreButton = CGPoint(x: 214, y: 292)
+    touch(restoreButton)
+
+    // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
+    await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
+
+    // Modify the paywall result value
+    paywallResultValueHolder.valueDescription = "empty value"
+
+    // Swipe the paywall down to dismiss
+    swipeDown()
+
+    // Assert the paywall was dismissed (and waits to see if the delegate got called again)
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert paywall result value
+    await assert(value: paywallResultValueHolder.valueDescription)
   }
 
   // Finished purchase with a result type of `declined` by swiping the paywall view controller away
