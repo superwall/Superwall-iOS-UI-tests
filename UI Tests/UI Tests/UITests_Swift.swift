@@ -341,9 +341,34 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  // Open In-App Safari view controller from manually presented paywall
   func test18() async throws {
-    skip("Skipping this test for now")
-    return
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_urls", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Position of the perform button to open a URL in Safari
+    let point = CGPoint(x: 326, y: 216)
+    touch(point)
+
+    // Verify that In-App Safari has opened
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Press the done button to go back
+    let donePoint = CGPoint(x: 30, y: 70)
+    touch(donePoint)
+
+    // Verify that the paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   // Clusterfucks by Jake™

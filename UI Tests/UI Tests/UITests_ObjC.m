@@ -473,8 +473,41 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Skipping for now")
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [weakSelf holdStrongly:delegate];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+    UIViewController *viewController = result.paywallViewController;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Position of the perform button to open a URL in Safari
+      CGPoint point = CGPointMake(326, 216);
+      [weakSelf touch:point];
+
+      // Verify that In-App Safari has opened
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        // Press the done button to go back
+        CGPoint donePoint = CGPointMake(30, 70);
+        [weakSelf touch:donePoint];
+
+        // Verify that the paywall appears
+        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      }));
+    }));
+  }];
 }
+
 
 // Clusterfucks by Jake™
 - (void)test19WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
