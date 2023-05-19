@@ -59,6 +59,10 @@ class Automated_UI_Testing: XCTestCase {
         app.activate()
         Communicator.shared.completed(action: action)
 
+      case .log(let message):
+        print(message)
+        Communicator.shared.completed(action: action)
+
       case .runTest(_):
         return
       case .completed(_):

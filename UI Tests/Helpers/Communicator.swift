@@ -33,6 +33,7 @@ class Communicator {
       case touch(point: CGPoint)
       case swipeDown
       case activateSubscriber(productIdentifier: String)
+      case log(_ message: String)
       case completed(action: Action)
     }
 
@@ -71,6 +72,11 @@ class Communicator {
   }
 
   private let server = HttpServer()
+  private let operationQueue: OperationQueue = {
+    let queue = OperationQueue()
+    queue.maxConcurrentOperationCount = 1
+    return queue
+  }()
 
   func start() {
     server[Constants.sourceConfiguration.serverPath] = { [weak self] request in
@@ -120,14 +126,22 @@ class Communicator {
     completionHandlers[action.identifier] = completion
 
     if let urlRequest = Constants.destinationConfiguration.urlRequest(with: action) {
-      let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
-        if let data = data, let stringResponse = String(data: data, encoding: .utf8) {
-          print(stringResponse)
-        } else if let error = error {
-          print("Error: \(error.localizedDescription)")
+      let operation = BlockOperation {
+        let semaphore = DispatchSemaphore(value: 0)
+
+        let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
+          if let data = data, let stringResponse = String(data: data, encoding: .utf8) {
+            print(stringResponse)
+          } else if let error = error {
+            print("Error: \(error.localizedDescription)")
+          }
+          semaphore.signal()
         }
+        task.resume()
+
+        semaphore.wait()
       }
-      task.resume()
+      operationQueue.addOperation(operation)
     } else {
       print("Invalid URL")
     }

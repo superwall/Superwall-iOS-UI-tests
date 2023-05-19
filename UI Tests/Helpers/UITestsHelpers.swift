@@ -109,6 +109,13 @@ public extension NSObject {
   @objc func activateSubscriber(productIdentifier: String) async {
     await Communicator.shared.send(.activateSubscriber(productIdentifier: productIdentifier))
   }
+
+  @objc func log(_ message: String) {
+    print(message)
+    Task {
+      await Communicator.shared.send(.log(message))
+    }
+  }
 }
 
 // MARK: - UITests Helpers
