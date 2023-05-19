@@ -18,4 +18,5 @@
 @protocol SWKPaywallViewControllerDelegate;
 @interface SWKMockPaywallViewControllerDelegate : NSObject <SWKPaywallViewControllerDelegate>
 @property (nonatomic, copy) void (^paywallViewControllerDidFinish)(SWKPaywallViewController *controller, SWKPaywallResult result);
+@property (nonatomic, copy) void (^paywallViewControllerDidDisappear)(SWKPaywallViewController *controller, SWKPaywallResult result);
 @end

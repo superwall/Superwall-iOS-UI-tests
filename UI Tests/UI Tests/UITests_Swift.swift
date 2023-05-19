@@ -761,9 +761,14 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    let paywallResultValueHolder = ValueDescriptionHolder()
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { viewController, result in
-      paywallResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.valueDescription = result.description
+    }
+
+    let paywallDidDisappearResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidDisappear { viewController, result in
+      paywallDidDisappearResultValueHolder.valueDescription = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
@@ -797,11 +802,14 @@ final class UITests_Swift: NSObject, Testable {
     // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
-    // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    // Assert paywall result value ("purchased")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+
+    // Assert paywall result disappeared value ("Value description not set")
+    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
 
     // Modify the paywall result value
-    paywallResultValueHolder.valueDescription = "empty value"
+    paywallDidFinishResultValueHolder.valueDescription = "empty value"
 
     // Swipe the paywall down to dismiss
     swipeDown()
@@ -809,8 +817,11 @@ final class UITests_Swift: NSObject, Testable {
     // Assert the paywall was dismissed (and waits to see if the delegate got called again)
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    // Assert paywall result disappeared value ("purchased")
+    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
+
+    // Assert paywall result value ("empty value")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
   }
 
   // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
@@ -818,9 +829,14 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    let paywallResultValueHolder = ValueDescriptionHolder()
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { viewController, result in
-      paywallResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.valueDescription = result.description
+    }
+
+    let paywallDidDisappearResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidDisappear { viewController, result in
+      paywallDidDisappearResultValueHolder.valueDescription = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "restore", delegate: delegate) {
@@ -843,11 +859,14 @@ final class UITests_Swift: NSObject, Testable {
     // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
-    // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    // Assert paywall finished result value ("restored")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+
+    // Assert paywall disappeared result value ("Value description not set")
+    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
 
     // Modify the paywall result value
-    paywallResultValueHolder.valueDescription = "empty value"
+    paywallDidFinishResultValueHolder.valueDescription = "empty value"
 
     // Swipe the paywall down to dismiss
     swipeDown()
@@ -855,11 +874,54 @@ final class UITests_Swift: NSObject, Testable {
     // Assert the paywall was dismissed (and waits to see if the delegate got called again)
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    // Assert paywall result value ("empty value")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+
+    // Assert paywall result value ("restored")
+    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
   }
 
-  // Finished purchase with a result type of `declined` by swiping the paywall view controller away
+  // Paywall disappeared with a result type of `declined` by swiping the paywall view controller away
+  func test40() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result in
+      paywallDidFinishResultValueHolder.valueDescription = result.description
+    }
+
+    let paywallDidDisappearResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidDisappear { viewController, result in
+      paywallDidDisappearResultValueHolder.valueDescription = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .pageSheet
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Swipe the paywall down to dismiss
+    swipeDown()
+
+    // Assert the paywall was dismissed (and waits to see if the delegate got called again)
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert paywall result value ("declined")
+    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
+
+    // Wait for the did finish
+    await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall result value ("Value description not set")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+  }
+
 
   /// Case: Airplane Mode
   /// Lifecycle handler

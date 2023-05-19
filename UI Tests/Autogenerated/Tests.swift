@@ -43,4 +43,5 @@ extension Automated_UI_Testing {
   func test37() async throws { try await performSDKTest(number: 37) }
   func test38() async throws { try await performSDKTest(number: 38) }
   func test39() async throws { try await performSDKTest(number: 39) }
+  func test40() async throws { try await performSDKTest(number: 40) }
 }

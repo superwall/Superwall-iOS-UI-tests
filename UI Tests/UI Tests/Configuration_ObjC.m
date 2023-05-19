@@ -40,9 +40,19 @@ static BOOL kHasConfigured = NO;
   _paywallViewControllerDidFinish = [block copy];
 }
 
-- (void)paywallViewController:(SWKPaywallViewController *)controller didFinishWith:(enum SWKPaywallResult)result {
+- (void)setPaywallViewControllerDidDisappear:(void (^)(SWKPaywallViewController *, SWKPaywallResult))block {
+  _paywallViewControllerDidDisappear = [block copy];
+}
+
+- (void)handleWithPaywall:(SWKPaywallViewController * _Nonnull)paywall result:(enum SWKPaywallResult)result {
   if (self.paywallViewControllerDidFinish) {
-    self.paywallViewControllerDidFinish(controller, result);
+    self.paywallViewControllerDidFinish(paywall, result);
+  }
+}
+
+- (void)paywall:(SWKPaywallViewController * _Nonnull)paywall didDisappearWith:(enum SWKPaywallResult)result {
+  if (self.paywallViewControllerDidDisappear) {
+    self.paywallViewControllerDidDisappear(paywall, result);
   }
 }
 
