@@ -17,23 +17,14 @@ struct Configuration {
 
 extension Configuration {
   class MockPaywallViewControllerDelegate: PaywallViewControllerDelegate {
-    private var paywallViewControllerDidFinish: ((PaywallViewController, PaywallResult) -> Void)?
-    private var paywallViewControllerDidDisappear: ((PaywallViewController, PaywallResult) -> Void)?
+    private var paywallViewControllerDidFinish: ((PaywallViewController, PaywallResult, Bool) -> Void)?
 
-    func paywallViewControllerDidFinish(_ handler: @escaping ((PaywallViewController, PaywallResult) -> Void)) {
+    func paywallViewControllerDidFinish(_ handler: @escaping ((PaywallViewController, PaywallResult, Bool) -> Void)) {
       paywallViewControllerDidFinish = handler
     }
 
-    func paywallViewControllerDidDisappear(_ handler: @escaping ((PaywallViewController, PaywallResult) -> Void)) {
-      paywallViewControllerDidDisappear = handler
-    }
-
-    func paywall(_ paywall: PaywallViewController, didDisappearWith result: PaywallResult) {
-      paywallViewControllerDidDisappear?(paywall, result)
-    }
-
-    func handle(paywall: PaywallViewController, result: PaywallResult) {
-      paywallViewControllerDidFinish?(paywall, result)
+    func paywall(_ paywall: PaywallViewController, didFinishWith result: PaywallResult, shouldDismiss: Bool) {
+      paywallViewControllerDidFinish?(paywall, result, shouldDismiss)
     }
   }
 }

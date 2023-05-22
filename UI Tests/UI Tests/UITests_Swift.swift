@@ -85,13 +85,15 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    delegate.paywallViewControllerDidFinish { viewController, result in
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
       DispatchQueue.main.async {
-        viewController.dismiss(animated: false)
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
       }
     }
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides, delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products", paywallOverrides: paywallOverrides, delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -168,13 +170,13 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    delegate.paywallViewControllerDidFinish { viewController, result in
+    delegate.paywallViewControllerDidFinish { viewController, _, shouldDismiss in
       DispatchQueue.main.async {
         viewController.dismiss(animated: false)
       }
     }
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", paywallOverrides: paywallOverrides, delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products", paywallOverrides: paywallOverrides, delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -197,7 +199,7 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     // Present manually again, but with no overrides
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_products", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -346,7 +348,7 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_urls", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_urls", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -651,12 +653,12 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    let paywallResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidFinish { viewController, result in
-      paywallResultValueHolder.valueDescription = result.description
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.valueDescription = result.description
     }
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -687,8 +689,8 @@ final class UITests_Swift: NSObject, Testable {
     // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
-    // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    // Assert paywall didFinish result value ("purchased")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
   }
 
   // Finished purchase with a result type of `declined`
@@ -696,12 +698,12 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    let paywallResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidFinish { viewController, result in
-      paywallResultValueHolder.valueDescription = result.description
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.valueDescription = result.description
     }
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -718,8 +720,8 @@ final class UITests_Swift: NSObject, Testable {
     // Wait for the above delegate function to get called (MUST wait here in order for the `paywallResultValueHolder` to get set)
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
-    // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    // Assert paywall result value ("declined")
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
   }
 
   // Finished purchase with a result type of `restored`
@@ -727,12 +729,12 @@ final class UITests_Swift: NSObject, Testable {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
-    let paywallResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidFinish { viewController, result in
-      paywallResultValueHolder.valueDescription = result.description
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { _, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.valueDescription = result.description
     }
 
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "restore", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .fullScreen
         RootViewController.shared.present(viewController, animated: true)
@@ -753,7 +755,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall result value
-    await assert(value: paywallResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
   }
 
   // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away
@@ -762,16 +764,12 @@ final class UITests_Swift: NSObject, Testable {
     holdStrongly(delegate)
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidFinish { viewController, result in
+
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
       paywallDidFinishResultValueHolder.valueDescription = result.description
     }
 
-    let paywallDidDisappearResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidDisappear { viewController, result in
-      paywallDidDisappearResultValueHolder.valueDescription = result.description
-    }
-
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .pageSheet
         RootViewController.shared.present(viewController, animated: true)
@@ -805,9 +803,6 @@ final class UITests_Swift: NSObject, Testable {
     // Assert paywall result value ("purchased")
     await assert(value: paywallDidFinishResultValueHolder.valueDescription)
 
-    // Assert paywall result disappeared value ("Value description not set")
-    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
-
     // Modify the paywall result value
     paywallDidFinishResultValueHolder.valueDescription = "empty value"
 
@@ -816,9 +811,6 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert the paywall was dismissed (and waits to see if the delegate got called again)
     await assert(after: Constants.paywallPresentationDelay)
-
-    // Assert paywall result disappeared value ("purchased")
-    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
 
     // Assert paywall result value ("empty value")
     await assert(value: paywallDidFinishResultValueHolder.valueDescription)
@@ -830,16 +822,11 @@ final class UITests_Swift: NSObject, Testable {
     holdStrongly(delegate)
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidFinish { viewController, result in
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
       paywallDidFinishResultValueHolder.valueDescription = result.description
     }
 
-    let paywallDidDisappearResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidDisappear { viewController, result in
-      paywallDidDisappearResultValueHolder.valueDescription = result.description
-    }
-
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "restore", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .pageSheet
         RootViewController.shared.present(viewController, animated: true)
@@ -862,9 +849,6 @@ final class UITests_Swift: NSObject, Testable {
     // Assert paywall finished result value ("restored")
     await assert(value: paywallDidFinishResultValueHolder.valueDescription)
 
-    // Assert paywall disappeared result value ("Value description not set")
-    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
-
     // Modify the paywall result value
     paywallDidFinishResultValueHolder.valueDescription = "empty value"
 
@@ -876,9 +860,6 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert paywall result value ("empty value")
     await assert(value: paywallDidFinishResultValueHolder.valueDescription)
-
-    // Assert paywall result value ("restored")
-    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
   }
 
   // Paywall disappeared with a result type of `declined` by swiping the paywall view controller away
@@ -887,16 +868,11 @@ final class UITests_Swift: NSObject, Testable {
     holdStrongly(delegate)
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidFinish { viewController, result in
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
       paywallDidFinishResultValueHolder.valueDescription = result.description
     }
 
-    let paywallDidDisappearResultValueHolder = ValueDescriptionHolder()
-    delegate.paywallViewControllerDidDisappear { viewController, result in
-      paywallDidDisappearResultValueHolder.valueDescription = result.description
-    }
-
-    if let viewController = try? await Superwall.shared.getPaywallViewController(forEvent: "present_data", delegate: delegate) {
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
       DispatchQueue.main.async {
         viewController.modalPresentationStyle = .pageSheet
         RootViewController.shared.present(viewController, animated: true)
@@ -909,16 +885,13 @@ final class UITests_Swift: NSObject, Testable {
     // Swipe the paywall down to dismiss
     swipeDown()
 
-    // Assert the paywall was dismissed (and waits to see if the delegate got called again)
+    // Assert the paywall was dismissed
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Assert paywall result value ("declined")
-    await assert(value: paywallDidDisappearResultValueHolder.valueDescription)
-
-    // Wait for the did finish
+    // Wait to see if the delegate gets called again
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
-    // Assert paywall result value ("Value description not set")
+    // Assert paywall result value ("declined")
     await assert(value: paywallDidFinishResultValueHolder.valueDescription)
   }
 

@@ -207,14 +207,14 @@ static id<SWKTestConfiguration> kConfiguration;
   [self holdStrongly:delegate];
   
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
     dispatch_async(dispatch_get_main_queue(), ^{
       [viewController dismissViewControllerAnimated:NO completion:nil];
     });
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -495,7 +495,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [weakSelf holdStrongly:delegate];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -865,17 +865,17 @@ static id<SWKTestConfiguration> kConfiguration;
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
   [weakSelf holdStrongly:delegate];
-  
-  // Create a ValueDescriptionHolder to store the paywall result value
-  SWKValueDescriptionHolder *paywallResultValueHolder = [SWKValueDescriptionHolder new];
-  
+
+  // Create a ValueDescriptionHolder to store the paywall did finish result value
+  SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
+
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    paywallResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -905,8 +905,8 @@ static id<SWKTestConfiguration> kConfiguration;
           
           // Wait for the delegate function to be called
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
-            // Assert paywall result value
-            NSString *value = paywallResultValueHolder.valueDescription;
+            // Assert didFinish paywall result value
+            NSString *value = paywallDidFinishResultValueHolder.valueDescription;
             TEST_ASSERT_VALUE(value);
           }];
         }];
@@ -923,16 +923,16 @@ static id<SWKTestConfiguration> kConfiguration;
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
   [weakSelf holdStrongly:delegate];
   
-  // Create a ValueDescriptionHolder to store the paywall result value
-  SWKValueDescriptionHolder *paywallResultValueHolder = [SWKValueDescriptionHolder new];
-  
+  // Create a ValueDescriptionHolder to store the paywall did finish result value
+  SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
+
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    paywallResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -949,8 +949,8 @@ static id<SWKTestConfiguration> kConfiguration;
       
       // Wait for the delegate function to be called
       [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
-        // Assert paywall result value
-        NSString *value = paywallResultValueHolder.valueDescription;
+        // Assert didFinish paywall result value
+        NSString *value = paywallDidFinishResultValueHolder.valueDescription;
         TEST_ASSERT_VALUE(value);
       }];
     }));
@@ -965,16 +965,16 @@ static id<SWKTestConfiguration> kConfiguration;
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
   [weakSelf holdStrongly:delegate];
   
-  // Create a ValueDescriptionHolder to store the paywall result value
-  SWKValueDescriptionHolder *paywallResultValueHolder = [SWKValueDescriptionHolder new];
-  
+  // Create a ValueDescriptionHolder to store the paywall did finish result value
+  SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
+
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    paywallResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -993,8 +993,8 @@ static id<SWKTestConfiguration> kConfiguration;
         
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
-          // Assert paywall result value
-          NSString *value = paywallResultValueHolder.valueDescription;
+          // Assert didFinish paywall result value
+          NSString *value = paywallDidFinishResultValueHolder.valueDescription;
           TEST_ASSERT_VALUE(value);
         }];
       }];
@@ -1004,7 +1004,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away
 - (void)test38WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(7)
+  TEST_START_NUM_ASSERTS(5)
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
@@ -1012,24 +1012,14 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
-  
+
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    [weakSelf log:@"HITTING setPaywallViewControllerDidFinish"];
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
     paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
-  // Create a ValueDescriptionHolder to store the paywall did disappear result value
-  SWKValueDescriptionHolder *paywallDidDisappearResultValueHolder = [SWKValueDescriptionHolder new];
-  
-  // Set the delegate's paywallViewControllerDidDisappear block
-  [delegate setPaywallViewControllerDidDisappear:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    [weakSelf log:@"HITTING setPaywallViewControllerDidDisappear"];
-    paywallDidDisappearResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
-  }];
-  
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1063,11 +1053,7 @@ static id<SWKTestConfiguration> kConfiguration;
             NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
             TEST_ASSERT_VALUE(paywallDidFinishValue);
             
-            // Assert paywall did disappear result value
-            NSString *paywallDidDisappearValue = paywallDidDisappearResultValueHolder.valueDescription;
-            TEST_ASSERT_VALUE(paywallDidDisappearValue);
-            
-            // Modify the paywall did finish result value
+            // Modify the didFinish paywall did finish result value
             paywallDidFinishResultValueHolder.valueDescription = @"empty value";
             
             // Swipe the paywall down to dismiss
@@ -1075,10 +1061,6 @@ static id<SWKTestConfiguration> kConfiguration;
             
             // Assert the paywall was dismissed
             TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-              // Assert paywall did disappear result value
-              NSString *paywallDidDisappearValue = paywallDidDisappearResultValueHolder.valueDescription;
-              TEST_ASSERT_VALUE(paywallDidDisappearValue);
-              
               // Assert paywall did finish result value
               NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
               TEST_ASSERT_VALUE(paywallDidFinishValue);
@@ -1092,7 +1074,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
 - (void)test39WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(6)
+  TEST_START_NUM_ASSERTS(4)
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
@@ -1100,22 +1082,14 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
-  
+
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
     paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
-  // Create a ValueDescriptionHolder to store the paywall did disappear result value
-  SWKValueDescriptionHolder *paywallDidDisappearResultValueHolder = [SWKValueDescriptionHolder new];
-  
-  // Set the delegate's paywallViewControllerDidDisappear block
-  [delegate setPaywallViewControllerDidDisappear:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    paywallDidDisappearResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
-  }];
-  
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1137,12 +1111,8 @@ static id<SWKTestConfiguration> kConfiguration;
           // Assert paywall did finish result value ("restored")
           NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
           TEST_ASSERT_VALUE(paywallDidFinishValue);
-          
-          // Assert paywall did disappear result value ("Value description not set")
-          NSString *paywallDidDisappearValue = paywallDidDisappearResultValueHolder.valueDescription;
-          TEST_ASSERT_VALUE(paywallDidDisappearValue);
-          
-          // Modify the paywall did finish result value
+
+          // Modify the paywall didFinish result value
           paywallDidFinishResultValueHolder.valueDescription = @"empty value";
           
           // Swipe the paywall down to dismiss
@@ -1153,10 +1123,6 @@ static id<SWKTestConfiguration> kConfiguration;
             // Assert paywall did finish result value ("empty value")
             NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
             TEST_ASSERT_VALUE(paywallDidFinishValue);
-            
-            // Assert paywall did disappear result value ("restored")
-            NSString *paywallDidDisappearValue = paywallDidDisappearResultValueHolder.valueDescription;
-            TEST_ASSERT_VALUE(paywallDidDisappearValue);
           }));
         }];
       }];
@@ -1166,7 +1132,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 // Paywall disappeared with a result type of `declined` by swiping the paywall view controller away
 - (void)test40WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(4)
+  TEST_START_NUM_ASSERTS(3)
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
@@ -1176,20 +1142,12 @@ static id<SWKTestConfiguration> kConfiguration;
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
   
   // Set the delegate's paywallViewControllerDidFinish block
-  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
     paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
-  // Create a ValueDescriptionHolder to store the paywall did disappear result value
-  SWKValueDescriptionHolder *paywallDidDisappearResultValueHolder = [SWKValueDescriptionHolder new];
-  
-  // Set the delegate's paywallViewControllerDidDisappear block
-  [delegate setPaywallViewControllerDidDisappear:^(SWKPaywallViewController *viewController, SWKPaywallResult result) {
-    paywallDidDisappearResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
-  }];
-  
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallViewControllerForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallViewControllerResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywallViewController;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1197,7 +1155,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
       });
     }
-    
+
     // Assert that paywall is presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Swipe the paywall down to dismiss
@@ -1205,13 +1163,9 @@ static id<SWKTestConfiguration> kConfiguration;
       
       // Assert the paywall was dismissed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-        // Assert paywall did disappear result value
-        NSString *paywallDidDisappearValue = paywallDidDisappearResultValueHolder.valueDescription;
-        TEST_ASSERT_VALUE(paywallDidDisappearValue);
-        
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
-          // Assert paywall did finish result value
+          // Assert paywall did finish result value ("declined")
           NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
           TEST_ASSERT_VALUE(paywallDidFinishValue);
         }];

@@ -36,23 +36,13 @@ static BOOL kHasConfigured = NO;
 
 @implementation SWKMockPaywallViewControllerDelegate
 
-- (void)setPaywallViewControllerDidFinish:(void (^)(SWKPaywallViewController *, SWKPaywallResult))block {
+- (void)setPaywallViewControllerDidFinish:(void (^)(SWKPaywallViewController *, SWKPaywallResult, BOOL))block {
   _paywallViewControllerDidFinish = [block copy];
 }
 
-- (void)setPaywallViewControllerDidDisappear:(void (^)(SWKPaywallViewController *, SWKPaywallResult))block {
-  _paywallViewControllerDidDisappear = [block copy];
-}
-
-- (void)handleWithPaywall:(SWKPaywallViewController * _Nonnull)paywall result:(enum SWKPaywallResult)result {
+- (void)paywall:(SWKPaywallViewController *)paywall didFinishWithResult:(enum SWKPaywallResult)result shouldDismiss:(BOOL)shouldDismiss {
   if (self.paywallViewControllerDidFinish) {
-    self.paywallViewControllerDidFinish(paywall, result);
-  }
-}
-
-- (void)paywall:(SWKPaywallViewController * _Nonnull)paywall didDisappearWith:(enum SWKPaywallResult)result {
-  if (self.paywallViewControllerDidDisappear) {
-    self.paywallViewControllerDidDisappear(paywall, result);
+    self.paywallViewControllerDidFinish(paywall, result, shouldDismiss);
   }
 }
 
