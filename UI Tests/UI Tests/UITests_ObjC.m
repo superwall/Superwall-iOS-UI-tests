@@ -1174,6 +1174,38 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+- (void)test41WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create a ValueDescriptionHolder to store the value
+  SWKValueDescriptionHolder *valueHolder = [SWKValueDescriptionHolder new];
+
+  // Register event with Superwall
+  [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      valueHolder.valueDescription = @"Error - feature gate closure executed when it should not have been.";
+    });
+  }];
+
+  // Assert that paywall does not appear
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Assert that the feature block does not get executed ("Value description not set")
+    TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, valueHolder.valueDescription);
+  }));
+}
+
+- (void)test42WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping for now")
+}
+
+- (void)test43WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping for now")
+}
+
+- (void)test44WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping for now")
+}
+
 
 //- (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_SKIP(@"Skipping")

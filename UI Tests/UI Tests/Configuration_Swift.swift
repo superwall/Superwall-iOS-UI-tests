@@ -35,6 +35,7 @@ extension Configuration {
   class Automatic: NSObject, TestConfiguration {
     func setup() async {
       // Using this approach over using the class setup() function because it's not async
+      #warning("can probably remove these checks now")
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
 

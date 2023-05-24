@@ -895,6 +895,89 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.valueDescription)
   }
 
+  // User is not subscribed, register a gated paywall when not connected to the internet
+  func test41() async throws {
+    skip("Skipping for now")
+    return
+
+    // Keep a reference to the value
+    let valueHolder = ValueDescriptionHolder()
+    Superwall.shared.register(event: "register_gated_paywall") {
+      DispatchQueue.main.async {
+        valueHolder.valueDescription = "Error - feature gate closure executed when it should not have been."
+      }
+    }
+
+    // Assert that paywall does not appear
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that the feature block does not get executed ("Value description not set")
+    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+  }
+
+  // User is not subscribed, register a non-gated paywall when not connected to the internet
+  func test42() async throws {
+    skip("Skipping for now")
+    return
+
+    // Keep a reference to the value
+    let valueHolder = ValueDescriptionHolder()
+    Superwall.shared.register(event: "register_nongated_paywall") {
+      DispatchQueue.main.async {
+        valueHolder.valueDescription = "Error - feature gate closure executed when it should not have been."
+      }
+    }
+
+    // Assert that paywall does not appear
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that the feature block does not get executed ("Value description not set")
+    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+  }
+
+  // User is not subscribed, register a non-existent paywall when not connected to the internet
+  func test43() async throws {
+    skip("Skipping for now")
+    return
+
+    // Keep a reference to the value
+    let valueHolder = ValueDescriptionHolder()
+    Superwall.shared.register(event: "i_just_made_this_up_and_it_dne") {
+      DispatchQueue.main.async {
+        valueHolder.valueDescription = "Error - feature gate closure executed when it should not have been."
+      }
+    }
+
+    // Assert that paywall does not appear
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that the feature block does not get executed ("Value description not set")
+    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+  }
+
+  // User is subscribed, register a gated paywall when not connected to the internet
+  func test44() async throws {
+    skip("Skipping for now")
+    return
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+
+    // Keep a reference to the value
+    let valueHolder = ValueDescriptionHolder()
+    Superwall.shared.register(event: "register_gated_paywall") {
+      DispatchQueue.main.async {
+        valueHolder.valueDescription = "Feature gate closure executed"
+      }
+    }
+
+    // Assert that paywall does not appear
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that the feature block gets executed ("Feature gate closure executed")
+    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+  }
+
 
   /// Case: Airplane Mode
   /// Lifecycle handler

@@ -44,6 +44,11 @@ class RootViewController: UIViewController {
     let testCase: Testable = Constants.language == .swift ? UITests_Swift() : (UITests_ObjC() as! Testable)
     let configuration = testCase.configuration
 
+    #warning("handle this better")
+    if [41, 42, 43, 44].contains(testNumber) {
+      NetworkConnectivity.shared.allowNetworkRequests = false
+    }
+
     await configuration.setup()
 
     try? await performTest(testNumber, on: testCase)
