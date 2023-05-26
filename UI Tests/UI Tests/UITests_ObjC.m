@@ -28,7 +28,7 @@ TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeI
 TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
 
 #define TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, completionHandlerValue) \
-[weakSelf assertWithValue:value after:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
+[weakSelf assertWithValue:value after:delay testName:testName completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
 
 #define TEST_ASSERT_DELAY_VALUE(delay, value) \
 TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, ^{})
