@@ -16,10 +16,10 @@
 TEST_START_NUM_ASSERTS(1);
 
 #define TEST_START_NUM_ASSERTS(numAsserts) \
-__weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_create(); for (NSInteger i = 0; i < numAsserts; i++){ dispatch_group_enter(group); } dispatch_group_notify(group, dispatch_get_main_queue(), ^{ completionHandler(nil); });
+__weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_create(); for (NSInteger i = 0; i < numAsserts; i++){ dispatch_group_enter(group); } dispatch_group_notify(group, dispatch_get_main_queue(), ^{ completionHandler(nil); }); NSString *testName = [NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__];
 
 #define TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, captureAreaValue, completionHandlerValue) \
-[weakSelf assertAfter:delay testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] precision:SWKPrecisionValueDefault captureArea:captureAreaValue completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
+[weakSelf assertAfter:delay testName:testName precision:SWKPrecisionValueDefault captureArea:captureAreaValue completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
 
 #define TEST_ASSERT_DELAY_COMPLETION(delay, completionHandlerValue) \
 TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeIndicator], completionHandlerValue)
@@ -871,7 +871,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set the delegate's paywallViewControllerDidFinish block
   [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
-    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
@@ -906,7 +906,7 @@ static id<SWKTestConfiguration> kConfiguration;
           // Wait for the delegate function to be called
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
             // Assert didFinish paywall result value
-            NSString *value = paywallDidFinishResultValueHolder.valueDescription;
+            NSString *value = paywallDidFinishResultValueHolder.stringValue;
             TEST_ASSERT_VALUE(value);
           }];
         }];
@@ -928,7 +928,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set the delegate's paywallViewControllerDidFinish block
   [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
-    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
@@ -950,7 +950,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Wait for the delegate function to be called
       [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
         // Assert didFinish paywall result value
-        NSString *value = paywallDidFinishResultValueHolder.valueDescription;
+        NSString *value = paywallDidFinishResultValueHolder.stringValue;
         TEST_ASSERT_VALUE(value);
       }];
     }));
@@ -970,7 +970,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set the delegate's paywallViewControllerDidFinish block
   [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
-    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
@@ -994,7 +994,7 @@ static id<SWKTestConfiguration> kConfiguration;
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
           // Assert didFinish paywall result value
-          NSString *value = paywallDidFinishResultValueHolder.valueDescription;
+          NSString *value = paywallDidFinishResultValueHolder.stringValue;
           TEST_ASSERT_VALUE(value);
         }];
       }];
@@ -1015,7 +1015,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set the delegate's paywallViewControllerDidFinish block
   [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
-    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
@@ -1050,11 +1050,11 @@ static id<SWKTestConfiguration> kConfiguration;
           // Wait for the delegate function to be called
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
             // Assert paywall did finish result value
-            NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
+            NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
             TEST_ASSERT_VALUE(paywallDidFinishValue);
             
             // Modify the didFinish paywall did finish result value
-            paywallDidFinishResultValueHolder.valueDescription = @"empty value";
+            paywallDidFinishResultValueHolder.stringValue = @"empty value";
             
             // Swipe the paywall down to dismiss
             [weakSelf swipeDown];
@@ -1062,7 +1062,7 @@ static id<SWKTestConfiguration> kConfiguration;
             // Assert the paywall was dismissed
             TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
               // Assert paywall did finish result value
-              NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
+              NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
               TEST_ASSERT_VALUE(paywallDidFinishValue);
             }));
           }];
@@ -1085,7 +1085,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Set the delegate's paywallViewControllerDidFinish block
   [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
-    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
@@ -1109,11 +1109,11 @@ static id<SWKTestConfiguration> kConfiguration;
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
           // Assert paywall did finish result value ("restored")
-          NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
+          NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
           TEST_ASSERT_VALUE(paywallDidFinishValue);
 
           // Modify the paywall didFinish result value
-          paywallDidFinishResultValueHolder.valueDescription = @"empty value";
+          paywallDidFinishResultValueHolder.stringValue = @"empty value";
           
           // Swipe the paywall down to dismiss
           [weakSelf swipeDown];
@@ -1121,7 +1121,7 @@ static id<SWKTestConfiguration> kConfiguration;
           // Assert the paywall was dismissed
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Assert paywall did finish result value ("empty value")
-            NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
+            NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
             TEST_ASSERT_VALUE(paywallDidFinishValue);
           }));
         }];
@@ -1143,7 +1143,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Set the delegate's paywallViewControllerDidFinish block
   [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
-    paywallDidFinishResultValueHolder.valueDescription = [SWKPaywallResultValueObjcHelper description:result];
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
   }];
   
   // Get the paywall view controller
@@ -1166,7 +1166,7 @@ static id<SWKTestConfiguration> kConfiguration;
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
           // Assert paywall did finish result value ("declined")
-          NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.valueDescription;
+          NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
           TEST_ASSERT_VALUE(paywallDidFinishValue);
         }];
       }));
@@ -1174,37 +1174,89 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
-- (void)test41WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(2)
+- (void)executeRegisterFeatureClosureTestWithSubscribed:(BOOL)subscribed gated:(BOOL)gated testName:(NSString * _Nonnull)testNameOverride completionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+  testName = testNameOverride;
 
-  // Create a ValueDescriptionHolder to store the value
-  SWKValueDescriptionHolder *valueHolder = [SWKValueDescriptionHolder new];
+  if (subscribed) {
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+      dispatch_semaphore_signal(semaphore);
+    }];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+  }
 
-  // Register event with Superwall
-  [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+  NSString *event = gated ? @"register_gated_paywall" : @"register_nongated_paywall";
+
+  SWKValueDescriptionHolder *errorHandlerHolder = [SWKValueDescriptionHolder new];
+  errorHandlerHolder.stringValue = @"No";
+
+  SWKPaywallPresentationHandler *paywallPresentationHandler = [[SWKPaywallPresentationHandler alloc] init];
+  [paywallPresentationHandler onError:^(NSError * _Nonnull error) {
+    errorHandlerHolder.intValue += 1;
+    errorHandlerHolder.stringValue = @"Yes";
+  }];
+
+  SWKValueDescriptionHolder *featureClosureHolder = [SWKValueDescriptionHolder new];
+  featureClosureHolder.stringValue = @"No";
+
+  [[Superwall sharedInstance] registerWithEvent:event params:nil handler:paywallPresentationHandler feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
-      valueHolder.valueDescription = @"Error - feature gate closure executed when it should not have been.";
+      featureClosureHolder.intValue += 1;
+      featureClosureHolder.stringValue = @"Yes";
     });
   }];
 
-  // Assert that paywall does not appear
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-    // Assert that the feature block does not get executed ("Value description not set")
-    TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, valueHolder.valueDescription);
+    TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, errorHandlerHolder.description);
+    TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, featureClosureHolder.description);
   }));
 }
 
+// Unable to fetch config, not subscribed, and not gated.
+- (SWKTestOptions *)testOptions41 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (void)test41WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Unable to fetch config, not subscribed, and gated.
+- (SWKTestOptions *)testOptions42 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
 - (void)test42WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Skipping for now")
+  [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
+// Unable to fetch config, subscribed, and not gated.
+- (SWKTestOptions *)testOptions43 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
 - (void)test43WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Skipping for now")
+  [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
+// Unable to fetch config, subscribed, and gated.
+- (SWKTestOptions *)testOptions44 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
 - (void)test44WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Skipping for now")
+  [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
+
+// Fetched config, not subscribed, and not gated.
+- (void)test45WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, not subscribed, and gated.
+- (void)test46WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, subscribed, and not gated.
+- (void)test47WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, subscribed, and gated.
+- (void)test48WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
 
 
 //- (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {

@@ -32,6 +32,10 @@ class RootViewController: UIViewController {
         Task {
           await runTest(testNumber, from: action)
         }
+//      case .cacheSDK:
+//        Task {
+//          await cacheSDK(from: action)
+//        }
       default:
         return
     }
@@ -44,12 +48,16 @@ class RootViewController: UIViewController {
     let testCase: Testable = Constants.language == .swift ? UITests_Swift() : (UITests_ObjC() as! Testable)
     let configuration = testCase.configuration
 
-    #warning("handle this better")
-    if [41, 42, 43, 44].contains(testNumber) {
-      NetworkConnectivity.shared.allowNetworkRequests = false
-    }
+    // Get test options
+    let testOptions = testOptions(for: testNumber, on: testCase)
 
-    await configuration.setup()
+    // Set network connectivity preference
+    NetworkConnectivity.shared.allowNetworkRequests = testOptions.allowNetworkRequests
+
+    // Configure if set to automatically configure
+    if testOptions.automaticallyConfigure {
+      await configuration.setup()
+    }
 
     try? await performTest(testNumber, on: testCase)
 
@@ -57,6 +65,17 @@ class RootViewController: UIViewController {
 
     Communicator.shared.completed(action: action)
   }
+
+//  func cacheSDK(from action: Communicator.Action) async {
+//    // Create the test case instance depending on language.
+//    let testCase: Testable = Constants.language == .swift ? UITests_Swift() : (UITests_ObjC() as! Testable)
+//    let configuration = testCase.configuration
+//
+//    await configuration.setup()
+//    await configuration.tearDown()
+//
+//    Communicator.shared.completed(action: action)
+//  }
 
   override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
     return [.bottom]
@@ -66,4 +85,3 @@ class RootViewController: UIViewController {
     return true
   }
 }
-

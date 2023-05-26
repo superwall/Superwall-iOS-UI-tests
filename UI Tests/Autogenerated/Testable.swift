@@ -4,6 +4,7 @@ import Foundation
 
 @objc protocol Testable: AnyObject {
   var configuration: TestConfiguration { get }
+
   func test0() async throws
   func test1() async throws
   func test2() async throws
@@ -49,6 +50,126 @@ import Foundation
   func test42() async throws
   func test43() async throws
   func test44() async throws
+  func test45() async throws
+  func test46() async throws
+  func test47() async throws
+  func test48() async throws
+
+  @objc optional func testOptions0() -> TestOptions
+  @objc optional func testOptions1() -> TestOptions
+  @objc optional func testOptions2() -> TestOptions
+  @objc optional func testOptions3() -> TestOptions
+  @objc optional func testOptions4() -> TestOptions
+  @objc optional func testOptions5() -> TestOptions
+  @objc optional func testOptions6() -> TestOptions
+  @objc optional func testOptions7() -> TestOptions
+  @objc optional func testOptions8() -> TestOptions
+  @objc optional func testOptions9() -> TestOptions
+  @objc optional func testOptions10() -> TestOptions
+  @objc optional func testOptions11() -> TestOptions
+  @objc optional func testOptions12() -> TestOptions
+  @objc optional func testOptions13() -> TestOptions
+  @objc optional func testOptions14() -> TestOptions
+  @objc optional func testOptions15() -> TestOptions
+  @objc optional func testOptions16() -> TestOptions
+  @objc optional func testOptions17() -> TestOptions
+  @objc optional func testOptions18() -> TestOptions
+  @objc optional func testOptions19() -> TestOptions
+  @objc optional func testOptions20() -> TestOptions
+  @objc optional func testOptions21() -> TestOptions
+  @objc optional func testOptions22() -> TestOptions
+  @objc optional func testOptions23() -> TestOptions
+  @objc optional func testOptions24() -> TestOptions
+  @objc optional func testOptions25() -> TestOptions
+  @objc optional func testOptions26() -> TestOptions
+  @objc optional func testOptions27() -> TestOptions
+  @objc optional func testOptions28() -> TestOptions
+  @objc optional func testOptions29() -> TestOptions
+  @objc optional func testOptions30() -> TestOptions
+  @objc optional func testOptions31() -> TestOptions
+  @objc optional func testOptions32() -> TestOptions
+  @objc optional func testOptions33() -> TestOptions
+  @objc optional func testOptions34() -> TestOptions
+  @objc optional func testOptions35() -> TestOptions
+  @objc optional func testOptions36() -> TestOptions
+  @objc optional func testOptions37() -> TestOptions
+  @objc optional func testOptions38() -> TestOptions
+  @objc optional func testOptions39() -> TestOptions
+  @objc optional func testOptions40() -> TestOptions
+  @objc optional func testOptions41() -> TestOptions
+  @objc optional func testOptions42() -> TestOptions
+  @objc optional func testOptions43() -> TestOptions
+  @objc optional func testOptions44() -> TestOptions
+  @objc optional func testOptions45() -> TestOptions
+  @objc optional func testOptions46() -> TestOptions
+  @objc optional func testOptions47() -> TestOptions
+  @objc optional func testOptions48() -> TestOptions
+}
+
+extension RootViewController {
+  func testOptions(for testNumber: Int, on testable: Testable) -> TestOptions {
+    let testOptions: TestOptions? = {
+      switch testNumber {
+        case 0: return testable.testOptions0?()
+        case 1: return testable.testOptions1?()
+        case 2: return testable.testOptions2?()
+        case 3: return testable.testOptions3?()
+        case 4: return testable.testOptions4?()
+        case 5: return testable.testOptions5?()
+        case 6: return testable.testOptions6?()
+        case 7: return testable.testOptions7?()
+        case 8: return testable.testOptions8?()
+        case 9: return testable.testOptions9?()
+        case 10: return testable.testOptions10?()
+        case 11: return testable.testOptions11?()
+        case 12: return testable.testOptions12?()
+        case 13: return testable.testOptions13?()
+        case 14: return testable.testOptions14?()
+        case 15: return testable.testOptions15?()
+        case 16: return testable.testOptions16?()
+        case 17: return testable.testOptions17?()
+        case 18: return testable.testOptions18?()
+        case 19: return testable.testOptions19?()
+        case 20: return testable.testOptions20?()
+        case 21: return testable.testOptions21?()
+        case 22: return testable.testOptions22?()
+        case 23: return testable.testOptions23?()
+        case 24: return testable.testOptions24?()
+        case 25: return testable.testOptions25?()
+        case 26: return testable.testOptions26?()
+        case 27: return testable.testOptions27?()
+        case 28: return testable.testOptions28?()
+        case 29: return testable.testOptions29?()
+        case 30: return testable.testOptions30?()
+        case 31: return testable.testOptions31?()
+        case 32: return testable.testOptions32?()
+        case 33: return testable.testOptions33?()
+        case 34: return testable.testOptions34?()
+        case 35: return testable.testOptions35?()
+        case 36: return testable.testOptions36?()
+        case 37: return testable.testOptions37?()
+        case 38: return testable.testOptions38?()
+        case 39: return testable.testOptions39?()
+        case 40: return testable.testOptions40?()
+        case 41: return testable.testOptions41?()
+        case 42: return testable.testOptions42?()
+        case 43: return testable.testOptions43?()
+        case 44: return testable.testOptions44?()
+        case 45: return testable.testOptions45?()
+        case 46: return testable.testOptions46?()
+        case 47: return testable.testOptions47?()
+        case 48: return testable.testOptions48?()
+        default:
+          fatalError("Test options have not been defined.")
+      }
+    }()
+
+    guard let testOptions = testOptions else {
+      return .defaultOptions
+    }
+
+    return testOptions
+  }
 }
 
 extension RootViewController {
@@ -99,6 +220,10 @@ extension RootViewController {
       case 42: try await testable.test42()
       case 43: try await testable.test43()
       case 44: try await testable.test44()
+      case 45: try await testable.test45()
+      case 46: try await testable.test46()
+      case 47: try await testable.test47()
+      case 48: try await testable.test48()
       default:
         fatalError("Test has not been defined above.")
     }

@@ -560,12 +560,12 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-    // Assert that alert appears
+    // Assert that alert does not appear
     await assert(after: Constants.paywallPresentationDelay)
 
-    // Close the alert
-    let purchaseButton = CGPoint(x: 352, y: 65)
-    touch(purchaseButton)
+    // Close the paywall
+    let closeButton = CGPoint(x: 352, y: 65)
+    touch(closeButton)
 
     // Assert that nothing else appears
     await assert(after: Constants.paywallPresentationDelay)
@@ -655,7 +655,7 @@ final class UITests_Swift: NSObject, Testable {
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
-      paywallDidFinishResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.stringValue = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
@@ -690,7 +690,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall didFinish result value ("purchased")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
   // Finished purchase with a result type of `declined`
@@ -700,7 +700,7 @@ final class UITests_Swift: NSObject, Testable {
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
-      paywallDidFinishResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.stringValue = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
@@ -721,7 +721,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall result value ("declined")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
   // Finished purchase with a result type of `restored`
@@ -731,7 +731,7 @@ final class UITests_Swift: NSObject, Testable {
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { _, result, shouldDismiss in
-      paywallDidFinishResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.stringValue = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore", delegate: delegate) {
@@ -755,7 +755,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall result value
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
   // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away
@@ -766,7 +766,7 @@ final class UITests_Swift: NSObject, Testable {
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
 
     delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
-      paywallDidFinishResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.stringValue = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
@@ -801,10 +801,10 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall result value ("purchased")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
 
     // Modify the paywall result value
-    paywallDidFinishResultValueHolder.valueDescription = "empty value"
+    paywallDidFinishResultValueHolder.stringValue = "empty value"
 
     // Swipe the paywall down to dismiss
     swipeDown()
@@ -813,7 +813,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Assert paywall result value ("empty value")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
   // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
@@ -823,7 +823,7 @@ final class UITests_Swift: NSObject, Testable {
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
-      paywallDidFinishResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.stringValue = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore", delegate: delegate) {
@@ -847,10 +847,10 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall finished result value ("restored")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
 
     // Modify the paywall result value
-    paywallDidFinishResultValueHolder.valueDescription = "empty value"
+    paywallDidFinishResultValueHolder.stringValue = "empty value"
 
     // Swipe the paywall down to dismiss
     swipeDown()
@@ -859,7 +859,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Assert paywall result value ("empty value")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
   // Paywall disappeared with a result type of `declined` by swiping the paywall view controller away
@@ -869,7 +869,7 @@ final class UITests_Swift: NSObject, Testable {
 
     let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
     delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
-      paywallDidFinishResultValueHolder.valueDescription = result.description
+      paywallDidFinishResultValueHolder.stringValue = result.description
     }
 
     if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_data", delegate: delegate) {
@@ -892,90 +892,99 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallDelegateResponseDelay)
 
     // Assert paywall result value ("declined")
-    await assert(value: paywallDidFinishResultValueHolder.valueDescription)
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // User is not subscribed, register a gated paywall when not connected to the internet
+  // https://www.notion.so/superwall/No-internet-feature-gating-b383af91a0fc49d9b7402d1cf09ada6a?pvs=4
+  func executeRegisterFeatureClosureTest(subscribed: Bool, gated: Bool, testName: String = #function) async {
+    // Handle subscription status
+    if subscribed {
+      // Mock user as subscribed
+      await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    }
+
+    // Determine gating event
+    let event: String = {
+      if gated {
+        return "register_gated_paywall"
+      } else {
+        return "register_nongated_paywall"
+      }
+    }()
+
+    // Create paywall presentation handler
+    let errorHandlerHolder = ValueDescriptionHolder()
+    errorHandlerHolder.stringValue = "No"
+
+    let paywallPresentationHandler = PaywallPresentationHandler()
+    paywallPresentationHandler.onError { error in
+      errorHandlerHolder.intValue += 1
+      errorHandlerHolder.stringValue = "Yes"
+    }
+
+    // Keep a reference to the value
+    let featureClosureHolder = ValueDescriptionHolder()
+    featureClosureHolder.stringValue = "No"
+
+    Superwall.shared.register(event: event, handler: paywallPresentationHandler) {
+      DispatchQueue.main.async {
+        featureClosureHolder.intValue += 1
+        featureClosureHolder.stringValue = "Yes"
+      }
+    }
+
+    // Assert paywall visibility
+    await assert(after: Constants.paywallPresentationDelay, testName: testName)
+
+    // Assert error handler execution
+    await assert(value: errorHandlerHolder.description, after: Constants.paywallPresentationDelay, testName: testName)
+
+    // Assert feature closure execution
+    await assert(value: featureClosureHolder.description, after: Constants.paywallPresentationDelay, testName: testName)
+  }
+
+  // Unable to fetch config, not subscribed, and not gated.
+  func testOptions41() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
   func test41() async throws {
-    skip("Skipping for now")
-    return
-
-    // Keep a reference to the value
-    let valueHolder = ValueDescriptionHolder()
-    Superwall.shared.register(event: "register_gated_paywall") {
-      DispatchQueue.main.async {
-        valueHolder.valueDescription = "Error - feature gate closure executed when it should not have been."
-      }
-    }
-
-    // Assert that paywall does not appear
-    await assert(after: Constants.paywallPresentationDelay)
-
-    // Assert that the feature block does not get executed ("Value description not set")
-    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+    await executeRegisterFeatureClosureTest(subscribed: false, gated: false)
   }
 
-  // User is not subscribed, register a non-gated paywall when not connected to the internet
+  // Unable to fetch config, not subscribed, and gated.
+  func testOptions42() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
   func test42() async throws {
-    skip("Skipping for now")
-    return
-
-    // Keep a reference to the value
-    let valueHolder = ValueDescriptionHolder()
-    Superwall.shared.register(event: "register_nongated_paywall") {
-      DispatchQueue.main.async {
-        valueHolder.valueDescription = "Error - feature gate closure executed when it should not have been."
-      }
-    }
-
-    // Assert that paywall does not appear
-    await assert(after: Constants.paywallPresentationDelay)
-
-    // Assert that the feature block does not get executed ("Value description not set")
-    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+    await executeRegisterFeatureClosureTest(subscribed: false, gated: true)
   }
 
-  // User is not subscribed, register a non-existent paywall when not connected to the internet
+  // Unable to fetch config, subscribed, and not gated.
+  func testOptions43() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
   func test43() async throws {
-    skip("Skipping for now")
-    return
-
-    // Keep a reference to the value
-    let valueHolder = ValueDescriptionHolder()
-    Superwall.shared.register(event: "i_just_made_this_up_and_it_dne") {
-      DispatchQueue.main.async {
-        valueHolder.valueDescription = "Error - feature gate closure executed when it should not have been."
-      }
-    }
-
-    // Assert that paywall does not appear
-    await assert(after: Constants.paywallPresentationDelay)
-
-    // Assert that the feature block does not get executed ("Value description not set")
-    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+    await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
-  // User is subscribed, register a gated paywall when not connected to the internet
+  // Unable to fetch config, subscribed, and gated.
+  func testOptions44() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
   func test44() async throws {
-    skip("Skipping for now")
-    return
+    await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
+  }
 
-    // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+  // Fetched config, not subscribed, and not gated.
+  func test45() async throws {
+    await executeRegisterFeatureClosureTest(subscribed: false, gated: false)
+  }
 
-    // Keep a reference to the value
-    let valueHolder = ValueDescriptionHolder()
-    Superwall.shared.register(event: "register_gated_paywall") {
-      DispatchQueue.main.async {
-        valueHolder.valueDescription = "Feature gate closure executed"
-      }
-    }
+  // Fetched config, not subscribed, and gated.
+  func test46() async throws {
+    await executeRegisterFeatureClosureTest(subscribed: false, gated: true)
+  }
 
-    // Assert that paywall does not appear
-    await assert(after: Constants.paywallPresentationDelay)
+  //   Fetched config, subscribed, and not gated.
+  func test47() async throws {
+    await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
+  }
 
-    // Assert that the feature block gets executed ("Feature gate closure executed")
-    await assert(value: valueHolder.valueDescription, after: Constants.paywallPresentationDelay)
+  // Fetched config, subscribed, and gated.
+  func test48() async throws {
+    await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
 
 

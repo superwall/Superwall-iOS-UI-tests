@@ -109,24 +109,6 @@ extension Configuration {
   }
 }
 
-//// MARK: - Mocks
-//
-//class MockDelegate: SuperwallDelegate {
-//  var observers: [(SuperwallEventInfo) -> Void] = []
-//
-//  public func addObserver(_ observer: @escaping (SuperwallEventInfo) -> Void) {
-//    observers.append(observer)
-//  }
-//
-//  public func removeObservers() {
-//    observers.removeAll()
-//  }
-//
-//  public func didTrackSuperwallEventInfo(_ info: SuperwallEventInfo) {
-//    observers.forEach({ $0(info) })
-//  }
-//}
-
 // MARK: - UITests_Swift convenience
 
 extension UITests_Swift {

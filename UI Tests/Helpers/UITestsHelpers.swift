@@ -17,6 +17,39 @@ public protocol TestConfiguration: NSObjectProtocol {
   func mockSubscribedUser(productIdentifier: String) async
 }
 
+@objc(SWKTestOptions)
+@objcMembers
+public class TestOptions: NSObject {
+  static let defaultOptions: TestOptions = TestOptions()
+
+  let allowNetworkRequests: Bool
+  let automaticallyConfigure: Bool
+  let requiresFreshInstall: Bool
+
+  init(allowNetworkRequests: Bool = true, automaticallyConfigure: Bool = true, requiresFreshInstall: Bool = false) {
+    self.allowNetworkRequests = allowNetworkRequests
+    self.automaticallyConfigure = automaticallyConfigure
+    self.requiresFreshInstall = requiresFreshInstall
+    super.init()
+  }
+
+  static func testOptions(allowNetworkRequests: Bool) -> TestOptions {
+    return TestOptions(allowNetworkRequests: allowNetworkRequests)
+  }
+
+  static func testOptions(automaticallyConfigure: Bool) -> TestOptions {
+    return TestOptions(automaticallyConfigure: automaticallyConfigure)
+  }
+
+  static func testOptions(requiresFreshInstall: Bool) -> TestOptions {
+    return TestOptions(requiresFreshInstall: requiresFreshInstall)
+  }
+
+  static func testOptions(allowNetworkRequests: Bool, automaticallyConfigure: Bool, requiresFreshInstall: Bool) -> TestOptions {
+    return TestOptions(allowNetworkRequests: allowNetworkRequests, automaticallyConfigure: automaticallyConfigure, requiresFreshInstall: requiresFreshInstall)
+  }
+}
+
 // MARK: - UITests
 
 public extension NSObject {
@@ -169,7 +202,12 @@ public extension NSObject {
 
 @objc(SWKValueDescriptionHolder)
 class ValueDescriptionHolder: NSObject {
-  @objc var valueDescription: String = "Value description not set"
+  @objc var stringValue: String = "Value description not set"
+  @objc var intValue: Int = 0
+
+  override var description: String {
+    return "\(stringValue)-\(intValue)"
+  }
 }
 
 // MARK: - PresentationResult

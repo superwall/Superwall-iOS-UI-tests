@@ -72,7 +72,7 @@ extension StoreKitHelper {
 extension StoreKitHelper: SKProductsRequestDelegate {
   public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
     guard response.products.isEmpty == false else {
-      assertionFailure("Failed to receive products in StoreKit helper")
+      assertionFailure("Failed to receive products in StoreKit helper. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
       return
     }
 
