@@ -16,4 +16,13 @@ jobs:
     steps:
       - name: Run curl commands
         run: |
-          curl ${{ secrets.BITRISE_URL }} -L --data '{"hook_info":{"type":"bitrise","build_trigger_token":"${{ secrets.BITRISE_TOKEN }}"},"build_params":{"branch":"main","workflow_id":"primary","environments":[{"mapped_to":"IOS_SDK_COMMIT_HASH","value":"${{ github.event.client_payload.commit }}","is_expand":true},{"mapped_to":"IOS_SDK_SCHEME","value":"${{ matrix.scheme }}","is_expand":true},{"mapped_to":"IOS_SDK_AUTHOR","value":"${{ github.event.client_payload.author }}","is_expand":true},{"mapped_to":"IOS_SDK_COMMIT_MESSAGE","value":"${{ github.event.client_payload.message }}","is_expand":true}]},"triggered_by":"curl"}'
+          PAYLOAD=$(jq -n \
+                    --arg btt "${{ secrets.BITRISE_TOKEN }}" \
+                    --arg branch "main" \
+                    --arg wid "primary" \
+                    --arg hash "${{ github.event.client_payload.commit }}" \
+                    --arg scheme "${{ matrix.scheme }}" \
+                    --arg author "${{ github.event.client_payload.author }}" \
+                    --arg msg "${{ github.event.client_payload.message }}" \
+                    '{hook_info: {type: "bitrise", build_trigger_token: $btt}, build_params: {branch: $branch, workflow_id: $wid, environments: [{mapped_to: "IOS_SDK_COMMIT_HASH", value: $hash, is_expand: true}, {mapped_to: "IOS_SDK_SCHEME", value: $scheme, is_expand: true}, {mapped_to: "IOS_SDK_AUTHOR", value: $author, is_expand: true}, {mapped_to: "IOS_SDK_COMMIT_MESSAGE", value: $msg, is_expand: true}]}, triggered_by: "curl"}')
+          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "${{ secrets.BITRISE_URL }}"
