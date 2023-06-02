@@ -694,15 +694,14 @@ static id<SWKTestConfiguration> kConfiguration;
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
         CGPoint okButton = CGPointMake(196, 495);
         [weakSelf touch:okButton];
-        
-        // Wait for dismiss
-        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+
+        [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
           // Try to present paywall again
           [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
-          
+
           // Ensure the paywall doesn't present.
           TEST_ASSERT_DELAY(kPaywallPresentationDelay);
-        }));
+        }];
       }];
     }));
   }));
