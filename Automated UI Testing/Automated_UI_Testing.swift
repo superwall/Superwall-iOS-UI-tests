@@ -14,7 +14,7 @@ class Automated_UI_Testing: XCTestCase {
     let app = XCUIApplication()
     return app
   }()
-  var skip: XCTSkip? = nil
+  var assertionData: AssertionData!
 
   struct Constants {
     typealias LaunchEnvironment = [String: String]
@@ -42,7 +42,11 @@ class Automated_UI_Testing: XCTestCase {
         Communicator.shared.completed(action: action)
 
       case .skip(let message):
-        skip = XCTSkip(message)
+        assertionData.skip = XCTSkip(message)
+        Communicator.shared.completed(action: action)
+
+      case .fail(let message):
+        assertionData.failure = XCTIssue(type: .assertionFailure, compactDescription: message)
         Communicator.shared.completed(action: action)
 
       case .touch(let point):
@@ -110,14 +114,8 @@ class Automated_UI_Testing: XCTestCase {
   }
 
   func performSDKTest(number: Int) async throws {
-    // Handle 5 minute timeout
-    let timeoutTask = Task {
-      await Task.sleep(timeInterval: 300)
-      guard Task.isCancelled == false else { return }
-      #warning("log failure better")
-      XCTFail("Timeout for test #\(number)")
-      await terminateApp()
-    }
+    // Store assertion data
+    assertionData = AssertionData()
 
     #warning("change to async sequence")
     let observer = NotificationCenter.default.addObserver(forName: .receivedActionRequest, object: nil, queue: .main) { [weak self] notification in
@@ -137,20 +135,28 @@ class Automated_UI_Testing: XCTestCase {
 
     await Communicator.shared.send(.runTest(number: number))
 
-    // Stop timeout
-    timeoutTask.cancel()
-
     // Clean up StoreKit
     resetStoreKitSession()
 
     // Stop listening for action requests
     NotificationCenter.default.removeObserver(observer)
 
-    if let skip {
+    if let failure = assertionData.failure {
+      XCTFail(failure.compactDescription)
+    }
+    else if let skip = assertionData.skip {
       throw skip
     }
     
     // Terminate app after test
     await terminateApp()
+
+    // Reset assertion data
+    assertionData = AssertionData()
   }
+}
+
+struct AssertionData {
+  var skip: XCTSkip? = nil
+  var failure: XCTIssue? = nil
 }
