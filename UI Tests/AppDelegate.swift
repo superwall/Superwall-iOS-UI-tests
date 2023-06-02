@@ -6,11 +6,16 @@
 //
 
 import UIKit
+import UXCam
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+    // Configure recordings
+    configureUXCam()
+
     // Override point for customization after application launch.
     Communicator.shared.start()
 
@@ -23,6 +28,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     NetworkInterceptor.shared.startRecording()
     
     return true
+  }
+
+  func configureUXCam() {
+//    let configuration = UXCamConfiguration(appKey: "8e6x26usp1g3tpb")
+//    configuration.enableNetworkLogging = true
+//    configuration.enableMultiSessionRecord = false
+//
+//    UXCam.setUserIdentity("iOS-UI-test")
+//    UXCam.optIntoSchematicRecordings()
+//    UXCam.start(with: configuration)
   }
 
   // MARK: UISceneSession Lifecycle

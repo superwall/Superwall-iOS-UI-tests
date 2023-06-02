@@ -149,7 +149,7 @@ class Automated_UI_Testing: XCTestCase {
     if let skip {
       throw skip
     }
-
+    
     // Terminate app after test
     await terminateApp()
   }

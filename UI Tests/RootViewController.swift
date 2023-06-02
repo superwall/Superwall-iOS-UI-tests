@@ -7,6 +7,7 @@
 
 import UIKit
 import SuperwallKit
+import UXCam
 
 @objc(SWKRootViewController)
 class RootViewController: UIViewController {
@@ -63,6 +64,9 @@ class RootViewController: UIViewController {
 
     await configuration.tearDown()
 
+    //
+    await UXCam.uploadUXCamData()
+
     Communicator.shared.completed(action: action)
   }
 
@@ -83,5 +87,15 @@ class RootViewController: UIViewController {
 
   override var prefersHomeIndicatorAutoHidden: Bool {
     return true
+  }
+}
+
+extension UXCam {
+  static func uploadUXCamData() async {
+    return await withCheckedContinuation { continuation in
+      UXCam.stopSessionAndUploadData {
+        continuation.resume()
+      }
+    }
   }
 }
