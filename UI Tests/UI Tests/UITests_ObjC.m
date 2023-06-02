@@ -215,7 +215,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -496,7 +496,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -876,7 +876,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -933,7 +933,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -975,7 +975,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -1020,7 +1020,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationPageSheet;
@@ -1090,7 +1090,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationPageSheet;
@@ -1148,7 +1148,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
-    UIViewController *viewController = result.paywallViewController;
+    UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
         viewController.modalPresentationStyle = UIModalPresentationPageSheet;
