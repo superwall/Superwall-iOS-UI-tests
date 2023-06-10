@@ -1173,85 +1173,100 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+- (void)handleSubscriptionMockingWithSubscribed:(BOOL)subscribed completionHandler:(void (^ _Nonnull)(void))completionHandler {
+  if (!subscribed) {
+    completionHandler();
+    return;
+  }
+
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:completionHandler];
+}
+
 - (void)executeRegisterFeatureClosureTestWithSubscribed:(BOOL)subscribed gated:(BOOL)gated testName:(NSString * _Nonnull)testNameOverride completionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START_NUM_ASSERTS(3)
   testName = testNameOverride;
 
-  if (subscribed) {
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
-      dispatch_semaphore_signal(semaphore);
+  // Handle subscription status before configuring to ensure that the receipt with automatic setup exists.
+  [self handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
+
+    // Now configure the SDK
+    [weakSelf.configuration setupWithCompletionHandler:^{
+      // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
+      [weakSelf handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
+        NSString *event = gated ? @"register_gated_paywall" : @"register_nongated_paywall";
+
+        SWKValueDescriptionHolder *errorHandlerHolder = [SWKValueDescriptionHolder new];
+        errorHandlerHolder.stringValue = @"No";
+
+        SWKPaywallPresentationHandler *paywallPresentationHandler = [[SWKPaywallPresentationHandler alloc] init];
+        [paywallPresentationHandler onError:^(NSError * _Nonnull error) {
+          errorHandlerHolder.intValue += 1;
+          errorHandlerHolder.stringValue = @"Yes";
+        }];
+
+        SWKValueDescriptionHolder *featureClosureHolder = [SWKValueDescriptionHolder new];
+        featureClosureHolder.stringValue = @"No";
+
+        [[Superwall sharedInstance] registerWithEvent:event params:nil handler:paywallPresentationHandler feature:^{
+          dispatch_async(dispatch_get_main_queue(), ^{
+            featureClosureHolder.intValue += 1;
+            featureClosureHolder.stringValue = @"Yes";
+          });
+        }];
+
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+          TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, errorHandlerHolder.description);
+          TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, featureClosureHolder.description);
+        }));
+      }];
     }];
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  }
-
-  NSString *event = gated ? @"register_gated_paywall" : @"register_nongated_paywall";
-
-  SWKValueDescriptionHolder *errorHandlerHolder = [SWKValueDescriptionHolder new];
-  errorHandlerHolder.stringValue = @"No";
-
-  SWKPaywallPresentationHandler *paywallPresentationHandler = [[SWKPaywallPresentationHandler alloc] init];
-  [paywallPresentationHandler onError:^(NSError * _Nonnull error) {
-    errorHandlerHolder.intValue += 1;
-    errorHandlerHolder.stringValue = @"Yes";
   }];
-
-  SWKValueDescriptionHolder *featureClosureHolder = [SWKValueDescriptionHolder new];
-  featureClosureHolder.stringValue = @"No";
-
-  [[Superwall sharedInstance] registerWithEvent:event params:nil handler:paywallPresentationHandler feature:^{
-    dispatch_async(dispatch_get_main_queue(), ^{
-      featureClosureHolder.intValue += 1;
-      featureClosureHolder.stringValue = @"Yes";
-    });
-  }];
-
-  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-    TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, errorHandlerHolder.description);
-    TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, featureClosureHolder.description);
-  }));
 }
 
 // Unable to fetch config, not subscribed, and not gated.
-- (SWKTestOptions *)testOptions41 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (SWKTestOptions *)testOptions41 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO automaticallyConfigure:NO]; }
 - (void)test41WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Unable to fetch config, not subscribed, and gated.
-- (SWKTestOptions *)testOptions42 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (SWKTestOptions *)testOptions42 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO automaticallyConfigure:NO]; }
 - (void)test42WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Unable to fetch config, subscribed, and not gated.
-- (SWKTestOptions *)testOptions43 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (SWKTestOptions *)testOptions43 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO automaticallyConfigure:NO]; }
 - (void)test43WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Unable to fetch config, subscribed, and gated.
-- (SWKTestOptions *)testOptions44 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (SWKTestOptions *)testOptions44 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO automaticallyConfigure:NO]; }
 - (void)test44WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Fetched config, not subscribed, and not gated.
+- (SWKTestOptions *)testOptions45 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
 - (void)test45WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Fetched config, not subscribed, and gated.
+- (SWKTestOptions *)testOptions46 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
 - (void)test46WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:NO gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Fetched config, subscribed, and not gated.
+- (SWKTestOptions *)testOptions47 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
 - (void)test47WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Fetched config, subscribed, and gated.
+- (SWKTestOptions *)testOptions48 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
 - (void)test48WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }

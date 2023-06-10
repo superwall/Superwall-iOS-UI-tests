@@ -897,7 +897,16 @@ final class UITests_Swift: NSObject, Testable {
 
   // https://www.notion.so/superwall/No-internet-feature-gating-b383af91a0fc49d9b7402d1cf09ada6a?pvs=4
   func executeRegisterFeatureClosureTest(subscribed: Bool, gated: Bool, testName: String = #function) async {
-    // Handle subscription status
+    // Handle subscription status before configuring to ensure that the receipt with automatic setup exists
+    if subscribed {
+      // Mock user as subscribed
+      await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    }
+
+    // Now configure the SDK
+    await configuration.setup()
+
+    // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration
     if subscribed {
       // Mock user as subscribed
       await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -944,45 +953,49 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Unable to fetch config, not subscribed, and not gated.
-  func testOptions41() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
+  func testOptions41() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test41() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: false)
   }
 
   // Unable to fetch config, not subscribed, and gated.
-  func testOptions42() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
+  func testOptions42() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test42() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: true)
   }
 
   // Unable to fetch config, subscribed, and not gated.
-  func testOptions43() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
+  func testOptions43() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test43() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
   // Unable to fetch config, subscribed, and gated.
-  func testOptions44() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
+  func testOptions44() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test44() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
 
   // Fetched config, not subscribed, and not gated.
+  func testOptions45() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test45() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: false)
   }
 
   // Fetched config, not subscribed, and gated.
+  func testOptions46() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test46() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: true)
   }
 
-  //   Fetched config, subscribed, and not gated.
+  // Fetched config, subscribed, and not gated.
+  func testOptions47() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test47() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
   // Fetched config, subscribed, and gated.
+  func testOptions48() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test48() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }

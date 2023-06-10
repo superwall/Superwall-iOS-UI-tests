@@ -38,6 +38,10 @@ public class TestOptions: NSObject {
     return TestOptions(allowNetworkRequests: allowNetworkRequests)
   }
 
+  static func testOptions(allowNetworkRequests: Bool, automaticallyConfigure: Bool) -> TestOptions {
+    return TestOptions(allowNetworkRequests: allowNetworkRequests, automaticallyConfigure: automaticallyConfigure)
+  }
+
   static func testOptions(automaticallyConfigure: Bool) -> TestOptions {
     return TestOptions(automaticallyConfigure: automaticallyConfigure)
   }
