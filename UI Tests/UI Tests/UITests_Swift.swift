@@ -501,8 +501,15 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Case: Subscribed user, register event without a gating handler
   /// Result: paywall should NOT display
+  func testOptions24() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test24() async throws {
-    // Mock user as subscribed
+    // Mock user as subscribed before configure so that receipts are in place
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+
+    // Configure SDK
+    await configuration.setup()
+
+    // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Register event
@@ -573,8 +580,15 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Case: Subscribed user, register event with a gating handler
   /// Result: paywall should NOT display, code in gating closure should execute
+  func testOptions27() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test27() async throws {
-    // Mock user as `subscribed`
+    // Mock user as subscribed before configure so that receipts are in place
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+
+    // Configure SDK
+    await configuration.setup()
+
+    // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     Superwall.shared.register(event: "register_gated_paywall") {

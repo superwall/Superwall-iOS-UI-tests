@@ -655,16 +655,27 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Case: Subscribed user, register event without a gating handler
 /// Result: paywall should NOT display
+- (SWKTestOptions *)testOptions24 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
 - (void)test24WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
-  // Mock user as subscribed
+  // Mock user as subscribed before configure so that receipts are in place
   [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
-    // Register event
-    [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
-    
-    // Assert that paywall DOES not appear
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+    // Configure SDK
+    [weakSelf.configuration setupWithCompletionHandler:^{
+
+      // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
+      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+
+        // Register event
+        [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+
+        // Assert that paywall DOES not appear
+        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+      }];
+    }];
   }];
 }
 
@@ -737,25 +748,35 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Case: Subscribed user, register event with a gating handler
 /// Result: paywall should NOT display, code in gating closure should execute
+- (SWKTestOptions *)testOptions27 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
 - (void)test27WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
-  // Mock user as `subscribed`
+  // Mock user as subscribed before configure so that receipts are in place
   [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
-    // Register event and present an alert controller
-    [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
-      dispatch_async(dispatch_get_main_queue(), ^{
-        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
-                                                                                 message:@"This is an alert message"
-                                                                          preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
-        [alertController addAction:action];
-        [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
-      });
+
+    // Configure SDK
+    [weakSelf.configuration setupWithCompletionHandler:^{
+
+      // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
+      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+
+        // Register event and present an alert controller
+        [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+          dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                                     message:@"This is an alert message"
+                                                                              preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+            [alertController addAction:action];
+            [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+          });
+        }];
+
+        // Assert that alert controller appears
+        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      }];
     }];
-    
-    // Assert that alert controller appears
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
   }];
 }
 

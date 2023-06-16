@@ -90,15 +90,12 @@ class Automated_UI_Testing: XCTestCase {
 
   func setupStoreKitSession() {
     storeKitTestSession = try! SKTestSession(configurationFileNamed: "Products")
-  }
-
-  func resetStoreKitSession() {
     storeKitTestSession.resetToDefaultState()
     storeKitTestSession.clearTransactions()
   }
 
   @MainActor
-  func deleteApp() {
+  func deleteApp() async {
     let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
     let icon = springboard.icons["UI Tests"]
     guard icon.exists else {
@@ -109,8 +106,16 @@ class Automated_UI_Testing: XCTestCase {
     icon.press(forDuration: 1.1);
 
     springboard.collectionViews.buttons["Remove App"].tap()
+
+    await Task.sleep(timeInterval: 1.0)
+
     springboard.alerts["Remove “UI Tests”?"].scrollViews.otherElements.buttons["Delete App"].tap()
+
+    await Task.sleep(timeInterval: 1.0)
+
     springboard.alerts["Delete “UI Tests”?"].scrollViews.otherElements.buttons["Delete"].tap()
+
+    await Task.sleep(timeInterval: 1.0)
   }
 
   func performSDKTest(number: Int) async throws {
@@ -123,8 +128,8 @@ class Automated_UI_Testing: XCTestCase {
       self?.handle(action)
     }
 
-    // Check here if app needs fresh install
-//    await deleteApp()
+    // Reset app to avoid anything cached.
+    await deleteApp()
 
     // Must setup store kit session before app is install
     setupStoreKitSession()
@@ -134,9 +139,6 @@ class Automated_UI_Testing: XCTestCase {
     await launchApp()
 
     await Communicator.shared.send(.runTest(number: number))
-
-    // Clean up StoreKit
-    resetStoreKitSession()
 
     // Stop listening for action requests
     NotificationCenter.default.removeObserver(observer)
