@@ -832,16 +832,23 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 // Presentation result: `userIsSubscribed`
+- (SWKTestOptions *)testOptions32 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:YES automaticallyConfigure:NO]; }
 - (void)test32WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
-  
-  // Mock user as subscribed
-  [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
-    // Get the presentation result for the specified event
-    [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
-      // Assert the value of the result's description
-      NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-      TEST_ASSERT_VALUE(value);
+
+  // Handle subscription status before configuring to ensure that the receipt with automatic setup exists.
+  [self handleSubscriptionMockingWithSubscribed:true completionHandler:^{
+    // Now configure the SDK
+    [weakSelf.configuration setupWithCompletionHandler:^{
+      // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
+      [weakSelf handleSubscriptionMockingWithSubscribed:true completionHandler:^{
+        // Get the presentation result for the specified event
+        [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+          // Assert the value of the result's description
+          NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+          TEST_ASSERT_VALUE(value);
+        }];
+      }];
     }];
   }];
 }
