@@ -38,11 +38,11 @@ extension Configuration {
       #warning("can probably remove these checks now")
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
-
-      Superwall.configure(apiKey: Constants.apiKey)
-
+      
       // Begin fetching products for use in other test cases
       await StoreKitHelper.shared.fetchCustomProducts()
+
+      Superwall.configure(apiKey: Constants.apiKey)
     }
 
     func tearDown() async {

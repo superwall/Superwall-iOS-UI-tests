@@ -630,8 +630,15 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Presentation result: `userIsSubscribed`
+  func testOptions32() -> TestOptions { return TestOptions(allowNetworkRequests: true, automaticallyConfigure: false) }
   func test32() async {
     // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+
+    // Now configure the SDK
+    await configuration.setup()
+
+    // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
