@@ -60,12 +60,13 @@ static BOOL kHasConfigured = NO;
   if (SWKConfigurationState.hasConfigured) { return; }
   SWKConfigurationState.hasConfigured = YES;
 
-  [Superwall configureWithApiKey:SWKConstants.apiKey];
 
   // Begin fetching products for use in other test cases
   [[SWKStoreKitHelper sharedInstance] fetchCustomProductsWithCompletionHandler:^{
+    [Superwall configureWithApiKey:SWKConstants.apiKey];
     completionHandler();
   }];
+
 }
 
 - (void)tearDownWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
