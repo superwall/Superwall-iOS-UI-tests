@@ -9,7 +9,7 @@ import UIKit
 import SuperwallKit
 
 final class UITests_Swift: NSObject, Testable {
-  // Uses the identify function. Should see the name 'Jack' in the paywall.
+  /// Uses the identify function. Should see the name 'Jack' in the paywall.
   func test0() async throws {
     Superwall.shared.identify(userId: "test0")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
@@ -18,7 +18,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Uses the identify function. Should see the name 'Kate' in the paywall.
+  /// Uses the identify function. Should see the name 'Kate' in the paywall.
   func test1() async throws {
     // Set identity
     Superwall.shared.identify(userId: "test1a")
@@ -32,7 +32,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Calls `reset()`. No first name should be displayed.
+  /// Calls `reset()`. No first name should be displayed.
   func test2() async throws {
     // Set identity
     Superwall.shared.identify(userId: "test2")
@@ -44,7 +44,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Calls `reset()` multiple times. No first name should be displayed.
+  /// Calls `reset()` multiple times. No first name should be displayed.
   func test3() async throws {
     // Set identity
     Superwall.shared.identify(userId: "test3")
@@ -57,7 +57,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
+  /// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
   func test4() async throws {
     // Present the paywall.
     Superwall.shared.register(event: "present_video")
@@ -73,7 +73,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: 2.0, precision: .video)
   }
 
-  // Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
+  /// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
   func test5() async throws {
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
@@ -103,7 +103,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
   func test6() async throws {
     // Present the paywall.
     Superwall.shared.register(event: "present_products")
@@ -111,7 +111,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
+  /// Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
   func test7() async throws {
     Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
@@ -129,7 +129,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
+  /// Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
   func test8() async throws {
     Superwall.shared.identify(userId: "test7")
     Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 12 ])
@@ -138,7 +138,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Present regardless of status
+  /// Present regardless of status
   func test9() async throws {
     // Mock user as subscribed
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -148,7 +148,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
   func test10() async throws {
     // Present the paywall.
     Superwall.shared.register(event: "present_products")
@@ -210,7 +210,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Clear a specific user attribute.
+  /// Clear a specific user attribute.
   func test11() async throws {
     Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
     Superwall.shared.register(event: "present_data")
@@ -234,19 +234,19 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Test trigger: off
+  /// Test trigger: off
   func test12() async throws {
     Superwall.shared.register(event: "keep_this_trigger_off")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Test trigger: not in the dashboard
+  /// Test trigger: not in the dashboard
   func test13() async throws {
     Superwall.shared.register(event: "i_just_made_this_up_and_it_dne")
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Test trigger: not-allowed standard event (paywall_close)
+  /// Test trigger: not-allowed standard event (paywall_close)
   func test14() async throws {
     // Show a paywall
     Superwall.shared.register(event: "present_always")
@@ -261,7 +261,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Clusterfucks by Jake™
+  /// Clusterfucks by Jake™
   func test15() async throws {
     Superwall.shared.register(event: "present_always")
     Superwall.shared.register(event: "present_always", params: ["some_param_1": "hello"])
@@ -292,7 +292,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Present an alert on Superwall.presentedViewController from the onPresent callback
+  /// Present an alert on Superwall.presentedViewController from the onPresent callback
   func test16() async throws {
     let handler = PaywallPresentationHandler()
     handler.onPresent { _ in
@@ -309,7 +309,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, precision: .transparency)
   }
 
-  // Clusterfucks by Jake™
+  /// Clusterfucks by Jake™
   func test17() async throws {
     Superwall.shared.identify(userId: "test0")
     Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
@@ -343,7 +343,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Open In-App Safari view controller from manually presented paywall
+  /// Open In-App Safari view controller from manually presented paywall
   func test18() async throws {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -373,7 +373,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Clusterfucks by Jake™
+  /// Clusterfucks by Jake™
   func test19() async throws {
     // Set identity
     Superwall.shared.identify(userId: "test19a")
@@ -507,7 +507,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Configure SDK
-    await configuration.setup(app: .default)
+    await configuration.setup()
 
     // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -586,7 +586,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Configure SDK
-    await configuration.setup(app: .default)
+    await configuration.setup()
 
     // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -604,26 +604,26 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Presentation result: `paywall`
+  /// Presentation result: `paywall`
   func test28() async {
     let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
     await assert(value: result.description)
   }
 
-  // Presentation result: `noRuleMatch`
+  /// Presentation result: `noRuleMatch`
   func test29() async {
     Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
     let result = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user")
     await assert(value: result.description)
   }
 
-  // Presentation result: `eventNotFound`
+  /// Presentation result: `eventNotFound`
   func test30() async {
     let result = await Superwall.shared.getPresentationResult(forEvent: "some_random_not_found_event")
     await assert(value: result.description)
   }
 
-  // Presentation result: `holdOut`
+  /// Presentation result: `holdOut`
   func test31() async {
     let result = await Superwall.shared.getPresentationResult(forEvent: "holdout")
     await assert(value: result.description)
@@ -636,7 +636,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Now configure the SDK
-    await configuration.setup(app: .default)
+    await configuration.setup()
 
     // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -669,7 +669,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  // Finished purchase with a result type of `purchased`
+  /// Finished purchase with a result type of `purchased`
   func test35() async {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -714,7 +714,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // Finished purchase with a result type of `declined`
+  /// Finished purchase with a result type of `declined`
   func test36() async throws {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -745,7 +745,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // Finished purchase with a result type of `restored`
+  /// Finished purchase with a result type of `restored`
   func test37() async throws {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -779,7 +779,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // Finished purchase with a result type of `purchased` and then swiping the paywall view controller away
+  /// Finished purchase with a result type of `purchased` and then swiping the paywall view controller away
   func test38() async {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -837,7 +837,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
+  /// Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
   func test39() async throws {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -883,7 +883,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // Paywall disappeared with a result type of `declined` by swiping the paywall view controller away
+  /// Paywall disappeared with a result type of `declined` by swiping the paywall view controller away
   func test40() async throws {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
@@ -916,7 +916,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  // https://www.notion.so/superwall/No-internet-feature-gating-b383af91a0fc49d9b7402d1cf09ada6a?pvs=4
+  /// https://www.notion.so/superwall/No-internet-feature-gating-b383af91a0fc49d9b7402d1cf09ada6a?pvs=4
   func executeRegisterFeatureClosureTest(subscribed: Bool, gated: Bool, testName: String = #function) async {
     // Handle subscription status before configuring to ensure that the receipt with automatic setup exists
     if subscribed {
@@ -925,7 +925,7 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     // Now configure the SDK
-    await configuration.setup(app: .default)
+    await configuration.setup()
 
     // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration
     if subscribed {
@@ -973,77 +973,71 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: featureClosureHolder.description, after: Constants.paywallPresentationDelay, testName: testName)
   }
 
-  // Unable to fetch config, not subscribed, and not gated.
+  /// Unable to fetch config, not subscribed, and not gated.
   func testOptions41() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test41() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: false)
   }
 
-  // Unable to fetch config, not subscribed, and gated.
+  /// Unable to fetch config, not subscribed, and gated.
   func testOptions42() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test42() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: true)
   }
 
-  // Unable to fetch config, subscribed, and not gated.
+  /// Unable to fetch config, subscribed, and not gated.
   func testOptions43() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test43() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
-  // Unable to fetch config, subscribed, and gated.
+  /// Unable to fetch config, subscribed, and gated.
   func testOptions44() -> TestOptions { return TestOptions(allowNetworkRequests: false, automaticallyConfigure: false) }
   func test44() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
 
-  // Fetched config, not subscribed, and not gated.
+  /// Fetched config, not subscribed, and not gated.
   func testOptions45() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test45() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: false)
   }
 
-  // Fetched config, not subscribed, and gated.
+  /// Fetched config, not subscribed, and gated.
   func testOptions46() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test46() async throws {
     await executeRegisterFeatureClosureTest(subscribed: false, gated: true)
   }
 
-  // Fetched config, subscribed, and not gated.
+  /// Fetched config, subscribed, and not gated.
   func testOptions47() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test47() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
-  // Fetched config, subscribed, and gated.
+  /// Fetched config, subscribed, and gated.
   func testOptions48() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
   func test48() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
 
   /// Present paywall from implicit trigger: `app_launch`.
-  func testOptions49() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
+  func testOptions49() -> TestOptions { return TestOptions(apiKey: Constants.appLaunchAPIKey) }
   func test49() async throws {
-    await configuration.setup(app: .appLaunch)
-
     // Assert paywall presented.
     await assert(after: Constants.implicitPaywallPresentationDelay)
   }
 
   /// Present paywall from implicit trigger: `session_start`.
-  func testOptions50() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
+  func testOptions50() -> TestOptions { return TestOptions(apiKey: Constants.sessionStartAPIKey) }
   func test50() async throws {
-    await configuration.setup(app: .sessionStart)
-
     // Assert paywall presented.
     await assert(after: Constants.implicitPaywallPresentationDelay)
   }
 
   /// Present paywall from implicit trigger: `app_install`.
-  func testOptions51() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
+  func testOptions51() -> TestOptions { return TestOptions(apiKey: Constants.appInstallAPIKey) }
   func test51() async throws {
-    await configuration.setup(app: .appInstall)
-
     // Assert paywall presented.
     await assert(after: Constants.implicitPaywallPresentationDelay)
   }

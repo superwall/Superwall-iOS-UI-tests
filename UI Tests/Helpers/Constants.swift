@@ -9,6 +9,8 @@ import Foundation
 
 @objc(SWKConstants)
 public class Constants: NSObject {
+  @objc public static var currentTestOptions: TestOptions = .defaultOptions
+
   @objc public enum Language: Int, CustomStringConvertible {
     case swift
     case objc
@@ -23,30 +25,21 @@ public class Constants: NSObject {
     }
   }
 
-  @objc public enum App: Int {
-    case `default`
-    case appLaunch
-    case sessionStart
-    case appInstall
-  }
-  @objc public static var app: App = .default
+  // Default UI test API key.
+  // https://superwall.com/applications/1270
+  @objc public static let defaultAPIKey: String = "pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2"
 
-  @objc public static func apiKey(forApp app: App) -> String {
-    switch app {
-    case .default:
-      // https://superwall.com/applications/1270
-      return "pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2"
-    case .appLaunch:
-      // https://superwall.com/applications/1768/
-      return "pk_fb295f846b075fae6619eebb43d126ecddd1e3b18e7028b8"
-    case .sessionStart:
-      // https://superwall.com/applications/1769/
-      return "pk_6c881299e2f8db59f697646e399397be76432fa0968ca254"
-    case .appInstall:
-      // https://superwall.com/applications/1770/
-      return "pk_8db958db59cc8460969659822351d5e177d8d65cb295cff2"
-    }
-  }
+  // Contains a campaign with an `app_launch` trigger
+  // https://superwall.com/applications/1768/
+  @objc public static let appLaunchAPIKey: String = "pk_fb295f846b075fae6619eebb43d126ecddd1e3b18e7028b8"
+
+  // Contains a campaign with a `session_start` trigger.
+  // https://superwall.com/applications/1769/
+  @objc public static let sessionStartAPIKey: String = "pk_6c881299e2f8db59f697646e399397be76432fa0968ca254"
+
+  // Contains a campaign with a `app_install` trigger.
+  // https://superwall.com/applications/1770/
+  @objc public static let appInstallAPIKey: String = "pk_8db958db59cc8460969659822351d5e177d8d65cb295cff2"
   
   @objc public static let configurationType = {
     return ProcessInfo.processInfo.environment["configurationType"]!

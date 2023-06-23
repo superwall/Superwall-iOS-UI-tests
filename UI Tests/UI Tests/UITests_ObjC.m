@@ -665,7 +665,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
     // Configure SDK
-    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
+    [weakSelf.configuration setupWithCompletionHandler:^{
       // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
@@ -757,8 +757,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
     // Configure SDK
-    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
-
+    [weakSelf.configuration setupWithCompletionHandler:^{
       // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
@@ -838,11 +837,11 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Handle subscription status before configuring to ensure that the receipt with automatic setup exists.
-  [self handleSubscriptionMockingWithSubscribed:true completionHandler:^{
+  [self handleSubscriptionMockingWithSubscribed:YES completionHandler:^{
     // Now configure the SDK
-    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
+    [weakSelf.configuration setupWithCompletionHandler:^{
       // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
-      [weakSelf handleSubscriptionMockingWithSubscribed:true completionHandler:^{
+      [weakSelf handleSubscriptionMockingWithSubscribed:YES completionHandler:^{
         // Get the presentation result for the specified event
         [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
           // Assert the value of the result's description
@@ -1219,7 +1218,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
 
     // Now configure the SDK
-    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
+    [weakSelf.configuration setupWithCompletionHandler:^{
       // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
       [weakSelf handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
         NSString *event = gated ? @"register_gated_paywall" : @"register_nongated_paywall";
@@ -1301,33 +1300,30 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 /// Present paywall from implicit trigger: `app_launch`.
-- (SWKTestOptions *)testOptions49 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (SWKTestOptions *)testOptions49 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.appLaunchAPIKey]; }
 - (void)test49WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
-  [self.configuration setupWithApp:AppAppLaunch completionHandler:^{
-    // Ensure nothing has changed.
-    TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
-  }];
+
+  // Ensure nothing has changed.
+  TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
 }
 
 /// Present paywall from implicit trigger: `session_start`.
-- (SWKTestOptions *)testOptions50 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (SWKTestOptions *)testOptions50 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.sessionStartAPIKey]; }
 - (void)test50WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
-  [self.configuration setupWithApp:AppSessionStart completionHandler:^{
-    // Ensure nothing has changed.
-    TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
-  }];
+
+  // Ensure nothing has changed.
+  TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
 }
 
 /// Present paywall from implicit trigger: `app_install`.
-- (SWKTestOptions *)testOptions51 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (SWKTestOptions *)testOptions51 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.appInstallAPIKey]; }
 - (void)test51WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
-  [self.configuration setupWithApp:AppAppInstall completionHandler:^{
-    // Ensure nothing has changed.
-    TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
-  }];
+
+  // Ensure nothing has changed.
+  TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
 }
 
 

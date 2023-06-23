@@ -13,7 +13,7 @@ import UXCam
 
 @objc(SWKTestConfiguration)
 public protocol TestConfiguration: NSObjectProtocol {
-  func setup(app: Constants.App) async
+  func setup() async
   func tearDown() async
   func mockSubscribedUser(productIdentifier: String) async
 }
@@ -25,12 +25,12 @@ public class TestOptions: NSObject {
 
   let allowNetworkRequests: Bool
   let automaticallyConfigure: Bool
-  let requiresFreshInstall: Bool
+  let apiKey: String
 
-  init(allowNetworkRequests: Bool = true, automaticallyConfigure: Bool = true, requiresFreshInstall: Bool = false) {
+  init(allowNetworkRequests: Bool = true, automaticallyConfigure: Bool = true, apiKey: String = Constants.defaultAPIKey) {
     self.allowNetworkRequests = allowNetworkRequests
     self.automaticallyConfigure = automaticallyConfigure
-    self.requiresFreshInstall = requiresFreshInstall
+    self.apiKey = apiKey
     super.init()
   }
 
@@ -46,12 +46,12 @@ public class TestOptions: NSObject {
     return TestOptions(automaticallyConfigure: automaticallyConfigure)
   }
 
-  static func testOptions(requiresFreshInstall: Bool) -> TestOptions {
-    return TestOptions(requiresFreshInstall: requiresFreshInstall)
+  static func testOptions(apiKey: String) -> TestOptions {
+    return TestOptions(apiKey: apiKey)
   }
 
-  static func testOptions(allowNetworkRequests: Bool, automaticallyConfigure: Bool, requiresFreshInstall: Bool) -> TestOptions {
-    return TestOptions(allowNetworkRequests: allowNetworkRequests, automaticallyConfigure: automaticallyConfigure, requiresFreshInstall: requiresFreshInstall)
+  static func testOptions(allowNetworkRequests: Bool, automaticallyConfigure: Bool, apiKey: String) -> TestOptions {
+    return TestOptions(allowNetworkRequests: allowNetworkRequests, automaticallyConfigure: automaticallyConfigure, apiKey: apiKey)
   }
 }
 

@@ -55,16 +55,18 @@ static BOOL kHasConfigured = NO;
 
 @implementation SWKConfigurationAutomatic
 
-- (void)setupWithApp:(enum App)app completionHandler:(void (^)(void))completionHandler {
+- (void)setupWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
   // Make sure setup has not been called
   if (SWKConfigurationState.hasConfigured) { return; }
   SWKConfigurationState.hasConfigured = YES;
 
+
   // Begin fetching products for use in other test cases
   [[SWKStoreKitHelper sharedInstance] fetchCustomProductsWithCompletionHandler:^{
-    [Superwall configureWithApiKey:[SWKConstants apiKeyForApp:app]];
+    [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey];
     completionHandler();
   }];
+
 }
 
 - (void)tearDownWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
@@ -93,12 +95,12 @@ static BOOL kHasConfigured = NO;
 
 @implementation SWKConfigurationAdvanced
 
-- (void)setupWithApp:(enum App)app completionHandler:(void (^)(void))completionHandler {
+- (void)setupWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
   // Make sure setup has not been called
   if (SWKConfigurationState.hasConfigured) { return; }
   SWKConfigurationState.hasConfigured = YES;
 
-  [Superwall configureWithApiKey:[SWKConstants apiKeyForApp:app] purchaseController:self.purchaseController options:nil completion:NULL];
+  [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey purchaseController:self.purchaseController options:nil completion:NULL];
 
   // Set status
   [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;

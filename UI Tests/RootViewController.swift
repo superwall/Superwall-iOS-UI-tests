@@ -62,15 +62,13 @@ class RootViewController: UIViewController {
     let testCase: Testable = Constants.language == .swift ? UITests_Swift() : (UITests_ObjC() as! Testable)
     let configuration = testCase.configuration
 
-    // Get test options
+    // Get and set current test options
     let testOptions = testOptions(for: testNumber, on: testCase)
-
-    // Set network connectivity preference
-    NetworkConnectivity.shared.allowNetworkRequests = testOptions.allowNetworkRequests
+    Constants.currentTestOptions = testOptions
 
     // Configure if set to automatically configure
     if testOptions.automaticallyConfigure {
-      await configuration.setup(app: .default)
+      await configuration.setup()
     }
 
     try? await performTest(testNumber, on: testCase)
