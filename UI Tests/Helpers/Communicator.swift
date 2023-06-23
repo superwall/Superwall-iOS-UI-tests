@@ -79,6 +79,8 @@ class Communicator {
     return queue
   }()
 
+  let sendSerialQueue = DispatchQueue(label: "com.ui-tests.Communicator.sendSerialQueue")
+
   func start() {
     server[Constants.sourceConfiguration.serverPath] = { [weak self] request in
 
@@ -87,14 +89,7 @@ class Communicator {
         switch action?.invocation {
           case .completed(let action):
             guard let self = self else { return }
-            guard let completionHandler = self.completionHandlers[action.identifier] else {
-              fatalError("There should have been a completion handler for this identifier")
-            }
-
-            DispatchQueue.main.async {
-              let action = action
-              completionHandler(action)
-            }
+            self.handleCompletionAction(action)
           default:
             NotificationCenter.default.post(name: .receivedActionRequest, object: action)
         }
@@ -112,6 +107,19 @@ class Communicator {
     }
   }
 
+  private func handleCompletionAction(_ action: Communicator.Action) {
+    sendSerialQueue.async {
+      guard let completionHandler = self.completionHandlers[action.identifier] else {
+        fatalError("There should have been a completion handler for this identifier")
+      }
+
+      DispatchQueue.main.async {
+        let action = action
+        completionHandler(action)
+      }
+    }
+  }
+
   private var completionHandlers: [String: (Communicator.Action) -> Void] = [:]
   
   @discardableResult func send(_ invocation: Communicator.Action.Invocation) async -> Communicator.Action {
@@ -123,28 +131,32 @@ class Communicator {
   }
 
   private func send(_ invocation: Communicator.Action.Invocation, completion: @escaping (Communicator.Action) -> Void) {
-    let action = Communicator.Action(invocation)
-    completionHandlers[action.identifier] = completion
+    sendSerialQueue.async { [weak self] in
+      guard let self = self else { return }
 
-    if let urlRequest = Constants.destinationConfiguration.urlRequest(with: action) {
-      let operation = BlockOperation {
-        let semaphore = DispatchSemaphore(value: 0)
+      let action = Communicator.Action(invocation)
+      completionHandlers[action.identifier] = completion
 
-        let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
-          if let data = data, let stringResponse = String(data: data, encoding: .utf8) {
-            print(stringResponse)
-          } else if let error = error {
-            print("Error: \(error.localizedDescription)")
+      if let urlRequest = Constants.destinationConfiguration.urlRequest(with: action) {
+        let operation = BlockOperation {
+          let semaphore = DispatchSemaphore(value: 0)
+
+          let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
+            if let data = data, let stringResponse = String(data: data, encoding: .utf8) {
+              print(stringResponse)
+            } else if let error = error {
+              print("Error: \(error.localizedDescription)")
+            }
+            semaphore.signal()
           }
-          semaphore.signal()
-        }
-        task.resume()
+          task.resume()
 
-        semaphore.wait()
+          semaphore.wait()
+        }
+        operationQueue.addOperation(operation)
+      } else {
+        print("Invalid URL")
       }
-      operationQueue.addOperation(operation)
-    } else {
-      print("Invalid URL")
     }
   }
 

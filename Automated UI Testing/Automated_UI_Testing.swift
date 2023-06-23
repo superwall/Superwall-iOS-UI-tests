@@ -152,9 +152,6 @@ class Automated_UI_Testing: XCTestCase {
     
     // Terminate app after test
     await terminateApp()
-
-    // Reset assertion data
-    assertionData = AssertionData()
   }
 }
 
