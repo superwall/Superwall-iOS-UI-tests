@@ -13,7 +13,7 @@ import UXCam
 
 @objc(SWKTestConfiguration)
 public protocol TestConfiguration: NSObjectProtocol {
-  func setup() async
+  func setup(app: Constants.App) async
   func tearDown() async
   func mockSubscribedUser(productIdentifier: String) async
 }

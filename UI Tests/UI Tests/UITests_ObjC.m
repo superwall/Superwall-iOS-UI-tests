@@ -54,6 +54,7 @@ NSCAssert(false, message);
 
 // Constants
 static NSTimeInterval kPaywallPresentationDelay;
+static NSTimeInterval kImplicitPaywallPresentationDelay;
 static NSTimeInterval kPaywallPresentationFailureDelay;
 static NSTimeInterval kPaywallDelegateResponseDelay;
 
@@ -98,6 +99,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 + (void)initialize {
   kPaywallPresentationDelay = SWKConstants.paywallPresentationDelay;
+  kImplicitPaywallPresentationDelay = SWKConstants.implicitPaywallPresentationDelay;
   kPaywallPresentationFailureDelay = SWKConstants.paywallPresentationFailureDelay;
   kPaywallDelegateResponseDelay = SWKConstants.paywallDelegateResponseDelay;
 }
@@ -663,8 +665,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
     // Configure SDK
-    [weakSelf.configuration setupWithCompletionHandler:^{
-
+    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
       // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
@@ -756,7 +757,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
 
     // Configure SDK
-    [weakSelf.configuration setupWithCompletionHandler:^{
+    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
 
       // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
@@ -839,7 +840,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Handle subscription status before configuring to ensure that the receipt with automatic setup exists.
   [self handleSubscriptionMockingWithSubscribed:true completionHandler:^{
     // Now configure the SDK
-    [weakSelf.configuration setupWithCompletionHandler:^{
+    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
       // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
       [weakSelf handleSubscriptionMockingWithSubscribed:true completionHandler:^{
         // Get the presentation result for the specified event
@@ -1218,7 +1219,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
 
     // Now configure the SDK
-    [weakSelf.configuration setupWithCompletionHandler:^{
+    [weakSelf.configuration setupWithApp:AppDefault completionHandler:^{
       // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
       [weakSelf handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
         NSString *event = gated ? @"register_gated_paywall" : @"register_nongated_paywall";
@@ -1299,6 +1300,35 @@ static id<SWKTestConfiguration> kConfiguration;
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
+/// Present paywall from implicit trigger: `app_launch`.
+- (SWKTestOptions *)testOptions49 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (void)test49WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+  [self.configuration setupWithApp:AppAppLaunch completionHandler:^{
+    // Ensure nothing has changed.
+    TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
+  }];
+}
+
+/// Present paywall from implicit trigger: `session_start`.
+- (SWKTestOptions *)testOptions50 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (void)test50WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+  [self.configuration setupWithApp:AppSessionStart completionHandler:^{
+    // Ensure nothing has changed.
+    TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
+  }];
+}
+
+/// Present paywall from implicit trigger: `app_install`.
+- (SWKTestOptions *)testOptions51 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (void)test51WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+  [self.configuration setupWithApp:AppAppInstall completionHandler:^{
+    // Ensure nothing has changed.
+    TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
+  }];
+}
 
 
 //- (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {

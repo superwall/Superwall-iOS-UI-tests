@@ -33,7 +33,7 @@ extension Configuration {
 
 extension Configuration {
   class Automatic: NSObject, TestConfiguration {
-    func setup() async {
+    func setup(app: Constants.App = .default) async {
       // Using this approach over using the class setup() function because it's not async
       #warning("can probably remove these checks now")
       guard State.hasConfigured == false else { return }
@@ -42,7 +42,7 @@ extension Configuration {
       // Begin fetching products for use in other test cases
       await StoreKitHelper.shared.fetchCustomProducts()
 
-      Superwall.configure(apiKey: Constants.apiKey)
+      Superwall.configure(apiKey: Constants.apiKey(forApp: app))
     }
 
     func tearDown() async {
@@ -62,12 +62,15 @@ extension Configuration {
   class Advanced: NSObject, TestConfiguration {
     let purchaseController: AdvancedPurchaseController = AdvancedPurchaseController()
 
-    func setup() async {
+    func setup(app: Constants.App) async {
       // Using this approach over using the class setup() function because it's not async
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
 
-      Superwall.configure(apiKey: Constants.apiKey, purchaseController: purchaseController)
+      Superwall.configure(
+        apiKey: Constants.apiKey(forApp: app),
+        purchaseController: purchaseController
+      )
 
       // Set status
       Superwall.shared.subscriptionStatus = .inactive

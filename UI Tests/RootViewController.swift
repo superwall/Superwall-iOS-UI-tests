@@ -70,7 +70,7 @@ class RootViewController: UIViewController {
 
     // Configure if set to automatically configure
     if testOptions.automaticallyConfigure {
-      await configuration.setup()
+      await configuration.setup(app: .default)
     }
 
     try? await performTest(testNumber, on: testCase)

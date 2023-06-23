@@ -507,7 +507,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Configure SDK
-    await configuration.setup()
+    await configuration.setup(app: .default)
 
     // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -586,7 +586,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Configure SDK
-    await configuration.setup()
+    await configuration.setup(app: .default)
 
     // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -636,7 +636,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
 
     // Now configure the SDK
-    await configuration.setup()
+    await configuration.setup(app: .default)
 
     // Mock user as subscribed again for advanced configuration that couldn't be done before SDK configure was called
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
@@ -925,7 +925,7 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     // Now configure the SDK
-    await configuration.setup()
+    await configuration.setup(app: .default)
 
     // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration
     if subscribed {
@@ -1021,6 +1021,32 @@ final class UITests_Swift: NSObject, Testable {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
 
+  /// Present paywall from implicit trigger: `app_launch`.
+  func testOptions49() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
+  func test49() async throws {
+    await configuration.setup(app: .appLaunch)
+
+    // Assert paywall presented.
+    await assert(after: Constants.implicitPaywallPresentationDelay)
+  }
+
+  /// Present paywall from implicit trigger: `session_start`.
+  func testOptions50() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
+  func test50() async throws {
+    await configuration.setup(app: .sessionStart)
+
+    // Assert paywall presented.
+    await assert(after: Constants.implicitPaywallPresentationDelay)
+  }
+
+  /// Present paywall from implicit trigger: `app_install`.
+  func testOptions51() -> TestOptions { return TestOptions(automaticallyConfigure: false) }
+  func test51() async throws {
+    await configuration.setup(app: .appInstall)
+
+    // Assert paywall presented.
+    await assert(after: Constants.implicitPaywallPresentationDelay)
+  }
 
   /// Case: Airplane Mode
   /// Lifecycle handler
