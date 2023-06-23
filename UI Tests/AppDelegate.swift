@@ -31,13 +31,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
 
   func configureUXCam() {
-//    let configuration = UXCamConfiguration(appKey: "8e6x26usp1g3tpb")
-//    configuration.enableNetworkLogging = true
-//    configuration.enableMultiSessionRecord = false
-//
-//    UXCam.setUserIdentity("iOS-UI-test")
-//    UXCam.optIntoSchematicRecordings()
-//    UXCam.start(with: configuration)
+    let configuration = UXCamConfiguration(appKey: "8e6x26usp1g3tpb")
+    configuration.enableNetworkLogging = true
+    configuration.enableMultiSessionRecord = false
+
+    UXCam.setUserIdentity("iOS-UI-test")
+    UXCam.optIntoSchematicRecordings()
+    UXCam.start(with: configuration)
   }
 
   // MARK: UISceneSession Lifecycle

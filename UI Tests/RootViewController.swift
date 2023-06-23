@@ -45,6 +45,12 @@ class RootViewController: UIViewController {
   func runTest(_ testNumber: Int, from action: Communicator.Action) async {
     print("Instructed to run test #\(testNumber) with \(Constants.configurationType) mode in \(Constants.language.description)")
 
+    func runTestCompleted() async {
+      await UXCam.uploadUXCamData()
+
+      Communicator.shared.completed(action: action)
+    }
+
     // Handle 5 minute timeout
     let timeoutTask = Task {
       await Task.sleep(timeInterval: 300)
@@ -52,10 +58,7 @@ class RootViewController: UIViewController {
 
       await Communicator.shared.send(.fail(message: "Test #\(testNumber) timed out!"))
 
-      //
-//      await UXCam.uploadUXCamData()
-
-      Communicator.shared.completed(action: action)
+      await runTestCompleted()
     }
 
     // Create the test case instance depending on language.
@@ -78,10 +81,7 @@ class RootViewController: UIViewController {
     // Cancel timeout
     timeoutTask.cancel()
 
-    //
-    await UXCam.uploadUXCamData()
-
-    Communicator.shared.completed(action: action)
+    await runTestCompleted()
   }
 
 //  func cacheSDK(from action: Communicator.Action) async {
