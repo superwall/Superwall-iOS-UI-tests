@@ -1,0 +1,26 @@
+name: Delete File on Push
+
+on:
+  push:
+
+jobs:
+  delete-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Delete File
+      run: |
+        rm "UI Tests.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Delete Package.resolved via GitHub Action"
+        git push
