@@ -25,6 +25,23 @@ class RootViewController: UIViewController {
       guard let action = notification.object as? Communicator.Action else { return }
       self?.handle(action)
     }
+
+//    Task {
+//      // Begin fetching products for use in other test cases
+//      await StoreKitHelper.shared.fetchCustomProducts()
+//
+//      Superwall.configure(apiKey: "pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2")
+//
+//      let delegate = Configuration.MockPaywallViewControllerDelegate()
+//      holdStrongly(delegate)
+//
+//      if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_urls", delegate: delegate) {
+//        DispatchQueue.main.async {
+//          viewController.modalPresentationStyle = .fullScreen
+//          RootViewController.shared.present(viewController, animated: true)
+//        }
+//      }
+//    }
   }
 
   func handle(_ action: Communicator.Action) {
