@@ -16,6 +16,18 @@ struct Configuration {
 }
 
 extension Configuration {
+  class MockSuperwallDelegate: SuperwallDelegate {
+    private var handleSuperwallEvent: ((SuperwallEventInfo) -> Void)?
+
+    func handleSuperwallEvent(_ handler: @escaping ((SuperwallEventInfo) -> Void)) {
+      handleSuperwallEvent = handler
+    }
+
+    func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+      handleSuperwallEvent?(eventInfo)
+    }
+  }
+
   class MockPaywallViewControllerDelegate: PaywallViewControllerDelegate {
     private var paywallViewControllerDidFinish: ((PaywallViewController, PaywallResult, Bool) -> Void)?
 

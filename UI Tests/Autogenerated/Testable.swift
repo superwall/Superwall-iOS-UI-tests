@@ -57,6 +57,11 @@ import Foundation
   func test49() async throws
   func test50() async throws
   func test51() async throws
+  func test52() async throws
+  func test53() async throws
+  func test54() async throws
+  func test55() async throws
+  func test56() async throws
 
   @objc optional func testOptions0() -> TestOptions
   @objc optional func testOptions1() -> TestOptions
@@ -110,6 +115,11 @@ import Foundation
   @objc optional func testOptions49() -> TestOptions
   @objc optional func testOptions50() -> TestOptions
   @objc optional func testOptions51() -> TestOptions
+  @objc optional func testOptions52() -> TestOptions
+  @objc optional func testOptions53() -> TestOptions
+  @objc optional func testOptions54() -> TestOptions
+  @objc optional func testOptions55() -> TestOptions
+  @objc optional func testOptions56() -> TestOptions
 }
 
 extension RootViewController {
@@ -168,6 +178,11 @@ extension RootViewController {
         case 49: return testable.testOptions49?()
         case 50: return testable.testOptions50?()
         case 51: return testable.testOptions51?()
+        case 52: return testable.testOptions52?()
+        case 53: return testable.testOptions53?()
+        case 54: return testable.testOptions54?()
+        case 55: return testable.testOptions55?()
+        case 56: return testable.testOptions56?()
         default:
           fatalError("Test options have not been defined.")
       }
@@ -236,6 +251,11 @@ extension RootViewController {
       case 49: try await testable.test49()
       case 50: try await testable.test50()
       case 51: try await testable.test51()
+      case 52: try await testable.test52()
+      case 53: try await testable.test53()
+      case 54: try await testable.test54()
+      case 55: try await testable.test55()
+      case 56: try await testable.test56()
       default:
         fatalError("Test has not been defined above.")
     }

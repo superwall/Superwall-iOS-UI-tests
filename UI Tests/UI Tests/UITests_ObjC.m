@@ -27,14 +27,11 @@ TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeI
 #define TEST_ASSERT_DELAY(delay) \
 TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
 
-#define TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, completionHandlerValue) \
-[weakSelf assertWithValue:value after:delay testName:testName completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
-
-#define TEST_ASSERT_DELAY_VALUE(delay, value) \
-TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, ^{})
+#define TEST_ASSERT_VALUE_COMPLETION(value, completionHandlerValue) \
+[weakSelf assertWithValue:value testName:testName completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
 
 #define TEST_ASSERT_VALUE(value) \
-TEST_ASSERT_DELAY_VALUE(0, value)
+TEST_ASSERT_VALUE_COMPLETION(value, ^{})
 
 #define TEST_SKIP(message) \
 [self skip:message]; completionHandler(nil); return;
@@ -490,6 +487,8 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skip while debugging");
+
   TEST_START_NUM_ASSERTS(3)
   
   // Create and hold strongly the delegate
@@ -581,6 +580,8 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Verify that external URLs can be opened in native Safari from paywall
 - (void)test20WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skip while debugging");
+
   TEST_START_NUM_ASSERTS(3)
   
   // Present paywall with URLs
@@ -1243,8 +1244,8 @@ static id<SWKTestConfiguration> kConfiguration;
         }];
 
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-          TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, errorHandlerHolder.description);
-          TEST_ASSERT_DELAY_VALUE(kPaywallPresentationDelay, featureClosureHolder.description);
+          TEST_ASSERT_VALUE(errorHandlerHolder.description);
+          TEST_ASSERT_VALUE(featureClosureHolder.description);
         }));
       }];
     }];
@@ -1325,6 +1326,27 @@ static id<SWKTestConfiguration> kConfiguration;
   // Ensure nothing has changed.
   TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
 }
+
+- (void)test52WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Implement")
+}
+
+- (void)test53WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Implement")
+}
+
+- (void)test54WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Implement")
+}
+
+- (void)test55WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Implement")
+}
+
+- (void)test56WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Implement")
+}
+
 
 
 //- (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {

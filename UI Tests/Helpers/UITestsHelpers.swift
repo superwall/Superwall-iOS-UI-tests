@@ -93,14 +93,14 @@ public extension NSObject {
     await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
   }
 
-  func assert(value: String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Test") async {
+  func assert(value: @autoclosure () -> String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Test") async {
     if timeInterval > 0 {
       await sleep(timeInterval: timeInterval)
     }
 
     let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
 
-    await Communicator.shared.send(.assertValue(testName: testName, value: value))
+    await Communicator.shared.send(.assertValue(testName: testName, value: value()))
   }
 
   @available(swift, obsoleted: 1.0)
@@ -113,10 +113,10 @@ public extension NSObject {
   }
 
   @available(swift, obsoleted: 1.0)
-  @objc func assert(value: String, after timeInterval: TimeInterval, testName: String) async {
+  @objc func assert(value: String, testName: String) async {
     let modifiedTestName = testName.components(separatedBy: "WithCompletionHandler:]").first!.components(separatedBy: "UITests_ObjC test").last!
 
-    await assert(value: value, after: timeInterval, testName: modifiedTestName)
+    await assert(value: value, testName: modifiedTestName)
   }
 
   #warning("make these async")
