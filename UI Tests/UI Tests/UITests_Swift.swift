@@ -345,9 +345,6 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Open In-App Safari view controller from manually presented paywall
   func test18() async throws {
-    skip("Skipping while debugging")
-    return
-
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)
 
@@ -362,7 +359,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Position of the perform button to open a URL in Safari
-    let point = CGPoint(x: 326, y: 216)
+    let point = CGPoint(x: 330, y: 212)
     touch(point)
 
     // Verify that In-App Safari has opened
@@ -425,16 +422,13 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Verify that external URLs can be opened in native Safari from paywall
   func test20() async throws {
-    skip("Skipping while debugging")
-    return
-
     // Present paywall with URLs
     Superwall.shared.register(event: "present_urls")
 
     await assert(after: Constants.paywallPresentationDelay)
 
     // Position of the perform button to open a URL in Safari
-    let point = CGPoint(x: 358, y: 177)
+    let point = CGPoint(x: 330, y: 136)
     touch(point)
 
     // Verify that Safari has opened.

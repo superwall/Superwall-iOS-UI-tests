@@ -7,7 +7,6 @@
 
 import UIKit
 import SuperwallKit
-import UXCam
 
 // MARK: - TestConfiguration
 
@@ -149,7 +148,6 @@ public extension NSObject {
   }
 
   @objc func log(_ message: String) {
-    UXCam.logEvent(message)
     print(message)
     Task {
       await Communicator.shared.send(.log(message))

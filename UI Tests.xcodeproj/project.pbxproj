@@ -52,7 +52,6 @@
 		54CFF7802A1D7AB80035DC9C /* Data+Gzip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CFF77E2A1D7AB80035DC9C /* Data+Gzip.swift */; };
 		54CFF7822A1D7BB20035DC9C /* NetworkEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CFF7812A1D7BB20035DC9C /* NetworkEvaluator.swift */; };
 		54CFF7842A1D7C680035DC9C /* NoActionRequestRedirector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CFF7832A1D7C680035DC9C /* NoActionRequestRedirector.swift */; };
-		54EE92872A29788F00B6AA5C /* UXCam in Frameworks */ = {isa = PBXBuildFile; productRef = 54EE92862A29788F00B6AA5C /* UXCam */; };
 		8845B67829C1F98F001B0013 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 540E79522989B1A900EE1425 /* Products.storekit */; };
 /* End PBXBuildFile section */
 
@@ -121,7 +120,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				54EE92872A29788F00B6AA5C /* UXCam in Frameworks */,
 				54CAAD2329BBDADA008D728C /* Swifter in Frameworks */,
 				54CAAD3529BC4DDB008D728C /* SuperwallKit in Frameworks */,
 			);
@@ -363,7 +361,6 @@
 			packageProductDependencies = (
 				54CAAD2229BBDADA008D728C /* Swifter */,
 				54CAAD3429BC4DDB008D728C /* SuperwallKit */,
-				54EE92862A29788F00B6AA5C /* UXCam */,
 			);
 			productName = "UI Tests";
 			productReference = 540E79332989B16600EE1425 /* UI Tests.app */;
@@ -425,7 +422,6 @@
 				54CAAD1F29BBDAD1008D728C /* XCRemoteSwiftPackageReference "swifter" */,
 				54CAAD3029BC4DC0008D728C /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 				54CAAD3329BC4DDB008D728C /* XCRemoteSwiftPackageReference "SuperwallKit-iOS" */,
-				54EE92852A29788F00B6AA5C /* XCRemoteSwiftPackageReference "ios-sdk" */,
 			);
 			productRefGroup = 540E79342989B16600EE1425 /* Products */;
 			projectDirPath = "";
@@ -946,14 +942,6 @@
 				kind = branch;
 			};
 		};
-		54EE92852A29788F00B6AA5C /* XCRemoteSwiftPackageReference "ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/uxcam/ios-sdk";
-			requirement = {
-				kind = exactVersion;
-				version = 3.6.2;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -976,11 +964,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 54CAAD3329BC4DDB008D728C /* XCRemoteSwiftPackageReference "SuperwallKit-iOS" */;
 			productName = SuperwallKit;
-		};
-		54EE92862A29788F00B6AA5C /* UXCam */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 54EE92852A29788F00B6AA5C /* XCRemoteSwiftPackageReference "ios-sdk" */;
-			productName = UXCam;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

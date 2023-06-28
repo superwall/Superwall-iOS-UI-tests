@@ -487,8 +487,6 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Skip while debugging");
-
   TEST_START_NUM_ASSERTS(3)
   
   // Create and hold strongly the delegate
@@ -580,8 +578,6 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Verify that external URLs can be opened in native Safari from paywall
 - (void)test20WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Skip while debugging");
-
   TEST_START_NUM_ASSERTS(3)
   
   // Present paywall with URLs

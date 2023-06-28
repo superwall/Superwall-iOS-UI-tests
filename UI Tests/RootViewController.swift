@@ -7,7 +7,6 @@
 
 import UIKit
 import SuperwallKit
-import UXCam
 
 @objc(SWKRootViewController)
 class RootViewController: UIViewController {
@@ -25,23 +24,6 @@ class RootViewController: UIViewController {
       guard let action = notification.object as? Communicator.Action else { return }
       self?.handle(action)
     }
-
-//    Task {
-//      // Begin fetching products for use in other test cases
-//      await StoreKitHelper.shared.fetchCustomProducts()
-//
-//      Superwall.configure(apiKey: "pk_5f6d9ae96b889bc2c36ca0f2368de2c4c3d5f6119aacd3d2")
-//
-//      let delegate = Configuration.MockPaywallViewControllerDelegate()
-//      holdStrongly(delegate)
-//
-//      if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_urls", delegate: delegate) {
-//        DispatchQueue.main.async {
-//          viewController.modalPresentationStyle = .fullScreen
-//          RootViewController.shared.present(viewController, animated: true)
-//        }
-//      }
-//    }
   }
 
   func handle(_ action: Communicator.Action) {
@@ -50,10 +32,6 @@ class RootViewController: UIViewController {
         Task {
           await runTest(testNumber, from: action)
         }
-//      case .cacheSDK:
-//        Task {
-//          await cacheSDK(from: action)
-//        }
       default:
         return
     }
@@ -62,12 +40,6 @@ class RootViewController: UIViewController {
   func runTest(_ testNumber: Int, from action: Communicator.Action) async {
     print("Instructed to run test #\(testNumber) with \(Constants.configurationType) mode in \(Constants.language.description)")
 
-    func runTestCompleted() async {
-      await UXCam.uploadUXCamData()
-
-      Communicator.shared.completed(action: action)
-    }
-
     // Handle 5 minute timeout
     let timeoutTask = Task {
       await Task.sleep(timeInterval: 300)
@@ -75,7 +47,8 @@ class RootViewController: UIViewController {
 
       await Communicator.shared.send(.fail(message: "Test #\(testNumber) timed out!"))
 
-      await runTestCompleted()
+      // Complete test run
+      Communicator.shared.completed(action: action)
     }
 
     // Create the test case instance depending on language.
@@ -98,19 +71,9 @@ class RootViewController: UIViewController {
     // Cancel timeout
     timeoutTask.cancel()
 
-    await runTestCompleted()
+    // Complete test tun
+    Communicator.shared.completed(action: action)
   }
-
-//  func cacheSDK(from action: Communicator.Action) async {
-//    // Create the test case instance depending on language.
-//    let testCase: Testable = Constants.language == .swift ? UITests_Swift() : (UITests_ObjC() as! Testable)
-//    let configuration = testCase.configuration
-//
-//    await configuration.setup()
-//    await configuration.tearDown()
-//
-//    Communicator.shared.completed(action: action)
-//  }
 
   override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
     return [.bottom]
@@ -118,15 +81,5 @@ class RootViewController: UIViewController {
 
   override var prefersHomeIndicatorAutoHidden: Bool {
     return true
-  }
-}
-
-extension UXCam {
-  static func uploadUXCamData() async {
-    return await withCheckedContinuation { continuation in
-      UXCam.stopSessionAndUploadData {
-        continuation.resume()
-      }
-    }
   }
 }
