@@ -506,7 +506,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that paywall is presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Position of the perform button to open a URL in Safari
-      CGPoint point = CGPointMake(326, 216);
+      CGPoint point = CGPointMake(330, 212);
       [weakSelf touch:point];
       
       // Verify that In-App Safari has opened
@@ -585,7 +585,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Position of the perform button to open a URL in Safari
-    CGPoint point = CGPointMake(358, 177);
+    CGPoint point = CGPointMake(330, 136);
     [weakSelf touch:point];
     
     // Verify that Safari has opened.
