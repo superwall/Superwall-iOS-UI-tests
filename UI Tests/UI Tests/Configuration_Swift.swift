@@ -79,13 +79,13 @@ extension Configuration {
       guard State.hasConfigured == false else { return }
       State.hasConfigured = true
 
+      // Begin fetching products for use in other test cases
+      await StoreKitHelper.shared.fetchCustomProducts()
+
       Superwall.configure(apiKey: Constants.currentTestOptions.apiKey, purchaseController: purchaseController)
 
       // Set status
       Superwall.shared.subscriptionStatus = .inactive
-
-      // Begin fetching products for use in other test cases
-      await StoreKitHelper.shared.fetchCustomProducts()
     }
 
     func tearDown() async {
