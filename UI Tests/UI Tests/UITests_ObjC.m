@@ -688,7 +688,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 684);
+    CGPoint purchaseButton = CGPointMake(196, 748);
     [weakSelf touch:purchaseButton];
     
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top

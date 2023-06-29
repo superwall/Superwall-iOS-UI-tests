@@ -528,7 +528,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 684)
+    let purchaseButton = CGPoint(x: 196, y: 748)
     touch(purchaseButton)
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
