@@ -1056,8 +1056,32 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Verify `app_launch` event occurs whenever app is launched from a cold start
   func test53() async throws {
-    skip("Implement")
-    return
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let appLaunchEventHolder = ValueDescriptionHolder()
+    appLaunchEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+        case .appLaunch:
+          appLaunchEventHolder.intValue += 1
+          appLaunchEventHolder.stringValue = "Yes"
+        default:
+          return
+      }
+    }
+
+    // Assert that `.appLaunch` was called once
+    await assert(value: appLaunchEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
+
+    #warning("close app and reopen to verify app launch not called again")
   }
 
   /// Verify `session_start` event occurs when the app is opened either from a cold start, or after at least 30 seconds since last `app_close`.
