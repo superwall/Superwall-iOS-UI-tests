@@ -22,19 +22,36 @@ public protocol TestConfiguration: NSObjectProtocol {
 public class TestOptions: NSObject {
   static let defaultOptions: TestOptions = TestOptions()
 
+  // Prevents network requests to mimic poor network connectivity
   let allowNetworkRequests: Bool
+
+  // Whether or not setup() should automatically configure the SDK, or the test itself will handle it
   let automaticallyConfigure: Bool
+
+  // Starts a test after a receipt has been generated for this particular product identifier
+  let purchasedProductIdentifier: String?
+
+  // API for the Superwall account. Modified for use of implicit triggers like `app_open`
   let apiKey: String
 
-  init(allowNetworkRequests: Bool = true, automaticallyConfigure: Bool = true, apiKey: String = Constants.defaultAPIKey) {
+  init(allowNetworkRequests: Bool = true, automaticallyConfigure: Bool = true, purchasedProductIdentifier: String? = nil, apiKey: String = Constants.defaultAPIKey) {
     self.allowNetworkRequests = allowNetworkRequests
     self.automaticallyConfigure = automaticallyConfigure
+    self.purchasedProductIdentifier = purchasedProductIdentifier
     self.apiKey = apiKey
     super.init()
   }
 
   static func testOptions(allowNetworkRequests: Bool) -> TestOptions {
     return TestOptions(allowNetworkRequests: allowNetworkRequests)
+  }
+
+  static func testOptions(purchasedProductIdentifier: String) -> TestOptions {
+    return TestOptions(purchasedProductIdentifier: purchasedProductIdentifier)
+  }
+
+  static func testOptions(allowNetworkRequests: Bool, purchasedProductIdentifier: String) -> TestOptions {
+    return TestOptions(allowNetworkRequests: allowNetworkRequests, purchasedProductIdentifier: purchasedProductIdentifier)
   }
 
   static func testOptions(allowNetworkRequests: Bool, automaticallyConfigure: Bool) -> TestOptions {

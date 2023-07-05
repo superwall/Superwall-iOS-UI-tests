@@ -59,6 +59,11 @@ class RootViewController: UIViewController {
     let testOptions = testOptions(for: testNumber, on: testCase)
     Constants.currentTestOptions = testOptions
 
+    // Add a receipt before the test starts
+    if let purchasedProductIdentifier = testOptions.purchasedProductIdentifier {
+      await activateSubscriber(productIdentifier: purchasedProductIdentifier)
+    }
+
     // Configure if set to automatically configure
     if testOptions.automaticallyConfigure {
       await configuration.setup()
