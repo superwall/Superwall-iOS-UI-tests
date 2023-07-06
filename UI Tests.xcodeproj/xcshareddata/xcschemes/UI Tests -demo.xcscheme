@@ -71,28 +71,7 @@
             </BuildableReference>
             <SelectedTests>
                <Test
-                  Identifier = "Automated_UI_Testing/test41()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test42()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test43()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test44()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test45()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test46()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test47()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test48()">
+                  Identifier = "Automated_UI_Testing/test0()">
                </Test>
             </SelectedTests>
          </TestableReference>
