@@ -1,4 +1,4 @@
-name: Run UI Tests from superwall-me/Superwall-iOS dispatch
+name: GHA Run UI Tests from superwall-me/Superwall-iOS dispatch
 
 on:
   workflow_dispatch:
