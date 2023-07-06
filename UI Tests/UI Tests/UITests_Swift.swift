@@ -1092,8 +1092,46 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Verify `app_close` anytime the app leaves the foreground and `app_open` anytime the app enters the foreground
   func test55() async throws {
-    skip("Implement")
-    return
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let appOpenEventHolder = ValueDescriptionHolder()
+    appOpenEventHolder.stringValue = "No"
+
+    // Create value handler
+    let appCloseEventHolder = ValueDescriptionHolder()
+    appCloseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .appClose:
+        appCloseEventHolder.intValue += 1
+        appCloseEventHolder.stringValue = "Yes"
+      case .appOpen:
+        appOpenEventHolder.intValue += 1
+        appOpenEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    // Close app
+    await springboard()
+
+    // Assert that `.appClose` was called once
+    await assert(value: appCloseEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
+
+     // Re-open app
+     await relaunch()
+
+    // Assert that `.appOpen` was called once
+    await assert(value: appOpenEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
   }
 
 
