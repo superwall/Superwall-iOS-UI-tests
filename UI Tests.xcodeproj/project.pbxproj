@@ -460,6 +460,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		54CFF7462A14416B0035DC9C /* Autogenerate functions */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
