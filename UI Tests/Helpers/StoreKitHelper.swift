@@ -21,15 +21,15 @@ public class StoreKitHelper: NSObject {
   }
 
   @objc public var monthlyProduct: SKProduct? {
-    return products.first(where: { $0.productIdentifier == Constants.monthlyProductIdentifier })
+    return products.first(where: { $0.productIdentifier == Constants.customMonthlyProductIdentifier })
   }
 
   @objc public var annualProduct: SKProduct? {
-    return products.first(where: { $0.productIdentifier == Constants.annualProductIdentifier })
+    return products.first(where: { $0.productIdentifier == Constants.customAnnualProductIdentifier })
   }
 
   private lazy var productsRequest: SKProductsRequest = {
-    let request = SKProductsRequest(productIdentifiers: [Constants.monthlyProductIdentifier, Constants.annualProductIdentifier])
+    let request = SKProductsRequest(productIdentifiers: [Constants.customMonthlyProductIdentifier, Constants.customAnnualProductIdentifier])
     request.delegate = self
     return request
   }()
@@ -64,8 +64,9 @@ public class StoreKitHelper: NSObject {
 extension StoreKitHelper {
   @objc(SWKStoreKitHelperConstants)
   class Constants: NSObject {
-    @objc static let monthlyProductIdentifier = "com.ui_tests.custom_monthly"
-    @objc static let annualProductIdentifier = "com.ui_tests.custom_annual"
+    @objc static let customMonthlyProductIdentifier = "com.ui_tests.custom_monthly"
+    @objc static let customAnnualProductIdentifier = "com.ui_tests.custom_annual"
+    @objc static let freeTrialProductIdentifier = "com.ui_tests.free_trial_annual"
   }
 }
 

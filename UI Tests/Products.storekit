@@ -116,6 +116,35 @@
           "referenceName" : "com.ui_tests.custom_monthly",
           "subscriptionGroupID" : "4F31BE19",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "59.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "5F8D699D",
+          "introductoryOffer" : {
+            "internalID" : "43282E70",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.ui_tests.free_trial_annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "com.ui_tests.free_trial_annual",
+          "subscriptionGroupID" : "4F31BE19",
+          "type" : "RecurringSubscription"
         }
       ]
     }

@@ -139,10 +139,10 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   /// Present regardless of status
-  func testOptions9() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions9() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test9() async throws {
     // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     Superwall.shared.register(event: "present_always")
 
@@ -436,7 +436,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .safari)
 
     // Relaunch the parent app.
-    relaunch()
+    await relaunch()
 
     // Ensure nothing has changed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -502,10 +502,10 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Case: Subscribed user, register event without a gating handler
   /// Result: paywall should NOT display
-  func testOptions24() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions24() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test24() async throws {
     // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Register event
     Superwall.shared.register(event: "register_nongated_paywall")
@@ -575,10 +575,10 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Case: Subscribed user, register event with a gating handler
   /// Result: paywall should NOT display, code in gating closure should execute
-  func testOptions27() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions27() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test27() async throws {
     // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     Superwall.shared.register(event: "register_gated_paywall") {
       DispatchQueue.main.async {
@@ -619,10 +619,10 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // Presentation result: `userIsSubscribed`
-  func testOptions32() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions32() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test32() async {
     // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     let result = await Superwall.shared.getPresentationResult(forEvent: "present_data")
     await assert(value: result.description)
@@ -743,7 +743,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
     let restoreButton = CGPoint(x: 200, y: 232)
@@ -829,7 +829,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Mock user as subscribed
-    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
     let restoreButton = CGPoint(x: 214, y: 292)
@@ -886,7 +886,7 @@ final class UITests_Swift: NSObject, Testable {
     // Mock user as subscribed
     if subscribed {
       // Mock user as subscribed
-      await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.annualProductIdentifier)
+      await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
     }
 
     // Determine gating event
@@ -942,13 +942,13 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   /// Unable to fetch config, subscribed, and not gated.
-  func testOptions43() -> TestOptions { return TestOptions(allowNetworkRequests: false, purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions43() -> TestOptions { return TestOptions(allowNetworkRequests: false, purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test43() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
   /// Unable to fetch config, subscribed, and gated.
-  func testOptions44() -> TestOptions { return TestOptions(allowNetworkRequests: false, purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions44() -> TestOptions { return TestOptions(allowNetworkRequests: false, purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test44() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
@@ -964,13 +964,13 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   /// Fetched config, subscribed, and not gated.
-  func testOptions47() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions47() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test47() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: false)
   }
 
   /// Fetched config, subscribed, and gated.
-  func testOptions48() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.annualProductIdentifier) }
+  func testOptions48() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
   func test48() async throws {
     await executeRegisterFeatureClosureTest(subscribed: true, gated: true)
   }
@@ -997,6 +997,7 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   /// Verify `app_install` event occurs when the SDK is configured for the first time, and directly after calling Superwall.shared.reset()
+  #warning("Is this supposed to work after reset? Ask Yusuf")
   func test52() async throws {
     // Create Superwall delegate
     let delegate = Configuration.MockSuperwallDelegate()
@@ -1020,10 +1021,13 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
+    // Close and reopen app after 3 seconds
+    await springboard()
+    await sleep(timeInterval: 3)
+    await relaunch()
+
     // Assert that `.appInstall` was called once
     await assert(value: appInstallEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
-
-    #warning("close app and reopen to verify app install not called again")
   }
 
   /// Verify `app_launch` event occurs whenever app is launched from a cold start
@@ -1050,81 +1054,135 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
+    // Close and reopen app
+    await springboard()
+    await relaunch()
+
     // Assert that `.appLaunch` was called once
     await assert(value: appLaunchEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
-
-    #warning("close app and reopen to verify app launch not called again")
   }
 
   /// Verify `session_start` event occurs when the app is opened either from a cold start, or after at least 30 seconds since last `app_close`.
   func test54() async throws {
-    skip("Implement")
-    return
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let sessionStartEventHolder = ValueDescriptionHolder()
+    sessionStartEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+        case .sessionStart:
+          sessionStartEventHolder.intValue += 1
+          sessionStartEventHolder.stringValue = "Yes"
+        default:
+          return
+      }
+    }
+
+    // Assert that `.sessionStart` was called once
+    await assert(value: sessionStartEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
+
+    // Close app
+    await springboard()
+
+    // Wait 35 seconds to trigger session start again
+    await sleep(timeInterval: 35)
+
+    // Re-open app
+    await relaunch()
+
+    // Assert that `.sessionStart` was called again
+    await assert(value: sessionStartEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
   }
 
-  /// app_close
+  /// Verify `app_close` anytime the app leaves the foreground and `app_open` anytime the app enters the foreground
   func test55() async throws {
     skip("Implement")
     return
   }
 
-  /// app_open
+
   func test56() async throws {
     skip("Implement")
     return
+
+    //    - subscription_start
+    //    - freeTrial_start
+    //    - nonRecurringProduct_purchase
+    //    - transaction_start
+    //    - transaction_abandon
+    //    - transaction_fail
+    //    - transaction_restore
+    //    - transaction_complete
+    //    - paywall_close
+    //    - paywall_open
+    //    - paywallWebviewLoad_start
+    //    - paywallWebviewLoad_fail
+    //    - paywallWebviewLoad_timeout
+    //    - paywallWebviewLoad_complete
+    //    - trigger_fire
+    //    - paywallResponseLoad_start
+    //    - paywallResponseLoad_fail
+    //    - paywallResponseLoad_complete
+    //    - paywallResponseLoad_notFound
+    //    - paywallProductsLoad_start
+    //    - paywallProductsLoad_fail
+    //    - paywallProductsLoad_complete
+    //    - user_attributes
+    //    - subscriptionStatus_didChange
+    //    - paywallPresentationRequest
+    //    - deepLink_open
+
   }
 
-  #warning("track these in above tests")
-//    - subscription_start
-//    - freeTrial_start
-//    - nonRecurringProduct_purchase
-//    - transaction_start
-//    - transaction_abandon
-//    - transaction_fail
-//    - transaction_restore
-//    - transaction_complete
-//    - paywall_close
-//    - paywall_open
-//    - paywallWebviewLoad_start
-//    - paywallWebviewLoad_fail
-//    - paywallWebviewLoad_timeout
-//    - paywallWebviewLoad_complete
-//    - trigger_fire
-//    - paywallResponseLoad_start
-//    - paywallResponseLoad_fail
-//    - paywallResponseLoad_complete
-//    - paywallResponseLoad_notFound
-//    - paywallProductsLoad_start
-//    - paywallProductsLoad_fail
-//    - paywallProductsLoad_complete
-//    - user_attributes
-//    - subscriptionStatus_didChange
-//    - paywallPresentationRequest
-//    - deepLink_open
+  // Display paywall with free trial content, make a free trial purchase, force trial to expire. Ensure that free trial content is no longer used
+  func test57() async throws {
+    skip("Need to add mechanism for restart")
+    return
+
+    Superwall.shared.register(event: "present_free_trial")
+
+    // Assert that paywall appears with free trial content
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Expire subscription
+    await expireSubscription(productIdentifier: StoreKitHelper.Constants.freeTrialProductIdentifier)
+
+    #warning("need to restart before continuing here")
+
+    // Try to present paywall again
+    Superwall.shared.register(event: "present_free_trial")
+
+    // Assert that paywall appears without free trial content
+    await assert(after: Constants.paywallPresentationDelay)
+  }
 
 
-
-  /// Case: Airplane Mode
-  /// Lifecycle handler
-
-//
-//  func test_getPresentationResult_paywallNotAvailable() async throws {
-//    let result = await Superwall.shared.getPresentationResult(forEvent: "incorrect_product_identifier")
-//    XCTAssertEqual(result, .paywallNotAvailable)
-//  }
-//
-
-
-  // Missing the final case `userIsSubscribed`. This can be done when we are able to manually
-  // set the subscription status using the purchaseController.
-
-  // Make sure exit / refresh shows up if paywall.js isn’t installed on page
-  //  func test17() async throws {
-  //    Superwall.shared.track(event: "no_paywalljs")
-  //    await assert(after: Constants.paywallPresentationFailureDelay)
-  //  }
-
-#warning("TODO: Might need to move to Waldo")
   // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
   // Superwall.shared.track(event: "present_urls")
   // Test: not calling dismiss on main thread

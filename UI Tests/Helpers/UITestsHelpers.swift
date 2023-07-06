@@ -154,14 +154,20 @@ public extension NSObject {
     }
   }
 
-  @objc func relaunch() {
-    Task {
-      await Communicator.shared.send(.relaunchApp)
-    }
+  @objc func relaunch() async {
+    await Communicator.shared.send(.relaunchApp)
   }
 
-  @objc func activateSubscriber(productIdentifier: String) async {
-    await Communicator.shared.send(.activateSubscriber(productIdentifier: productIdentifier))
+  @objc func springboard() async {
+    await Communicator.shared.send(.springboard)
+  }
+
+  @objc func activateSubscription(productIdentifier: String) async {
+    await Communicator.shared.send(.activateSubscription(productIdentifier: productIdentifier))
+  }
+
+  @objc func expireSubscription(productIdentifier: String) async {
+    await Communicator.shared.send(.expireSubscription(productIdentifier: productIdentifier))
   }
 
   @objc func log(_ message: String) {

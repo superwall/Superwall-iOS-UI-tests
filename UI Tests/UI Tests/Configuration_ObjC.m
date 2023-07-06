@@ -48,6 +48,27 @@ static BOOL kHasConfigured = NO;
 
 @end
 
+// MARK: - SWKMockSuperwallDelegate
+
+@interface SWKMockSuperwallDelegate ()
+@property (nonatomic, copy) void (^handleSuperwallEvent)(SWKSuperwallEventInfo *);
+@end
+
+@implementation SWKMockSuperwallDelegate
+
+- (void)handleSuperwallEvent:(void (^)(SWKSuperwallEventInfo *))handler {
+  self.handleSuperwallEvent = handler;
+}
+
+- (void)handleSuperwallEventWithInfo:(SWKSuperwallEventInfo *)eventInfo {
+  if (self.handleSuperwallEvent) {
+    self.handleSuperwallEvent(eventInfo);
+  }
+}
+
+@end
+
+
 // MARK: - Automatic configuration
 
 @interface SWKConfigurationAutomatic()
@@ -59,7 +80,6 @@ static BOOL kHasConfigured = NO;
   // Make sure setup has not been called
   if (SWKConfigurationState.hasConfigured) { return; }
   SWKConfigurationState.hasConfigured = YES;
-
 
   // Begin fetching products for use in other test cases
   [[SWKStoreKitHelper sharedInstance] fetchCustomProductsWithCompletionHandler:^{
@@ -77,7 +97,7 @@ static BOOL kHasConfigured = NO;
 }
 
 - (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier  completionHandler:(void (^ _Nonnull)(void))completionHandler {
-  [self activateSubscriberWithProductIdentifier:productIdentifier completionHandler:^{
+  [self activateSubscriptionWithProductIdentifier:productIdentifier completionHandler:^{
     completionHandler();
   }];
 }
@@ -100,13 +120,13 @@ static BOOL kHasConfigured = NO;
   if (SWKConfigurationState.hasConfigured) { return; }
   SWKConfigurationState.hasConfigured = YES;
 
-  [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey purchaseController:self.purchaseController options:nil completion:NULL];
-
-  // Set status
-  [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
-
   // Begin fetching products for use in other test cases
   [[SWKStoreKitHelper sharedInstance] fetchCustomProductsWithCompletionHandler:^{
+    [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey purchaseController:self.purchaseController options:nil completion:NULL];
+
+    // Set status
+    [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
+
     completionHandler();
   }];
 }

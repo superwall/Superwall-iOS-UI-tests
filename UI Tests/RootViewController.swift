@@ -61,7 +61,7 @@ class RootViewController: UIViewController {
 
     // Add a receipt before the test starts
     if let purchasedProductIdentifier = testOptions.purchasedProductIdentifier {
-      await activateSubscriber(productIdentifier: purchasedProductIdentifier)
+      await activateSubscription(productIdentifier: purchasedProductIdentifier)
     }
 
     // Configure if set to automatically configure

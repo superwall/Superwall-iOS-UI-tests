@@ -27,13 +27,15 @@ class Communicator {
 
       // Parent tells the test app
       case relaunchApp
+      case springboard
       case assert(testName: String, precision: Float, captureArea: CaptureArea)
       case assertValue(testName: String, value: String)
       case skip(message: String)
       case fail(message: String)
       case touch(point: CGPoint)
       case swipeDown
-      case activateSubscriber(productIdentifier: String)
+      case activateSubscription(productIdentifier: String)
+      case expireSubscription(productIdentifier: String)
       case log(_ message: String)
       case completed(action: Action)
     }

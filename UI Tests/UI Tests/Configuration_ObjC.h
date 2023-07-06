@@ -19,3 +19,7 @@
 @interface SWKMockPaywallViewControllerDelegate : NSObject <SWKPaywallViewControllerDelegate>
 @property (nonatomic, copy) void (^paywallViewControllerDidFinish)(SWKPaywallViewController *controller, SWKPaywallResult result, BOOL shouldDismiss);
 @end
+
+@interface SWKMockSuperwallDelegate : NSObject <SWKSuperwallDelegate>
+- (void)handleSuperwallEvent:(void (^)(SWKSuperwallEventInfo *))handler;
+@end

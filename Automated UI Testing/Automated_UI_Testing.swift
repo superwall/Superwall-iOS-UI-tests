@@ -31,6 +31,10 @@ class Automated_UI_Testing: XCTestCase {
         app.activate()
         Communicator.shared.completed(action: action)
 
+      case .springboard:
+        XCUIDevice.shared.press(.home)
+        Communicator.shared.completed(action: action)
+
       case .assert(let testName, let precision, let captureArea):
         // If Xcode 14.1/14.2 bug ever gets fixed, use `simctl` to set a consistent status bar instead (https://www.jessesquires.com/blog/2022/12/14/simctrl-status_bar-broken/)
         let image = captureArea.image(from: app.screenshot().image)
@@ -59,8 +63,12 @@ class Automated_UI_Testing: XCTestCase {
         app.swipeDown(velocity: XCUIGestureVelocity.fast)
         Communicator.shared.completed(action: action)
 
-      case .activateSubscriber(let productIdentifier):
+      case .activateSubscription(let productIdentifier):
         try! storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
+        Communicator.shared.completed(action: action)
+
+      case .expireSubscription(let productIdentifier):
+        try! storeKitTestSession.expireSubscription(productIdentifier: productIdentifier)
         Communicator.shared.completed(action: action)
 
       case .log(let message):
@@ -107,15 +115,15 @@ class Automated_UI_Testing: XCTestCase {
 
     springboard.collectionViews.buttons["Remove App"].tap()
 
-    await Task.sleep(timeInterval: 1.0)
+    await Task.sleep(timeInterval: 2.0)
 
     springboard.alerts["Remove “UI Tests”?"].scrollViews.otherElements.buttons["Delete App"].tap()
 
-    await Task.sleep(timeInterval: 1.0)
+    await Task.sleep(timeInterval: 2.0)
 
     springboard.alerts["Delete “UI Tests”?"].scrollViews.otherElements.buttons["Delete"].tap()
 
-    await Task.sleep(timeInterval: 1.0)
+    await Task.sleep(timeInterval: 2.0)
   }
 
   func performSDKTest(number: Int) async throws {

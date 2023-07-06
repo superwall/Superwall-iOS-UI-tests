@@ -33,19 +33,14 @@ TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
 #define TEST_ASSERT_VALUE(value) \
 TEST_ASSERT_VALUE_COMPLETION(value, ^{})
 
+#define TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, completionHandlerValue) \
+[weakSelf sleepWithTimeInterval:delay completionHandler:^{ TEST_ASSERT_VALUE_COMPLETION(value, completionHandlerValue) }];
+
 #define TEST_SKIP(message) \
 [self skip:message]; completionHandler(nil); return;
 
 #define FATAL_ERROR(message) \
 NSCAssert(false, message);
-
-#pragma mark - SWKSuperwallDelegate
-
-@interface SWKMockDelegate: NSObject <SWKSuperwallDelegate>
-@property (nonatomic, strong) NSMutableArray <void (^)(SWKSuperwallEventInfo *info)> *observers;
-- (void)addObserver:(void (^)(SWKSuperwallEventInfo *info))block;
-- (void)removeObservers;
-@end
 
 #pragma mark - UITests_ObjC
 
@@ -274,12 +269,11 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 // Present regardless of status
-- (SWKTestOptions *)testOptions9 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier]; }
+- (SWKTestOptions *)testOptions9 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test9WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
-
-  // Mock user as subscribed
-  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+  
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
     [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
     TEST_ASSERT_DELAY(kPaywallPresentationDelay);
@@ -593,10 +587,10 @@ static id<SWKTestConfiguration> kConfiguration;
     // Verify that Safari has opened.
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea safari], ^{
       // Relaunch the parent app.
-      [weakSelf relaunch];
-      
-      // Ensure nothing has changed.
-      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      [weakSelf relaunchWithCompletionHandler:^{
+        // Ensure nothing has changed.
+        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      }];
     });
   }));
 }
@@ -656,12 +650,12 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Case: Subscribed user, register event without a gating handler
 /// Result: paywall should NOT display
-- (SWKTestOptions *)testOptions24 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier]; }
+- (SWKTestOptions *)testOptions24 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test24WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
   // Mock user as subscribed
-  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
 
     // Register event
     [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
@@ -745,7 +739,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Mock user as subscribed
-  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
 
     // Register event and present an alert controller
     [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
@@ -997,7 +991,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that paywall is presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Mock user as subscribed
-      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
         // Press restore
         CGPoint restoreButton = CGPointMake(200, 232);
         [weakSelf touch:restoreButton];
@@ -1112,7 +1106,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that paywall is presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Mock user as subscribed
-      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:^{
+      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
         // Press restore
         CGPoint restoreButton = CGPointMake(214, 292);
         [weakSelf touch:restoreButton];
@@ -1191,7 +1185,7 @@ static id<SWKTestConfiguration> kConfiguration;
     return;
   }
 
-  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier completionHandler:completionHandler];
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:completionHandler];
 }
 
 - (void)executeRegisterFeatureClosureTestWithSubscribed:(BOOL)subscribed gated:(BOOL)gated testName:(NSString * _Nonnull)testNameOverride completionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -1241,13 +1235,13 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 // Unable to fetch config, subscribed, and not gated.
-- (SWKTestOptions *)testOptions43 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO purchasedProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier]; }
+- (SWKTestOptions *)testOptions43 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO purchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test43WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Unable to fetch config, subscribed, and gated.
-- (SWKTestOptions *)testOptions44 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO purchasedProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier]; }
+- (SWKTestOptions *)testOptions44 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO purchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test44WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
@@ -1263,13 +1257,13 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 // Fetched config, subscribed, and not gated.
-- (SWKTestOptions *)testOptions47 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier]; }
+- (SWKTestOptions *)testOptions47 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test47WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
 
 // Fetched config, subscribed, and gated.
-- (SWKTestOptions *)testOptions48 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.annualProductIdentifier]; }
+- (SWKTestOptions *)testOptions48 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test48WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   [self executeRegisterFeatureClosureTestWithSubscribed:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
 }
@@ -1302,15 +1296,118 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test52WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Implement")
+  TEST_START
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *appInstallEventHolder = [SWKValueDescriptionHolder new];
+  appInstallEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventAppInstall:
+        appInstallEventHolder.intValue += 1;
+        appInstallEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Close and reopen app
+  [weakSelf springboardWithCompletionHandler:^{
+    [weakSelf sleepWithTimeInterval:3.0 completionHandler:^{
+      [weakSelf relaunchWithCompletionHandler:^{
+        // Assert that `.appInstall` was called once
+        TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, appInstallEventHolder.description, ^{});
+      }];
+    }];
+  }];
 }
 
 - (void)test53WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Implement")
+  TEST_START
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *appLaunchEventHolder = [SWKValueDescriptionHolder new];
+  appLaunchEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventAppLaunch:
+        appLaunchEventHolder.intValue += 1;
+        appLaunchEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Close and reopen app
+  [weakSelf springboardWithCompletionHandler:^{
+    [weakSelf relaunchWithCompletionHandler:^{
+      // Assert that `.appLaunch` was called once
+      TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, appLaunchEventHolder.description, ^{});
+    }];
+  }];
 }
 
 - (void)test54WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Implement")
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *sessionStartEventHolder = [SWKValueDescriptionHolder new];
+  sessionStartEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSessionStart:
+        sessionStartEventHolder.intValue += 1;
+        sessionStartEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Assert that `.sessionStart` was called once
+  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, sessionStartEventHolder.description, ^{
+
+    // Close app
+    [weakSelf springboardWithCompletionHandler:^{
+      // Wait 35 seconds to trigger session start again
+      [weakSelf sleepWithTimeInterval:35 completionHandler:^{
+        // Re-open app
+        [weakSelf relaunchWithCompletionHandler:^{
+          // Assert that `.sessionStart` was called again
+          TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, sessionStartEventHolder.description, ^{});
+        }];
+      }];
+    }];
+  });
 }
 
 - (void)test55WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -1321,94 +1418,8 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_SKIP(@"Implement")
 }
 
-
-
-//- (void)test18WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-//  TEST_SKIP(@"Skipping")
-//}
-
-//- (void)test_getTrackResult_paywall {
-//  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKTrackResult * _Nonnull result) {
-//    switch (result.value) {
-//      case SWKTrackValuePaywall:
-//        break;
-//      default:
-//        XCTFail();
-//    }
-//  }];
-//}
-//
-//- (void)test_getTrackResult_eventNotFound {
-//  [[Superwall sharedInstance] getPresentationResultForEvent:@"a_random_madeup_event" completionHandler:^(SWKTrackResult * _Nonnull result) {
-//    XCTAssertEqual(result.value, SWKTrackValueEventNotFound);
-//  }];
-//}
-//
-//- (void)test_getTrackResult_noRuleMatch {
-//  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKTrackResult * _Nonnull result) {
-//    XCTAssertEqual(result.value, SWKTrackValueNoRuleMatch);
-//  }];
-//}
-//
-//- (void)test_getTrackResult_paywallNotAvailable {
-//  [[Superwall sharedInstance] getPresentationResultForEvent:@"incorrect_product_identifier" completionHandler:^(SWKTrackResult * _Nonnull result) {
-//    XCTAssertEqual(result.value, SWKTrackValuePaywallNotAvailable);
-//  }];
-//}
-//
-//- (void)test_getTrackResult_holdout {
-//  [[Superwall sharedInstance] getPresentationResultForEvent:@"holdout" completionHandler:^(SWKTrackResult * _Nonnull result) {
-//    switch (result.value) {
-//      case SWKTrackValueHoldout:
-//        break;
-//      default:
-//        XCTFail();
-//    }
-//  }];
-//}
-
-// Missing the final case `userIsSubscribed`. This can be done when we are able to manually
-// set the subscription status using the purchaseController.
-
-
-// Make sure exit / refresh shows up if paywall.js isn’t installed on page
-//- (void)test17 {
-////
-//  // Send event
-//  [[Superwall sharedInstance] trackWithEvent:@"no_paywalljs"];
-//
-//  // Wait and assert.
-//  ASYNC_TEST_ASSERT(kPaywallPresentationFailureDelay);
-//
-//}
+- (void)test57WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Implement")
+}
 
 @end
-
-//// MARK: - SWKMockDelegate
-//
-//@implementation SWKMockDelegate
-//
-//- (instancetype)init {
-//  self = [super init];
-//  if (self) {
-//    self.observers = [[NSMutableArray alloc] init];
-//  }
-//
-//  return self;
-//}
-//
-//- (void)addObserver:(void (^)(SWKSuperwallEventInfo *info))block {
-//  [self.observers addObject:block];
-//}
-//
-//- (void)removeObservers {
-//  [self.observers removeAllObjects];
-//}
-//
-//- (void)didTrackSuperwallEventInfo:(SWKSuperwallEventInfo *)info {
-//  [self.observers enumerateObjectsUsingBlock:^(void (^ _Nonnull observer)(SWKSuperwallEventInfo *), NSUInteger idx, BOOL * _Nonnull stop) {
-//    observer(info);
-//  }];
-//}
-//
-//@end
