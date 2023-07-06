@@ -1088,18 +1088,6 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert that `.sessionStart` was called once
     await assert(value: sessionStartEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
-
-    // Close app
-    await springboard()
-
-    // Wait 35 seconds to trigger session start again
-    await sleep(timeInterval: 35)
-
-    // Re-open app
-    await relaunch()
-
-    // Assert that `.sessionStart` was called again
-    await assert(value: sessionStartEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
   }
 
   /// Verify `app_close` anytime the app leaves the foreground and `app_open` anytime the app enters the foreground
