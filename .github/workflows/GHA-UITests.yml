@@ -1,0 +1,59 @@
+name: Run UI Tests from superwall-me/Superwall-iOS dispatch
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [branch-push]
+
+jobs:
+  xcode_build:
+    runs-on: macos-12
+    strategy:
+      matrix:
+        scheme: ["UI Tests -swift -automatic", "UI Tests -swift -advanced", "UI Tests -objc -automatic", "UI Tests -objc -advanced"]
+    env:
+      PROJECT: "UI Tests.xcodeproj"
+      SDK: iphonesimulator
+      DESTINATION: 'platform=iOS Simulator,name=iPhone 14 Pro,OS=16.4'
+      DERIVED_DATA_PATH: build_output
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Xcode
+      run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+    - name: Run UI Tests
+      continue-on-error: true
+      id: ui_tests
+      run: |
+        # Run the xcodebuild test command and duplicate the output to a temporary file named full_output.txt.
+        xcodebuild test -project "${{ env.PROJECT }}" \
+        -scheme "${{ matrix.scheme }}" \
+        -sdk "${{ env.SDK }}" \
+        -destination "${{ env.DESTINATION }}" \
+        -derivedDataPath "${{ env.DERIVED_DATA_PATH }}" \
+        -verbose | tee full_output.txt
+        # Use grep to extract the test suite summary from the full_output.txt file.
+        # Write the summary to a temporary file named test_output.txt.
+        grep -m 1 'Test Suite .* \(passed\|failed\) at' -A 1 full_output.txt | head -n 2 > test_output.txt
+
+    - name: Send test results to Slack
+      run: |
+        # Read the contents of the test_output.txt file.
+        test_output=$(cat test_output.txt)
+        # Determine whether the tests passed or failed.
+        if [[ $test_output == *"passed"* ]]; then
+          # If the tests passed, prepend the message with a green checkmark emoji.
+          emoji="✅"
+        else
+          # If the tests failed, prepend the message with a red alarm emoji.
+          emoji="🚨"
+        fi
+        # Prepend the emoji and the scheme variable to the test output.
+        full_message="*$emoji Scheme: ${{ matrix.scheme }}*\n_${{ github.event.client_payload.author }} (${{ github.event.client_payload.commit }})_\n$test_output"
+        # Prepare the JSON payload with the full message as a "section" block with "mrkdwn" text.
+        payload="{\"blocks\": [{\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"$full_message\"}}]}"
+        # Print the payload for debugging purposes.
+        echo "Payload: $payload"
