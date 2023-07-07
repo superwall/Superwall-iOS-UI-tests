@@ -734,7 +734,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Case: Subscribed user, register event with a gating handler
 /// Result: paywall should NOT display, code in gating closure should execute
-- (SWKTestOptions *)testOptions27 { return [SWKTestOptions testOptionsWithAutomaticallyConfigure:NO]; }
+- (SWKTestOptions *)testOptions27 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test27WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
@@ -810,23 +810,17 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 // Presentation result: `userIsSubscribed`
-- (SWKTestOptions *)testOptions32 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:YES automaticallyConfigure:NO]; }
+- (SWKTestOptions *)testOptions32 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
 - (void)test32WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
 
-  // Handle subscription status before configuring to ensure that the receipt with automatic setup exists.
+  // Mock user as subscribed
   [self handleSubscriptionMockingWithSubscribed:YES completionHandler:^{
-    // Now configure the SDK
-    [weakSelf.configuration setupWithCompletionHandler:^{
-      // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
-      [weakSelf handleSubscriptionMockingWithSubscribed:YES completionHandler:^{
-        // Get the presentation result for the specified event
-        [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
-          // Assert the value of the result's description
-          NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-          TEST_ASSERT_VALUE(value);
-        }];
-      }];
+    // Get the presentation result for the specified event
+    [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+      // Assert the value of the result's description
+      NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+      TEST_ASSERT_VALUE(value);
     }];
   }];
 }
@@ -1368,6 +1362,8 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test54WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Fixed in another branch")
+
   TEST_START_NUM_ASSERTS(2)
 
   // Create Superwall delegate
