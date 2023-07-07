@@ -1448,267 +1448,236 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test56WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Implement")
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  NSString *urlString = @"exampleapp://?superwall_debug=true&paywall_id=8832&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg";
+  NSURL *url = [[NSURL alloc] initWithString:urlString];
+  BOOL handled = [[Superwall sharedInstance] handleDeepLink:url];
+
+  // Create value handler
+  SWKValueDescriptionHolder *deepLinkEventHolder = [SWKValueDescriptionHolder new];
+  deepLinkEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventDeepLink:
+        deepLinkEventHolder.intValue += 1;
+        deepLinkEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  NSString *handledString = handled ? @"true" : @"false";
+
+  // Assert that deep link was handled
+  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, handledString, ^{
+
+    // Assert that `.deepLink` was called once
+    TEST_ASSERT_DELAY_VALUE_COMPLETION(0, deepLinkEventHolder.description, ^{
+
+      TEST_ASSERT_DELAY(0)
+    })
+  });
 }
 
+- (SWKTestOptions *)testOptions57 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.deepLinkOpenAPIKey]; }
 - (void)test57WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Implement")
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  NSString *urlString = @"exampleapp://mydeepLink?isDeepLink=true";
+  NSURL *url = [[NSURL alloc] initWithString:urlString];
+  BOOL handled = [[Superwall sharedInstance] handleDeepLink:url];
+
+  // Create value handler
+  SWKValueDescriptionHolder *deepLinkEventHolder = [SWKValueDescriptionHolder new];
+  deepLinkEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventDeepLink:
+        deepLinkEventHolder.intValue += 1;
+        deepLinkEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  NSString *handledString = handled ? @"true" : @"false";
+
+  // Assert that deep link was handled
+  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, handledString, ^{
+
+    // Assert that `.deepLink` was called once
+    TEST_ASSERT_DELAY_VALUE_COMPLETION(0, deepLinkEventHolder.description, ^{
+
+      TEST_ASSERT_DELAY(0)
+    })
+  });
 }
 
+- (SWKTestOptions *)testOptions58 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.transactionAbandonAPIKey]; }
+- (void)test58WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
 
-/*
- /// Verify `app_close` anytime the app leaves the foreground and `app_open` anytime the app enters the foreground
- func test55() async throws {
-   // Create Superwall delegate
-   let delegate = Configuration.MockSuperwallDelegate()
-   holdStrongly(delegate)
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
 
-   // Set delegate
-   Superwall.shared.delegate = delegate
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
 
-   // Create value handler
-   let appOpenEventHolder = ValueDescriptionHolder()
-   appOpenEventHolder.stringValue = "No"
+  // Create value handler
+  SWKValueDescriptionHolder *transactionAbandonEventHolder = [SWKValueDescriptionHolder new];
+  transactionAbandonEventHolder.stringValue = @"No";
 
-   // Create value handler
-   let appCloseEventHolder = ValueDescriptionHolder()
-   appCloseEventHolder.stringValue = "No"
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionAbandon:
+        transactionAbandonEventHolder.intValue += 1;
+        transactionAbandonEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
 
-   // Respond to Superwall events
-   delegate.handleSuperwallEvent { eventInfo in
-     switch eventInfo.event {
-     case .appClose:
-       appCloseEventHolder.intValue += 1
-       appCloseEventHolder.stringValue = "Yes"
-     case .appOpen:
-       appOpenEventHolder.intValue += 1
-       appOpenEventHolder.stringValue = "Yes"
-     default:
-       return
-     }
-   }
+  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
 
-   // Close app
-   await springboard()
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(196, 750);
+    [weakSelf touch:purchaseButton];
 
-   // Assert that `.appClose` was called once
-   await assert(value: appCloseEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    CGRect customFrame = CGRectMake(0, 488, 393, 300);
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+      // Tap the Subscribe button
+      CGPoint abandonTransactionButton = CGPointMake(359, 515);
+      [weakSelf touch:abandonTransactionButton];
 
-    // Re-open app
-    await relaunch()
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+        // Assert that `.transactionAbandon` was called once
+        TEST_ASSERT_DELAY_VALUE_COMPLETION(0, transactionAbandonEventHolder.description, ^{});
+      });
+    }));
+  });
+}
 
-   // Assert that `.appOpen` was called once
-   await assert(value: appOpenEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
- }
+- (SWKTestOptions *)testOptions59 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.paywallDeclineAPIKey]; }
+- (void)test59WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
 
- /// Test opening debugger from deeplink.
- func test56() async throws {
-   // Create Superwall delegate
-   let delegate = Configuration.MockSuperwallDelegate()
-   holdStrongly(delegate)
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
 
-   // Set delegate
-   Superwall.shared.delegate = delegate
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
 
-   let urlString = "exampleapp://?superwall_debug=true&paywall_id=8832&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg"
-   let url = URL(string: urlString)!
-   let handled = Superwall.shared.handleDeepLink(url)
+  // Create value handler
+  SWKValueDescriptionHolder *paywallDeclineEventHolder = [SWKValueDescriptionHolder new];
+  paywallDeclineEventHolder.stringValue = @"No";
 
-   // Create value handler
-   let deepLinkEventHolder = ValueDescriptionHolder()
-   deepLinkEventHolder.stringValue = "No"
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventPaywallDecline:
+        paywallDeclineEventHolder.intValue += 1;
+        paywallDeclineEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
 
-   // Respond to Superwall events
-   delegate.handleSuperwallEvent { eventInfo in
-     switch eventInfo.event {
-     case .deepLink(url: let url):
-       deepLinkEventHolder.intValue += 1
-       deepLinkEventHolder.stringValue = url.absoluteString
-     default:
-       return
-     }
-   }
+  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
 
-   // Assert that the deep link worked
-   await assert(value: "\(handled)", after: Constants.implicitPaywallPresentationDelay)
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+    // Decline the paywall
+    CGPoint declineButton = CGPointMake(358, 59);
+    [weakSelf touch:declineButton];
 
-   // Assert that `.deepLink` was called once
-   await assert(value: deepLinkEventHolder.description)
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+      // Assert that `.paywallDecline` was called once
+      TEST_ASSERT_DELAY_VALUE_COMPLETION(0, paywallDeclineEventHolder.description, ^{});
+    });
+  });
+}
 
-   await assert()
- }
+- (SWKTestOptions *)testOptions60 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.transactionFailAPIKey]; }
+- (void)test60WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
 
- /// Present paywall from implicit trigger: `deepLink_open`.
- func testOptions57() -> TestOptions { return TestOptions(apiKey: Constants.deepLinkOpenAPIKey) }
- func test57() async throws {
-   // Create Superwall delegate
-   let delegate = Configuration.MockSuperwallDelegate()
-   holdStrongly(delegate)
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
 
-   // Set delegate
-   Superwall.shared.delegate = delegate
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
 
-   let url = URL(string: "exampleapp://mydeepLink?isDeepLink=true")!
+  // Create value handler
+  SWKValueDescriptionHolder *transactionFailEventHolder = [SWKValueDescriptionHolder new];
+  transactionFailEventHolder.stringValue = @"No";
 
-   let handled = Superwall.shared.handleDeepLink(url)
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionFail:
+        transactionFailEventHolder.intValue += 1;
+        transactionFailEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
 
-   // Create value handler
-   let deepLinkEventHolder = ValueDescriptionHolder()
-   deepLinkEventHolder.stringValue = "No"
+  // Fail all transactions
+  [self failTransactionsWithCompletionHandler:^{
+    [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
 
-   // Respond to Superwall events
-   delegate.handleSuperwallEvent { eventInfo in
-     switch eventInfo.event {
-     case .deepLink(url: let url):
-       deepLinkEventHolder.intValue += 1
-       deepLinkEventHolder.stringValue = url.absoluteString
-     default:
-       return
-     }
-   }
+    // Assert that paywall was presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+      // Purchase on the paywall
+      CGPoint purchaseButton = CGPointMake(196, 750);
+      [weakSelf touch:purchaseButton];
 
-   // Assert that the deep link worked
-   await assert(value: "\(handled)", after: Constants.implicitPaywallPresentationDelay)
+      // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+      CGRect customFrame = CGRectMake(0, 488, 393, 300);
+      TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+        // Tap subscribe button.
+        CGPoint subscribeButton = CGPointMake(196, 766);
+        [weakSelf touch:subscribeButton];
 
-   // Assert that `.deepLink` was called once
-   await assert(value: deepLinkEventHolder.description)
-
-   // Assert paywall presented.
-   await assert()
- }
-
- /// Present paywall after a `transaction_abandon` event.
- func testOptions58() -> TestOptions { return TestOptions(apiKey: Constants.transactionAbandonAPIKey) }
- func test58() async throws {
-   // Create Superwall delegate
-   let delegate = Configuration.MockSuperwallDelegate()
-   holdStrongly(delegate)
-
-   // Set delegate
-   Superwall.shared.delegate = delegate
-
-   // Create value handler
-   let transactionAbandonEventHolder = ValueDescriptionHolder()
-   transactionAbandonEventHolder.stringValue = "No"
-
-   // Respond to Superwall events
-   delegate.handleSuperwallEvent { eventInfo in
-     switch eventInfo.event {
-     case .transactionAbandon:
-       transactionAbandonEventHolder.intValue += 1
-       transactionAbandonEventHolder.stringValue = "Yes"
-     default:
-       return
-     }
-   }
-
-   Superwall.shared.register(event: "campaign_trigger")
-
-   await assert(after: Constants.paywallPresentationDelay)
-
-   // Purchase on the paywall
-   let purchaseButton = CGPoint(x: 196, y: 750)
-   touch(purchaseButton)
-
-   // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
-   await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
-
-   let abandonTransactionButton = CGPoint(x: 359, y: 515)
-   touch(abandonTransactionButton)
-
-   await assert(after: Constants.paywallPresentationDelay)
-
-   // Assert that `.transactionAbandon` was called once
-   await assert(value: transactionAbandonEventHolder.description)
- }
-
- /// Present paywall after a `paywall_decline` event.
- func testOptions59() -> TestOptions { return TestOptions(apiKey: Constants.paywallDeclineAPIKey) }
- func test59() async throws {
-   // Create Superwall delegate
-   let delegate = Configuration.MockSuperwallDelegate()
-   holdStrongly(delegate)
-
-   // Set delegate
-   Superwall.shared.delegate = delegate
-
-   // Create value handler
-   let paywallDeclineEventHolder = ValueDescriptionHolder()
-   paywallDeclineEventHolder.stringValue = "No"
-
-   // Respond to Superwall events
-   delegate.handleSuperwallEvent { eventInfo in
-     switch eventInfo.event {
-     case .paywallDecline:
-       paywallDeclineEventHolder.intValue += 1
-       paywallDeclineEventHolder.stringValue = "Yes"
-     default:
-       return
-     }
-   }
-
-   Superwall.shared.register(event: "campaign_trigger")
-
-   await assert(after: Constants.paywallPresentationDelay)
-
-   // Decline the paywall
-   let declineButton = CGPoint(x: 358, y: 59)
-   touch(declineButton)
-
-   await assert(after: Constants.paywallPresentationDelay)
-
-   // Assert that `.paywallDecline` was called once
-   await assert(value: paywallDeclineEventHolder.description)
- }
-
- /// Present paywall after a `transaction_fail` event.
- func testOptions60() -> TestOptions { return TestOptions(apiKey: Constants.transactionFailAPIKey) }
- func test60() async throws {
-   // Create Superwall delegate
-   let delegate = Configuration.MockSuperwallDelegate()
-   holdStrongly(delegate)
-
-   // Set delegate
-   Superwall.shared.delegate = delegate
-
-   // Create value handler
-   let transactionFailEventHolder = ValueDescriptionHolder()
-   transactionFailEventHolder.stringValue = "No"
-
-   // Respond to Superwall events
-   delegate.handleSuperwallEvent { eventInfo in
-     switch eventInfo.event {
-     case .transactionFail:
-       transactionFailEventHolder.intValue += 1
-       transactionFailEventHolder.stringValue = "Yes"
-     default:
-       return
-     }
-   }
-
-   await failTransactions()
-
-   Superwall.shared.register(event: "campaign_trigger")
-
-   await assert(after: Constants.paywallPresentationDelay)
-
-   // Purchase on the paywall
-   let purchaseButton = CGPoint(x: 196, y: 750)
-   touch(purchaseButton)
-
-   // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
-   await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
-
-   // Tap the Subscribe button
-   let subscribeButton = CGPoint(x: 196, y: 766)
-   touch(subscribeButton)
-
-   await assert(after: Constants.paywallPresentationDelay)
-
-   // Assert that `.transaction_fail` was called once
-   await assert(value: transactionFailEventHolder.description)
- }
-
- */
+        // Assert that paywall was presented
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+          // Assert that `.transactionFail` was called
+          TEST_ASSERT_DELAY_VALUE_COMPLETION(0, transactionFailEventHolder.description, ^{});
+        });
+      }));
+    });
+  }];
+}
 
 @end

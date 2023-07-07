@@ -1153,9 +1153,9 @@ final class UITests_Swift: NSObject, Testable {
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
       switch eventInfo.event {
-      case .deepLink(url: let url):
+      case .deepLink:
         deepLinkEventHolder.intValue += 1
-        deepLinkEventHolder.stringValue = url.absoluteString
+        deepLinkEventHolder.stringValue = "Yes"
       default:
         return
       }
@@ -1191,15 +1191,15 @@ final class UITests_Swift: NSObject, Testable {
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
       switch eventInfo.event {
-      case .deepLink(url: let url):
+      case .deepLink:
         deepLinkEventHolder.intValue += 1
-        deepLinkEventHolder.stringValue = url.absoluteString
+        deepLinkEventHolder.stringValue = "Yes"
       default:
         return
       }
     }
 
-    // Assert that the deep link worked
+    // The deep link will return false here.
     await assert(value: "\(handled)", after: Constants.implicitPaywallPresentationDelay)
 
     // Assert that `.deepLink` was called once
