@@ -71,6 +71,36 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "Automated_UI_Testing/test0()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test10()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test18()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test20()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test21()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test25()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test35()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test38()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test5()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test6()">
+               </Test>
+               <Test
                   Identifier = "ParentAppTestCase">
                </Test>
             </SkippedTests>
