@@ -34,6 +34,7 @@ class Communicator {
       case fail(message: String)
       case touch(point: CGPoint)
       case swipeDown
+      case failTransactions
       case activateSubscription(productIdentifier: String)
       case expireSubscription(productIdentifier: String)
       case log(_ message: String)

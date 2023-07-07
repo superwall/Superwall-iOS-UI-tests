@@ -63,6 +63,10 @@ class Automated_UI_Testing: XCTestCase {
         app.swipeDown(velocity: XCUIGestureVelocity.fast)
         Communicator.shared.completed(action: action)
 
+      case .failTransactions:
+        storeKitTestSession.failTransactionsEnabled = true
+        Communicator.shared.completed(action: action)
+
       case .activateSubscription(let productIdentifier):
         try! storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
         Communicator.shared.completed(action: action)

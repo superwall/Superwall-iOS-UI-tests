@@ -154,6 +154,10 @@ public extension NSObject {
     }
   }
 
+  @objc func failTransactions() async {
+    await Communicator.shared.send(.failTransactions)
+  }
+
   @objc func relaunch() async {
     await Communicator.shared.send(.relaunchApp)
   }

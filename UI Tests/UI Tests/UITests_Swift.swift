@@ -996,8 +996,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.implicitPaywallPresentationDelay)
   }
 
-  /// Verify `app_install` event occurs when the SDK is configured for the first time, and directly after calling Superwall.shared.reset()
-  #warning("Is this supposed to work after reset? Ask Yusuf")
+  /// Verify `app_install` event occurs when the SDK is configured for the first time
   func test52() async throws {
     // Create Superwall delegate
     let delegate = Configuration.MockSuperwallDelegate()
@@ -1134,42 +1133,241 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: appOpenEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
   }
 
-
+  /// Test opening debugger from deeplink.
   func test56() async throws {
-    skip("Implement")
-    return
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
 
-    //    - subscription_start
-    //    - freeTrial_start
-    //    - nonRecurringProduct_purchase
-    //    - transaction_start
-    //    - transaction_abandon
-    //    - transaction_fail
-    //    - transaction_restore
-    //    - transaction_complete
-    //    - paywall_close
-    //    - paywall_open
-    //    - paywallWebviewLoad_start
-    //    - paywallWebviewLoad_fail
-    //    - paywallWebviewLoad_timeout
-    //    - paywallWebviewLoad_complete
-    //    - trigger_fire
-    //    - paywallResponseLoad_start
-    //    - paywallResponseLoad_fail
-    //    - paywallResponseLoad_complete
-    //    - paywallResponseLoad_notFound
-    //    - paywallProductsLoad_start
-    //    - paywallProductsLoad_fail
-    //    - paywallProductsLoad_complete
-    //    - user_attributes
-    //    - subscriptionStatus_didChange
-    //    - paywallPresentationRequest
-    //    - deepLink_open
+    // Set delegate
+    Superwall.shared.delegate = delegate
 
+    let urlString = "exampleapp://?superwall_debug=true&paywall_id=8832&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg"
+    let url = URL(string: urlString)!
+    let handled = Superwall.shared.handleDeepLink(url)
+
+    // Create value handler
+    let deepLinkEventHolder = ValueDescriptionHolder()
+    deepLinkEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .deepLink(url: let url):
+        deepLinkEventHolder.intValue += 1
+        deepLinkEventHolder.stringValue = url.absoluteString
+      default:
+        return
+      }
+    }
+
+    // Assert that the deep link worked
+    await assert(value: "\(handled)", after: Constants.implicitPaywallPresentationDelay)
+
+    // Assert that `.deepLink` was called once
+    await assert(value: deepLinkEventHolder.description)
+
+    await assert()
   }
 
-  // Display paywall with free trial content, make a free trial purchase, force trial to expire. Ensure that free trial content is no longer used
+  /// Present paywall from implicit trigger: `deepLink_open`.
+  func testOptions57() -> TestOptions { return TestOptions(apiKey: Constants.deepLinkOpenAPIKey) }
   func test57() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    let url = URL(string: "exampleapp://mydeepLink?isDeepLink=true")!
+
+    let handled = Superwall.shared.handleDeepLink(url)
+
+    // Create value handler
+    let deepLinkEventHolder = ValueDescriptionHolder()
+    deepLinkEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .deepLink(url: let url):
+        deepLinkEventHolder.intValue += 1
+        deepLinkEventHolder.stringValue = url.absoluteString
+      default:
+        return
+      }
+    }
+
+    // Assert that the deep link worked
+    await assert(value: "\(handled)", after: Constants.implicitPaywallPresentationDelay)
+
+    // Assert that `.deepLink` was called once
+    await assert(value: deepLinkEventHolder.description)
+
+    // Assert paywall presented.
+    await assert()
+  }
+
+  /// Present paywall after a `transaction_abandon` event.
+  func testOptions58() -> TestOptions { return TestOptions(apiKey: Constants.transactionAbandonAPIKey) }
+  func test58() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionAbandonEventHolder = ValueDescriptionHolder()
+    transactionAbandonEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .transactionAbandon:
+        transactionAbandonEventHolder.intValue += 1
+        transactionAbandonEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "campaign_trigger")
+    
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    let abandonTransactionButton = CGPoint(x: 359, y: 515)
+    touch(abandonTransactionButton)
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.transactionAbandon` was called once
+    await assert(value: transactionAbandonEventHolder.description)
+  }
+
+  /// Present paywall after a `paywall_decline` event.
+  func testOptions59() -> TestOptions { return TestOptions(apiKey: Constants.paywallDeclineAPIKey) }
+  func test59() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let paywallDeclineEventHolder = ValueDescriptionHolder()
+    paywallDeclineEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .paywallDecline:
+        paywallDeclineEventHolder.intValue += 1
+        paywallDeclineEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "campaign_trigger")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Decline the paywall
+    let declineButton = CGPoint(x: 358, y: 59)
+    touch(declineButton)
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.paywallDecline` was called once
+    await assert(value: paywallDeclineEventHolder.description)
+  }
+
+  /// Present paywall after a `transaction_fail` event.
+  func testOptions60() -> TestOptions { return TestOptions(apiKey: Constants.transactionFailAPIKey) }
+  func test60() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionFailEventHolder = ValueDescriptionHolder()
+    transactionFailEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .transactionFail:
+        transactionFailEventHolder.intValue += 1
+        transactionFailEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    await failTransactions()
+
+    Superwall.shared.register(event: "campaign_trigger")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.transaction_fail` was called once
+    await assert(value: transactionFailEventHolder.description)
+  }
+
+  //    - subscription_start
+  //    - freeTrial_start
+  //    - nonRecurringProduct_purchase
+  //    - transaction_start
+  //    - transaction_fail
+  //    - transaction_restore
+  //    - transaction_complete
+  //    - paywall_close
+  //    - paywall_open
+  //    - paywallWebviewLoad_start
+  //    - paywallWebviewLoad_fail
+  //    - paywallWebviewLoad_timeout
+  //    - paywallWebviewLoad_complete
+  //    - trigger_fire
+  //    - paywallResponseLoad_start
+  //    - paywallResponseLoad_fail
+  //    - paywallResponseLoad_complete
+  //    - paywallResponseLoad_notFound
+  //    - paywallProductsLoad_start
+  //    - paywallProductsLoad_fail
+  //    - paywallProductsLoad_complete
+  //    - user_attributes
+  //    - subscriptionStatus_didChange
+  //    - paywallPresentationRequest
+
+  // Display paywall with free trial content, make a free trial purchase, force trial to expire. Ensure that free trial content is no longer used
+  func test61() async throws {
     skip("Need to add mechanism for restart")
     return
 

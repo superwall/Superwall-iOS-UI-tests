@@ -40,7 +40,27 @@ public class Constants: NSObject {
   // Contains a campaign with a `app_install` trigger.
   // https://superwall.com/applications/1770/
   @objc public static let appInstallAPIKey: String = "pk_8db958db59cc8460969659822351d5e177d8d65cb295cff2"
-  
+
+  // Contains a campaign with a `deepLink_open` trigger.
+  // https://superwall.com/applications/1817/
+  @objc public static let deepLinkOpenAPIKey: String =
+  "pk_3faea4c721179218a245475ea9d378d1ecb9bf059411a0c0"
+
+  // Contains a campaign with a `transaction_fail` trigger.
+  // https://superwall.com/applications/1818/
+  @objc public static let transactionAbandonAPIKey: String =
+  "pk_9c99186b023ae795e0189cf9cdcd3e2d2d174289e0800d66"
+
+  // Contains a campaign with a `paywall_decline` trigger.
+  // https://superwall.com/applications/1819/
+  @objc public static let paywallDeclineAPIKey: String =
+  "pk_a1071d541642719e2dc854da9ec717ec967b8908854ede74"
+
+  // Contains a campaign with a `transaction_fail` trigger.
+  // https://superwall.com/applications/1820/
+  @objc public static let transactionFailAPIKey: String =
+  "pk_b6cd945401435766da627080a3fbe349adb2dcd69ab767f3"
+
   @objc public static let configurationType = {
     return ProcessInfo.processInfo.environment["configurationType"]!
   }()
