@@ -51,7 +51,7 @@ public class Constants: NSObject {
   
   // Time interval constants
   @objc public static let defaultTimeout: TimeInterval = 120.0
-  @objc public static let paywallPresentationDelay: TimeInterval = 8.0
+  @objc public static let paywallPresentationDelay: TimeInterval = 12.0
   @objc public static let implicitPaywallPresentationDelay: TimeInterval = 12.0
   @objc public static let paywallPresentationFailureDelay: TimeInterval = 16.0
   @objc public static let paywallDelegateResponseDelay: TimeInterval = 12.0
