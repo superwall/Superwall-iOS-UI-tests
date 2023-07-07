@@ -37,7 +37,8 @@ class Automated_UI_Testing: XCTestCase {
 
       case .assert(let testName, let precision, let captureArea):
         // If Xcode 14.1/14.2 bug ever gets fixed, use `simctl` to set a consistent status bar instead (https://www.jessesquires.com/blog/2022/12/14/simctrl-status_bar-broken/)
-        let image = captureArea.image(from: app.screenshot().image)
+//        let image = captureArea.image(from: app.screenshot().image)
+        let image = app.screenshot().image
         ciAssertSnapshot(matching: image, as: .image(precision: precision), testName: testName)
         Communicator.shared.completed(action: action)
 
