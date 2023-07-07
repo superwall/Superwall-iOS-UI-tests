@@ -42,7 +42,7 @@ class Automated_UI_Testing: XCTestCase {
         Communicator.shared.completed(action: action)
 
       case .assertValue(let testName, let value):
-        assertSnapshot(matching: value, as: .json, testName: testName)
+        ciAssertSnapshot(matching: value, as: .json, testName: testName)
         Communicator.shared.completed(action: action)
 
       case .skip(let message):
