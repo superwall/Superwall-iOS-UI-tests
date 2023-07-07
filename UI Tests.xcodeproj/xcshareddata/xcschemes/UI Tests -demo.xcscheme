@@ -73,6 +73,12 @@
                <Test
                   Identifier = "Automated_UI_Testing/test10()">
                </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test18()">
+               </Test>
+               <Test
+                  Identifier = "Automated_UI_Testing/test35()">
+               </Test>
             </SelectedTests>
          </TestableReference>
       </Testables>
