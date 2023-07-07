@@ -20,7 +20,8 @@ class Automated_UI_Testing: XCTestCase {
     typealias LaunchEnvironment = [String: String]
     static let launchEnvironment = ProcessInfo.processInfo.environment
     static let isCIEnvironment: Bool = {
-      return launchEnvironment["xcode_cloud_ci"] != nil ? true : false
+      #warning("change")
+      return true
     }()
     static let snapshotsPathComponent: String = {
       return isCIEnvironment ? "CI_Snapshots" : "Snapshots"
