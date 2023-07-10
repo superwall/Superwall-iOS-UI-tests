@@ -24,14 +24,8 @@ __weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_cre
 #define TEST_ASSERT_DELAY_COMPLETION(delay, completionHandlerValue) \
 TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeIndicator], completionHandlerValue)
 
-#define TEST_ASSERT_DELAY(delay) \
-TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
-
 #define TEST_ASSERT_VALUE_COMPLETION(value, completionHandlerValue) \
 [weakSelf assertWithValue:value testName:testName completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
-
-#define TEST_ASSERT_VALUE(value) \
-TEST_ASSERT_VALUE_COMPLETION(value, ^{})
 
 #define TEST_ASSERT_DELAY_VALUE_COMPLETION(delay, value, completionHandlerValue) \
 [weakSelf sleepWithTimeInterval:delay completionHandler:^{ TEST_ASSERT_VALUE_COMPLETION(value, completionHandlerValue) }];
@@ -104,7 +98,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
   
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Uses the identify function. Should see the name 'Kate' in the paywall.
@@ -119,8 +113,8 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] identifyWithUserId:@"test1b"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Kate" }];
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-  
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Calls `reset()`. No first name should be displayed.
@@ -135,8 +129,8 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] reset];
   
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-  
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Calls `reset()` multiple times. No first name should be displayed.
@@ -152,8 +146,8 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] reset];
   
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-  
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
@@ -170,7 +164,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [[Superwall sharedInstance] registerWithEvent:@"present_video"];
         
         // Assert that the video has started from the 0 sec mark (video simply counts from 0sec to 2sec and only displays those 2 values)
-        TEST_ASSERT_DELAY(2.0);
+        TEST_ASSERT_DELAY_COMPLETION(2.0, ^{})
       }];
     }];
   }];
@@ -217,7 +211,7 @@ static id<SWKTestConfiguration> kConfiguration;
       });
       
       // Assert after a delay
-      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
     } else {
       // Handle error
       completionHandler(result.error);
@@ -231,8 +225,8 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Present the paywall.
   [[Superwall sharedInstance] registerWithEvent:@"present_products"];
-  
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
@@ -250,8 +244,8 @@ static id<SWKTestConfiguration> kConfiguration;
       // Remove those attributes.
       [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
       [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
-      
-      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
     }];
   }));
 }
@@ -264,8 +258,8 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
   [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
-  
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Present regardless of status
@@ -276,7 +270,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
     [[Superwall sharedInstance] registerWithEvent:@"present_always"];
 
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }];
 }
 
@@ -350,8 +344,8 @@ static id<SWKTestConfiguration> kConfiguration;
           // Add new user attribute
           [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Sawyer" }];
           [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-          
-          TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
       }));
     }];
@@ -363,7 +357,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   [[Superwall sharedInstance] registerWithEvent:@"keep_this_trigger_off"];
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Test trigger: not in the dashboard
@@ -371,7 +365,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   [[Superwall sharedInstance] registerWithEvent:@"i_just_made_this_up_and_it_dne"];
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Test trigger: not-allowed standard event (paywall_close)
@@ -384,7 +378,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
-      TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
     }];
   }));
 }
@@ -417,7 +411,7 @@ static id<SWKTestConfiguration> kConfiguration;
             [[Superwall sharedInstance] registerWithEvent:@"present_always"];
             
             // Wait and assert.
-            TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
           }];
           
           // Present paywall
@@ -445,8 +439,8 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
-  
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 // Clusterfucks by Jake™
@@ -474,8 +468,8 @@ static id<SWKTestConfiguration> kConfiguration;
           [[Superwall sharedInstance] registerWithEvent:@"present_always"];
           [[Superwall sharedInstance] registerWithEvent:@"present_always" params:@{@"some_param_1": @"hello"}];
           [[Superwall sharedInstance] registerWithEvent:@"present_always"];
-          
-          TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
       }));
     }];
@@ -512,7 +506,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf touch:donePoint];
         
         // Verify that the paywall appears
-        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
       }));
     }));
   }];
@@ -560,8 +554,8 @@ static id<SWKTestConfiguration> kConfiguration;
                   [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
                   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
                   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-                  
-                  TEST_ASSERT_DELAY(kPaywallPresentationDelay)
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
                 }];
               }));
             }];
@@ -589,7 +583,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Relaunch the parent app.
       [weakSelf relaunchWithCompletionHandler:^{
         // Ensure nothing has changed.
-        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
       }];
     });
   }));
@@ -625,7 +619,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [[Superwall sharedInstance] registerWithEvent:@"present_data"];
         
         // Ensure the paywall doesn't present.
-        TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
       }];
     }));
   }));
@@ -645,7 +639,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
   
   // Assert that paywall appears
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 /// Case: Subscribed user, register event without a gating handler
@@ -661,7 +655,7 @@ static id<SWKTestConfiguration> kConfiguration;
     [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
 
     // Assert that paywall DOES not appear
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }];
 }
 
@@ -697,7 +691,7 @@ static id<SWKTestConfiguration> kConfiguration;
           [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
 
           // Ensure the paywall doesn't present.
-          TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
       }];
     }));
@@ -728,7 +722,7 @@ static id<SWKTestConfiguration> kConfiguration;
     [weakSelf touch:purchaseButton];
     
     // Assert that nothing else appears
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }));
 }
 
@@ -754,7 +748,7 @@ static id<SWKTestConfiguration> kConfiguration;
     }];
 
     // Assert that alert controller appears
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }];
 }
 
@@ -766,7 +760,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-    TEST_ASSERT_VALUE(value);
+    TEST_ASSERT_VALUE_COMPLETION(value, ^{})
   }];
 }
 
@@ -781,7 +775,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-    TEST_ASSERT_VALUE(value);
+    TEST_ASSERT_VALUE_COMPLETION(value, ^{})
   }];
 }
 
@@ -793,7 +787,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] getPresentationResultForEvent:@"some_random_not_found_event" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-    TEST_ASSERT_VALUE(value);
+    TEST_ASSERT_VALUE_COMPLETION(value, ^{})
   }];
 }
 
@@ -805,7 +799,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] getPresentationResultForEvent:@"holdout" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-    TEST_ASSERT_VALUE(value);
+    TEST_ASSERT_VALUE_COMPLETION(value, ^{})
   }];
 }
 
@@ -820,7 +814,7 @@ static id<SWKTestConfiguration> kConfiguration;
     [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
       // Assert the value of the result's description
       NSString *value = [SWKPresentationValueObjcHelper description:result.value];
-      TEST_ASSERT_VALUE(value);
+      TEST_ASSERT_VALUE_COMPLETION(value, ^{})
     }];
   }];
 }
@@ -837,7 +831,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] registerWithEvent:@"present_data"];
   
   // Assert after a delay
-  TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
 /// Call reset while a paywall is displayed should not cause a crash
@@ -853,7 +847,7 @@ static id<SWKTestConfiguration> kConfiguration;
     [[Superwall sharedInstance] reset];
     
     // Assert after a delay
-    TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }));
 }
 
@@ -906,7 +900,7 @@ static id<SWKTestConfiguration> kConfiguration;
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
             // Assert didFinish paywall result value
             NSString *value = paywallDidFinishResultValueHolder.stringValue;
-            TEST_ASSERT_VALUE(value);
+            TEST_ASSERT_VALUE_COMPLETION(value, ^{});
           }];
         }];
       }));
@@ -950,7 +944,7 @@ static id<SWKTestConfiguration> kConfiguration;
       [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
         // Assert didFinish paywall result value
         NSString *value = paywallDidFinishResultValueHolder.stringValue;
-        TEST_ASSERT_VALUE(value);
+        TEST_ASSERT_VALUE_COMPLETION(value, ^{});
       }];
     }));
   }];
@@ -994,7 +988,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
           // Assert didFinish paywall result value
           NSString *value = paywallDidFinishResultValueHolder.stringValue;
-          TEST_ASSERT_VALUE(value);
+          TEST_ASSERT_VALUE_COMPLETION(value, ^{});
         }];
       }];
     }));
@@ -1050,19 +1044,19 @@ static id<SWKTestConfiguration> kConfiguration;
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
             // Assert paywall did finish result value
             NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
-            TEST_ASSERT_VALUE(paywallDidFinishValue);
-            
-            // Modify the didFinish paywall did finish result value
-            paywallDidFinishResultValueHolder.stringValue = @"empty value";
-            
-            // Swipe the paywall down to dismiss
-            [weakSelf swipeDown];
-            
-            // Assert the paywall was dismissed
-            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-              // Assert paywall did finish result value
-              NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
-              TEST_ASSERT_VALUE(paywallDidFinishValue);
+            TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, (^{
+              // Modify the didFinish paywall did finish result value
+              paywallDidFinishResultValueHolder.stringValue = @"empty value";
+
+              // Swipe the paywall down to dismiss
+              [weakSelf swipeDown];
+
+              // Assert the paywall was dismissed
+              TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+                // Assert paywall did finish result value
+                NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
+                TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, ^{});
+              }));
             }));
           }];
         }];
@@ -1109,19 +1103,19 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
           // Assert paywall did finish result value ("restored")
           NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
-          TEST_ASSERT_VALUE(paywallDidFinishValue);
+          TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, (^{
+            // Modify the paywall didFinish result value
+            paywallDidFinishResultValueHolder.stringValue = @"empty value";
 
-          // Modify the paywall didFinish result value
-          paywallDidFinishResultValueHolder.stringValue = @"empty value";
-          
-          // Swipe the paywall down to dismiss
-          [weakSelf swipeDown];
-          
-          // Assert the paywall was dismissed
-          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-            // Assert paywall did finish result value ("empty value")
-            NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
-            TEST_ASSERT_VALUE(paywallDidFinishValue);
+            // Swipe the paywall down to dismiss
+            [weakSelf swipeDown];
+
+            // Assert the paywall was dismissed
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+              // Assert paywall did finish result value ("empty value")
+              NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
+              TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, ^{});
+            }));
           }));
         }];
       }];
@@ -1166,7 +1160,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
           // Assert paywall did finish result value ("declined")
           NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
-          TEST_ASSERT_VALUE(paywallDidFinishValue);
+          TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, ^{});
         }];
       }));
     }));
@@ -1210,8 +1204,9 @@ static id<SWKTestConfiguration> kConfiguration;
     }];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-      TEST_ASSERT_VALUE(errorHandlerHolder.description);
-      TEST_ASSERT_VALUE(featureClosureHolder.description);
+      TEST_ASSERT_VALUE_COMPLETION(errorHandlerHolder.description, (^{
+        TEST_ASSERT_VALUE_COMPLETION(featureClosureHolder.description, ^{});
+      }));
     }));
   }];
 }
@@ -1268,7 +1263,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Ensure nothing has changed.
-  TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{})
 }
 
 /// Present paywall from implicit trigger: `session_start`.
@@ -1277,7 +1272,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Ensure nothing has changed.
-  TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{})
 }
 
 /// Present paywall from implicit trigger: `app_install`.
@@ -1286,7 +1281,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Ensure nothing has changed.
-  TEST_ASSERT_DELAY(kImplicitPaywallPresentationDelay);
+  TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{})
 }
 
 - (void)test52WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
