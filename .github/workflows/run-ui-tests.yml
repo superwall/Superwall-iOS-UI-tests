@@ -1,8 +1,9 @@
 name: Run UI Tests from superwall-me/Superwall-iOS dispatch
 
 on:
+  workflow_dispatch:
   repository_dispatch:
-    types: [create-tag]
+    types: [branch-push]
 
 jobs:
   tag:
