@@ -1,28 +1,33 @@
 name: Run UI Tests from superwall-me/Superwall-iOS dispatch
 
 on:
-  workflow_dispatch:
   repository_dispatch:
-    types: [branch-push]
+    types: [create-tag]
 
 jobs:
-  run_tests:
+  tag:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        scheme: ["UI Tests -swift -automatic", "UI Tests -swift -advanced", "UI Tests -objc -automatic", "UI Tests -objc -advanced"]
-
     steps:
-      - name: Run curl commands
-        run: |
-          PAYLOAD=$(jq -n \
-                    --arg btt "${{ secrets.BITRISE_TOKEN }}" \
-                    --arg branch "main" \
-                    --arg wid "primary" \
-                    --arg hash "${{ github.event.client_payload.commit }}" \
-                    --arg scheme "${{ matrix.scheme }}" \
-                    --arg author "${{ github.event.client_payload.author }}" \
-                    --arg msg "${{ github.event.client_payload.message }}" \
-                    '{hook_info: {type: "bitrise", build_trigger_token: $btt}, build_params: {branch: $branch, workflow_id: $wid, environments: [{mapped_to: "IOS_SDK_COMMIT_HASH", value: $hash, is_expand: true}, {mapped_to: "IOS_SDK_SCHEME", value: $scheme, is_expand: true}, {mapped_to: "IOS_SDK_AUTHOR", value: $author, is_expand: true}, {mapped_to: "IOS_SDK_COMMIT_MESSAGE", value: $msg, is_expand: true}]}, triggered_by: "curl"}')
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "${{ secrets.BITRISE_URL }}"
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Git User
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Remove existing tags
+      run: |
+        git pull
+        for tag in $(git tag); do
+          if [[ $tag == run-ui-tests-* ]]; then
+            git tag -d $tag
+            git push origin :refs/tags/$tag
+          fi
+        done
+
+    - name: Add Tag
+      run: |
+        TAG_NAME="run-ui-tests-${{ github.event.client_payload.commit }}"
+        git tag -a $TAG_NAME -m "Add $TAG_NAME tag"
+        git push origin :refs/tags/$TAG_NAME
