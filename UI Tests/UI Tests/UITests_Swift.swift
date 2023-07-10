@@ -1126,8 +1126,8 @@ final class UITests_Swift: NSObject, Testable {
     // Assert that `.appClose` was called once
     await assert(value: appCloseEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
 
-     // Re-open app
-     await relaunch()
+    // Re-open app
+    await relaunch()
 
     // Assert that `.appOpen` was called once
     await assert(value: appOpenEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
@@ -1208,7 +1208,6 @@ final class UITests_Swift: NSObject, Testable {
     Superwall.shared.delegate = delegate
 
     let url = URL(string: "exampleapp://mydeepLink?isDeepLink=true")!
-
     let handled = Superwall.shared.handleDeepLink(url)
 
     // Create value handler

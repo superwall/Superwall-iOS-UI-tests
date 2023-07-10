@@ -24,6 +24,9 @@ __weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_cre
 #define TEST_ASSERT_DELAY_COMPLETION(delay, completionHandlerValue) \
 TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeIndicator], completionHandlerValue)
 
+#define TEST_ASSERT_COMPLETION(completionHandlerValue) \
+TEST_ASSERT_DELAY_COMPLETION(0, ^{})
+
 #define TEST_ASSERT_DELAY(delay) \
 TEST_ASSERT_DELAY_COMPLETION(delay, ^{})
 
@@ -487,7 +490,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
   
   // Get the paywall view controller
   [[Superwall sharedInstance] getPaywallForEvent:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
@@ -869,7 +872,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
@@ -926,7 +929,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
@@ -968,7 +971,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
@@ -1013,7 +1016,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
@@ -1083,7 +1086,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
@@ -1141,7 +1144,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
   
   // Create a ValueDescriptionHolder to store the paywall did finish result value
   SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
@@ -1300,7 +1303,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1337,7 +1340,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1368,11 +1371,11 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test54WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(2)
+  TEST_START
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1402,7 +1405,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1452,7 +1455,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1480,29 +1483,29 @@ static id<SWKTestConfiguration> kConfiguration;
   NSString *handledString = handled ? @"true" : @"false";
 
   // Assert that deep link was handled
-  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, handledString, ^{
+  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, handledString, (^{
 
     // Assert that `.deepLink` was called once
-    TEST_ASSERT_DELAY_VALUE_COMPLETION(0, deepLinkEventHolder.description, ^{
+    TEST_ASSERT_VALUE_COMPLETION(deepLinkEventHolder.description, (^{
       // Tap the Preview button
       CGPoint previewButton = CGPointMake(196, 775);
       [weakSelf touch:previewButton];
 
-      [self sleepWithTimeInterval:2.0 completionHandler:^{
+      [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
         // Tap the Free Trial button
         CGPoint freeTrialButton = CGPointMake(196, 665);
         [weakSelf touch:freeTrialButton];
 
-        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
           // Tap the close button
           CGPoint closeButton = CGPointMake(196, 91);
           [weakSelf touch:closeButton];
 
-          [self sleepWithTimeInterval:2.0 completionHandler:^{
+          [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
             // Tap the preview button
             [weakSelf touch:previewButton];
 
-            [self sleepWithTimeInterval:2.0 completionHandler:^{
+            [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
               // Tap the default view
               CGPoint defaultButton = CGPointMake(196, 725);
               [weakSelf touch:defaultButton];
@@ -1510,10 +1513,10 @@ static id<SWKTestConfiguration> kConfiguration;
               TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{});
             }];
           }];
-        });
+        }));
       }];
-    })
-  });
+    }));
+  }));
 }
 
 - (SWKTestOptions *)testOptions57 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.deepLinkOpenAPIKey]; }
@@ -1522,13 +1525,12 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
 
-  NSString *urlString = @"exampleapp://mydeepLink?isDeepLink=true";
-  NSURL *url = [[NSURL alloc] initWithString:urlString];
+  NSURL *url = [[NSURL alloc] initWithString:@"exampleapp://mydeepLink?isDeepLink=true"];
   BOOL handled = [[Superwall sharedInstance] handleDeepLink:url];
 
   // Create value handler
@@ -1550,14 +1552,14 @@ static id<SWKTestConfiguration> kConfiguration;
   NSString *handledString = handled ? @"true" : @"false";
 
   // Assert that deep link was handled
-  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, handledString, ^{
+  TEST_ASSERT_DELAY_VALUE_COMPLETION(kImplicitPaywallPresentationDelay, handledString, (^{
 
     // Assert that `.deepLink` was called once
-    TEST_ASSERT_DELAY_VALUE_COMPLETION(0, deepLinkEventHolder.description, ^{
-
-      TEST_ASSERT_DELAY(0)
-    })
-  });
+    TEST_ASSERT_VALUE_COMPLETION(deepLinkEventHolder.description, (^{
+      // Assert paywall presented.
+      TEST_ASSERT_COMPLETION(^{})
+    }))
+  }));
 }
 
 - (SWKTestOptions *)testOptions58 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.transactionAbandonAPIKey]; }
@@ -1566,7 +1568,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1590,7 +1592,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
 
   // Assert that paywall was presented
-  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
     CGPoint purchaseButton = CGPointMake(196, 750);
     [weakSelf touch:purchaseButton];
@@ -1604,10 +1606,10 @@ static id<SWKTestConfiguration> kConfiguration;
 
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
         // Assert that `.transactionAbandon` was called once
-        TEST_ASSERT_DELAY_VALUE_COMPLETION(0, transactionAbandonEventHolder.description, ^{});
+        TEST_ASSERT_VALUE_COMPLETION(transactionAbandonEventHolder.description, ^{});
       });
     }));
-  });
+  }));
 }
 
 - (SWKTestOptions *)testOptions59 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.paywallDeclineAPIKey]; }
@@ -1616,7 +1618,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1640,16 +1642,16 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
 
   // Assert that paywall was presented
-  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Decline the paywall
     CGPoint declineButton = CGPointMake(358, 59);
     [weakSelf touch:declineButton];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
       // Assert that `.paywallDecline` was called once
-      TEST_ASSERT_DELAY_VALUE_COMPLETION(0, paywallDeclineEventHolder.description, ^{});
+      TEST_ASSERT_VALUE_COMPLETION(paywallDeclineEventHolder.description, ^{});
     });
-  });
+  }));
 }
 
 - (SWKTestOptions *)testOptions60 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.transactionFailAPIKey]; }
@@ -1658,7 +1660,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
-  [weakSelf holdStrongly:delegate];
+  [self holdStrongly:delegate];
 
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
@@ -1699,11 +1701,15 @@ static id<SWKTestConfiguration> kConfiguration;
         // Assert that paywall was presented
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
           // Assert that `.transactionFail` was called
-          TEST_ASSERT_DELAY_VALUE_COMPLETION(0, transactionFailEventHolder.description, ^{});
+          TEST_ASSERT_VALUE_COMPLETION(transactionFailEventHolder.description, ^{});
         });
       }));
     });
   }];
+}
+
+- (void)test61WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Need to add mechanism for restart")
 }
 
 @end
