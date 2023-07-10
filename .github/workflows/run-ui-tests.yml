@@ -11,7 +11,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
+      with:
+        fetch-depth: 0
+        
     - name: Setup Git User
       run: |
         git config --local user.email "action@github.com"
@@ -29,6 +31,6 @@ jobs:
 
     - name: Add Tag
       run: |
-        TAG_NAME="run-ui-tests-${{ github.event.client_payload.commit }}"
+        TAG_NAME="run-ui-tests-TEST"
         git tag -a $TAG_NAME -m "Add $TAG_NAME tag"
         git push origin :refs/tags/$TAG_NAME
