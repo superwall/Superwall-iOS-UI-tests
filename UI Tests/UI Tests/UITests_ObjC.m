@@ -1457,7 +1457,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
 
-  NSString *urlString = @"exampleapp://?superwall_debug=true&paywall_id=8832&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg";
+  NSString *urlString = @"exampleapp://?superwall_debug=true&paywall_id=7872&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg";
   NSURL *url = [[NSURL alloc] initWithString:urlString];
   BOOL handled = [[Superwall sharedInstance] handleDeepLink:url];
 
@@ -1484,8 +1484,34 @@ static id<SWKTestConfiguration> kConfiguration;
 
     // Assert that `.deepLink` was called once
     TEST_ASSERT_DELAY_VALUE_COMPLETION(0, deepLinkEventHolder.description, ^{
+      // Tap the Preview button
+      CGPoint previewButton = CGPointMake(196, 775);
+      [weakSelf touch:previewButton];
 
-      TEST_ASSERT_DELAY(0)
+      [self sleepWithTimeInterval:2.0 completionHandler:^{
+        // Tap the Free Trial button
+        CGPoint freeTrialButton = CGPointMake(196, 665);
+        [weakSelf touch:freeTrialButton];
+
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+          // Tap the close button
+          CGPoint closeButton = CGPointMake(196, 91);
+          [weakSelf touch:closeButton];
+
+          [self sleepWithTimeInterval:2.0 completionHandler:^{
+            // Tap the preview button
+            [weakSelf touch:previewButton];
+
+            [self sleepWithTimeInterval:2.0 completionHandler:^{
+              // Tap the default view
+              CGPoint defaultButton = CGPointMake(196, 725);
+              [weakSelf touch:defaultButton];
+
+              TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{});
+            }];
+          }];
+        });
+      }];
     })
   });
 }

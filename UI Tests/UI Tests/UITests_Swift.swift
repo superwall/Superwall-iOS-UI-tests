@@ -1133,7 +1133,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: appOpenEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
   }
 
-  /// Test opening debugger from deeplink.
+  /// Test opening debugger from deeplink and previewing both the free trial and default view.
   func test56() async throws {
     // Create Superwall delegate
     let delegate = Configuration.MockSuperwallDelegate()
@@ -1142,7 +1142,7 @@ final class UITests_Swift: NSObject, Testable {
     // Set delegate
     Superwall.shared.delegate = delegate
 
-    let urlString = "exampleapp://?superwall_debug=true&paywall_id=8832&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg"
+    let urlString = "exampleapp://?superwall_debug=true&paywall_id=7872&token=sat_eyJhbGciOiJIUzI1NiJ9.eyJzY29wZXMiOlt7InNjb3BlIjoicGF5d2FsbF9wcmV2aWV3IiwiYXBwbGljYXRpb25JZCI6MTI3MH1dLCJpYXQiOjE2ODg2MjgxNTIsImV4cCI6NTA2NTI4Nzg3MiwiYXVkIjoicHduIiwiaXNzIjoicHduIiwic3ViIjoiNzAifQ.J0QNaycFlGY8ZQGBUwrySxkX43iPH2iV646EvJ5TvCg"
     let url = URL(string: urlString)!
     let handled = Superwall.shared.handleDeepLink(url)
 
@@ -1167,7 +1167,34 @@ final class UITests_Swift: NSObject, Testable {
     // Assert that `.deepLink` was called once
     await assert(value: deepLinkEventHolder.description)
 
-    await assert()
+    // Tap the Preview button
+    let previewButton = CGPoint(x: 196, y: 775)
+    touch(previewButton)
+
+    await sleep(timeInterval: 2)
+
+    // Tap the Free Trial button
+    let freeTrialButton = CGPoint(x: 196, y: 665)
+    touch(freeTrialButton)
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the close button
+    let closeButton = CGPoint(x: 196, y: 91)
+    touch(closeButton)
+
+    await sleep(timeInterval: 2)
+
+    // Tap the Preview button
+    touch(previewButton)
+
+    await sleep(timeInterval: 2)
+
+    // Tap the default view
+    let defaultButton = CGPoint(x: 196, y: 725)
+    touch(defaultButton)
+
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Present paywall from implicit trigger: `deepLink_open`.
