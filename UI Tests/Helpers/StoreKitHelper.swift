@@ -7,6 +7,7 @@
 
 import Foundation
 import StoreKit
+import SuperwallKit
 
 @objc(SWKStoreKitHelper)
 public class StoreKitHelper: NSObject {
@@ -46,16 +47,31 @@ public class StoreKitHelper: NSObject {
     }
   }
 
-  var mostRecentTransactionState: ((SKPaymentTransactionState) -> Void)?
+  @objc(mostRecentPurchaseResult)
+  var mostRecentPurchaseResultObjc: ((PurchaseResultObjc, Error?) -> Void)?
+  var mostRecentPurchaseResult: ((PurchaseResult) -> Void)?
 
-  @objc public func purchase(product: SKProduct) async -> SKPaymentTransactionState{
+  @available(swift, obsoleted: 1.0)
+  @objc public func purchase(product: SKProduct) async -> (PurchaseResultObjc, Error?) {
     let payment = SKPayment(product: product)
     SKPaymentQueue.default().add(payment)
 
     return await withCheckedContinuation { continuation in
-      mostRecentTransactionState = { [weak self] state in
+      mostRecentPurchaseResultObjc = { [weak self] result, error in
+        continuation.resume(returning: (result, error))
+        self?.mostRecentPurchaseResultObjc = nil
+      }
+    }
+  }
+
+  public func purchase(product: SKProduct) async -> PurchaseResult {
+    let payment = SKPayment(product: product)
+    SKPaymentQueue.default().add(payment)
+
+    return await withCheckedContinuation { continuation in
+      mostRecentPurchaseResult = { [weak self] state in
         continuation.resume(returning: state)
-        self?.mostRecentTransactionState = nil
+        self?.mostRecentPurchaseResult = nil
       }
     }
   }
@@ -90,9 +106,44 @@ extension StoreKitHelper: SKPaymentTransactionObserver {
   public func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
     guard
       let transaction = transactions.first,
-      let mostRecentTransactionState = mostRecentTransactionState,
-      [.purchasing].contains(transaction.transactionState) == false
+      [.purchasing, .restored].contains(transaction.transactionState) == false
     else { return }
-    mostRecentTransactionState(transaction.transactionState)
+
+    switch transaction.transactionState {
+    case .purchased:
+      mostRecentPurchaseResultObjc?(.purchased, nil)
+      mostRecentPurchaseResult?(.purchased)
+    case .deferred:
+      mostRecentPurchaseResultObjc?(.pending, nil)
+      mostRecentPurchaseResult?(.pending)
+    case .failed:
+      if let error = transaction.error {
+        if let error = error as? SKError {
+          switch error.code {
+          case .paymentCancelled,
+            .overlayCancelled:
+            mostRecentPurchaseResultObjc?(.cancelled, nil)
+            mostRecentPurchaseResult?(.cancelled)
+            return
+          default:
+            break
+          }
+
+          if #available(iOS 14, *) {
+            switch error.code {
+            case .overlayTimeout:
+              mostRecentPurchaseResultObjc?(.cancelled, nil)
+              mostRecentPurchaseResult?(.cancelled)
+            default:
+              break
+            }
+          }
+        }
+        mostRecentPurchaseResultObjc?(.failed, error)
+        mostRecentPurchaseResult?(.failed(error))
+      }
+    default:
+      break
+    }
   }
 }

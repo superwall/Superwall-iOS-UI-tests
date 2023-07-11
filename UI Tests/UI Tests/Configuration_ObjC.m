@@ -161,17 +161,16 @@ static BOOL kHasConfigured = NO;
 @implementation SWKAdvancedPurchaseController
 
 - (void)purchaseWithProduct:(SKProduct *)product completion:(void (^)(enum SWKPurchaseResult, NSError * _Nullable))completion {
-
-  [[SWKStoreKitHelper sharedInstance] purchaseWithProduct:product completionHandler:^(SKPaymentTransactionState transactionState) {
-
-    switch (transactionState) {
-      case SKPaymentTransactionStatePurchased:
-      case SKPaymentTransactionStateRestored:
+  [[SWKStoreKitHelper sharedInstance] purchaseWithProduct:product completionHandler:^(SWKPurchaseResult purchaseResult, NSError *error) {
+    switch (purchaseResult) {
+      case SWKPurchaseResultPurchased:
         [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusActive;
         completion(SWKPurchaseResultPurchased, nil);
         break;
-      case SKPaymentTransactionStateFailed:
-        completion(SWKPurchaseResultFailed, [NSError new]);
+      case SWKPurchaseResultPending:
+        completion(SWKPurchaseResultPending, nil);
+      case SWKPurchaseResultFailed:
+        completion(SWKPurchaseResultFailed, error);
         break;
       default:
         completion(SWKPurchaseResultCancelled, nil);

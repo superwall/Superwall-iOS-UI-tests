@@ -103,15 +103,14 @@ extension Configuration {
 
   class AdvancedPurchaseController: PurchaseController {
     func purchase(product: SKProduct) async -> PurchaseResult {
-      let transactionState = await StoreKitHelper.shared.purchase(product: product)
-      switch transactionState {
-        case .purchased, .restored:
+      let purchaseResult = await StoreKitHelper.shared.purchase(product: product)
+
+      switch purchaseResult {
+        case .purchased:
           Superwall.shared.subscriptionStatus = .active
-          return .purchased
-        case .failed:
-          return .failed(NSError() as Error)
+          fallthrough
         default:
-          return .cancelled
+          return purchaseResult
       }
     }
 
