@@ -24,6 +24,9 @@ __weak typeof(self) weakSelf = self; dispatch_group_t group = dispatch_group_cre
 #define TEST_ASSERT_DELAY_COMPLETION(delay, completionHandlerValue) \
 TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(delay, [SWKCaptureArea safeAreaNoHomeIndicator], completionHandlerValue)
 
+#define TEST_ASSERT_COMPLETION(completionHandlerValue) \
+TEST_ASSERT_DELAY_COMPLETION(0, ^{})
+
 #define TEST_ASSERT_VALUE_COMPLETION(value, completionHandlerValue) \
 [weakSelf assertWithValue:value testName:testName completionHandler:^{ dispatch_group_leave(group); if(completionHandlerValue != nil) { completionHandlerValue(); }}];
 
