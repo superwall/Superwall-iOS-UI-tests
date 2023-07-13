@@ -19,6 +19,9 @@ class Automated_UI_Testing: XCTestCase {
   struct Constants {
     typealias LaunchEnvironment = [String: String]
     static let launchEnvironment = ProcessInfo.processInfo.environment
+    static let snapshotsPathComponent: String = {
+      return BuildHelpers.Constants.isCIEnvironment ? "CI_Snapshots" : "Snapshots"
+    }()
   }
 
   override class func setUp() {

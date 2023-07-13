@@ -61,7 +61,8 @@
       </EnvironmentVariables>
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "54CAAD0729BBD09F008D728C"
@@ -71,28 +72,13 @@
             </BuildableReference>
             <SelectedTests>
                <Test
-                  Identifier = "Automated_UI_Testing/test41()">
+                  Identifier = "Automated_UI_Testing/test10()">
                </Test>
                <Test
-                  Identifier = "Automated_UI_Testing/test42()">
+                  Identifier = "Automated_UI_Testing/test18()">
                </Test>
                <Test
-                  Identifier = "Automated_UI_Testing/test43()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test44()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test45()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test46()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test47()">
-               </Test>
-               <Test
-                  Identifier = "Automated_UI_Testing/test48()">
+                  Identifier = "Automated_UI_Testing/test35()">
                </Test>
             </SelectedTests>
          </TestableReference>
