@@ -15,7 +15,6 @@
 		540E79432989B16600EE1425 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 540E79412989B16600EE1425 /* LaunchScreen.storyboard */; };
 		5472D0002A5CBA2300B50CE4 /* BuildHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5472CFFF2A5CBA2300B50CE4 /* BuildHelpers.swift */; };
 		5472D0012A5CBA2300B50CE4 /* BuildHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5472CFFF2A5CBA2300B50CE4 /* BuildHelpers.swift */; };
-		54805FA42A57769900CA547F /* Automated_UI_Testing+Snapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54805FA32A57769900CA547F /* Automated_UI_Testing+Snapshots.swift */; };
 		54CAAD0B29BBD0A0008D728C /* Automated_UI_Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD0A29BBD0A0008D728C /* Automated_UI_Testing.swift */; };
 		54CAAD2129BBDAD1008D728C /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 54CAAD2029BBDAD1008D728C /* Swifter */; };
 		54CAAD2329BBDADA008D728C /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 54CAAD2229BBDADA008D728C /* Swifter */; };
@@ -80,7 +79,6 @@
 		540E79522989B1A900EE1425 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		540E79992991CCD600EE1425 /* StoreKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitHelper.swift; sourceTree = "<group>"; };
 		5472CFFF2A5CBA2300B50CE4 /* BuildHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuildHelpers.swift; path = ci_scripts/BuildHelpers.swift; sourceTree = SOURCE_ROOT; };
-		54805FA32A57769900CA547F /* Automated_UI_Testing+Snapshots.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Automated_UI_Testing+Snapshots.swift"; path = "ci_scripts/Automated_UI_Testing+Snapshots.swift"; sourceTree = SOURCE_ROOT; };
 		54CAACE529B6BE90008D728C /* Configuration_Swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration_Swift.swift; sourceTree = "<group>"; };
 		54CAACEF29B80CF4008D728C /* Configuration_ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Configuration_ObjC.m; sourceTree = "<group>"; };
 		54CAACF129B80ED6008D728C /* Configuration_ObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Configuration_ObjC.h; sourceTree = "<group>"; };
@@ -210,7 +208,6 @@
 			isa = PBXGroup;
 			children = (
 				54CAAD0A29BBD0A0008D728C /* Automated_UI_Testing.swift */,
-				54805FA32A57769900CA547F /* Automated_UI_Testing+Snapshots.swift */,
 			);
 			path = "Automated UI Testing";
 			sourceTree = "<group>";
@@ -533,7 +530,6 @@
 				5472D0012A5CBA2300B50CE4 /* BuildHelpers.swift in Sources */,
 				54CAAD3829BC5257008D728C /* Communicator.swift in Sources */,
 				54CAAD3929BC5C47008D728C /* Extensions.swift in Sources */,
-				54805FA42A57769900CA547F /* Automated_UI_Testing+Snapshots.swift in Sources */,
 				54CAAD0B29BBD0A0008D728C /* Automated_UI_Testing.swift in Sources */,
 				54CAAD3B29BEAABE008D728C /* Tests.swift in Sources */,
 			);
