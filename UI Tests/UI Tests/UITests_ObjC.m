@@ -416,11 +416,15 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           
           SWKPaywallPresentationHandler *handler = [[SWKPaywallPresentationHandler alloc] init];
+          __block NSString *experimentId;
+          
           [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
             [[Superwall sharedInstance] registerWithEvent:@"present_always"];
-            
+            experimentId = paywallInfo.experiment.id;
             // Wait and assert.
-            TEST_ASSERT_DELAY(kPaywallPresentationDelay);
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+              TEST_ASSERT_VALUE(experimentId);
+            });
           }];
           
           // Present paywall

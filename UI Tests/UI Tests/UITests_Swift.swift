@@ -285,12 +285,16 @@ final class UITests_Swift: NSObject, Testable {
     await dismissViewControllers()
 
     let handler = PaywallPresentationHandler()
-    handler.onPresent { _ in
+
+    var experimentId = ""
+    handler.onPresent { info in
+      experimentId = info.experiment?.id ?? ""
       Superwall.shared.register(event: "present_always")
     }
     Superwall.shared.register(event: "present_always", handler: handler)
 
     await assert(after: Constants.paywallPresentationDelay)
+    await assert(value: experimentId)
   }
 
   /// Present an alert on Superwall.presentedViewController from the onPresent callback
