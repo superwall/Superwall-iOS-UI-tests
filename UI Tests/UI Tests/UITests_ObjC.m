@@ -417,7 +417,7 @@ static id<SWKTestConfiguration> kConfiguration;
             experimentId = paywallInfo.experiment.id;
             // Wait and assert.
             TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
-              TEST_ASSERT_VALUE(experimentId);
+              TEST_ASSERT_VALUE_COMPLETION(experimentId, ^{});
             });
           }];
           
