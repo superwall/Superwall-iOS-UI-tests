@@ -1066,11 +1066,8 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: appLaunchEventHolder.description, after: Constants.implicitPaywallPresentationDelay)
   }
 
-  /// Verify `session_start` event occurs when the app is opened either from a cold start, or after at least 30 seconds since last `app_close`.
+  /// Verify `session_start` event occurs when the app is opened from a cold start.
   func test54() async throws {
-    skip("Fixed in another branch")
-    return
-
     // Create Superwall delegate
     let delegate = Configuration.MockSuperwallDelegate()
     holdStrongly(delegate)
