@@ -12,7 +12,7 @@ protocol RequestRefirer {
     func refireURLRequest(urlRequest: URLRequest)
 }
 
-public protocol RequestEvaluator: class {
+public protocol RequestEvaluator: AnyObject {
     func isActionAllowed(urlRequest: URLRequest) -> Bool
 }
 

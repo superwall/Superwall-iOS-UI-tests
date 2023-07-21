@@ -1705,4 +1705,20 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_SKIP(@"Need to add mechanism for restart")
 }
 
+/// Verify that an invalid URL like `#` doesn't crash the app
+- (void)test62WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Present paywall with URLs
+  [[Superwall sharedInstance] registerWithEvent:@"present_urls"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Tap the open # URL button
+    CGPoint point = CGPointMake(330, 360);
+    [weakSelf touch:point];
+
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+  }));
+}
+
 @end

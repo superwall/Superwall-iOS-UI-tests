@@ -1397,11 +1397,11 @@ final class UITests_Swift: NSObject, Testable {
   //    - subscriptionStatus_didChange
   //    - paywallPresentationRequest
 
-  // Display paywall with free trial content, make a free trial purchase, force trial to expire. Ensure that free trial content is no longer used
+  // TODO: Display paywall with free trial content, make a free trial purchase, force trial to expire. Ensure that free trial content is no longer used
   func test61() async throws {
     skip("Need to add mechanism for restart")
     return
-
+    // Expire subscription crashes sometimes, dunno why. The free trial is on the secondary product to test the v3 logic  FYI
     Superwall.shared.register(event: "present_free_trial")
 
     // Assert that paywall appears with free trial content
@@ -1434,6 +1434,21 @@ final class UITests_Swift: NSObject, Testable {
     Superwall.shared.register(event: "present_free_trial")
 
     // Assert that paywall appears without free trial content
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Verify that an invalid URL like `#` doesn't crash the app
+  func test62() async throws {
+    // Present paywall with URLs
+    Superwall.shared.register(event: "present_urls")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the open # URL button
+    let point = CGPoint(x: 330, y: 360)
+    touch(point)
+
+    // Verify that nothing happened
     await assert(after: Constants.paywallPresentationDelay)
   }
 
