@@ -1452,6 +1452,37 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  /// Restore but don't have an active subscription
+  func test63() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { _, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.stringValue = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Press restore
+    let restoreButton = CGPoint(x: 200, y: 232)
+    touch(restoreButton)
+
+    // Assert no subscription alert appeared.
+    await assert(after: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall not finished.
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
+  }
+
 
   // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
   // Superwall.shared.track(event: "present_urls")
