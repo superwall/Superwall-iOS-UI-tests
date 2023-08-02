@@ -68,6 +68,10 @@ public class Constants: NSObject {
   @objc public static let language: Language = {
     return ProcessInfo.processInfo.environment["language"]! == "swift" ? .swift : .objc
   }()
+
+  public static let httpConfiguration: Communicator.HTTPConfiguration = {
+    return .init(processInfo: ProcessInfo.processInfo)
+  }()
   
   // Time interval constants
   @objc public static let paywallPresentationDelay: TimeInterval = 12.0 * CIDelayMultiplier

@@ -18,14 +18,20 @@ class Automated_UI_Testing: XCTestCase {
 
   struct Constants {
     typealias LaunchEnvironment = [String: String]
-    static let launchEnvironment = ProcessInfo.processInfo.environment
+    static let launchEnvironment = {
+      return ProcessInfo.processInfo.environment
+    }()
     static let snapshotsPathComponent: String = {
       return BuildHelpers.Constants.isCIEnvironment ? "CI_Snapshots" : "Snapshots"
+    }()
+
+    static let httpConfiguration = {
+      return Communicator.HTTPConfiguration(processInfo: ProcessInfo.processInfo)
     }()
   }
 
   override class func setUp() {
-    Communicator.shared.start()
+    Communicator.shared.start(httpConfiguration: Constants.httpConfiguration)
   }
 
   func handle(_ action: Communicator.Action) {
@@ -71,11 +77,19 @@ class Automated_UI_Testing: XCTestCase {
         Communicator.shared.completed(action: action)
 
       case .activateSubscription(let productIdentifier):
-        try! storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
+        do {
+          try storeKitTestSession.buyProduct(productIdentifier: productIdentifier)
+        } catch {
+          assertionData.failure = XCTIssue(type: .uncaughtException, compactDescription: "Unable to purchase product with SKTestSession: \(error.localizedDescription)")
+        }
         Communicator.shared.completed(action: action)
 
       case .expireSubscription(let productIdentifier):
-        try! storeKitTestSession.expireSubscription(productIdentifier: productIdentifier)
+        do {
+          try storeKitTestSession.expireSubscription(productIdentifier: productIdentifier)
+        } catch {
+          assertionData.failure = XCTIssue(type: .uncaughtException, compactDescription: "Unable to expire product with SKTestSession: \(error.localizedDescription)")
+        }
         Communicator.shared.completed(action: action)
 
       case .log(let message):

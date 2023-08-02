@@ -8,8 +8,72 @@
 import UIKit
 import Swifter
 
-class Communicator {
-  static let shared: Communicator = Communicator()
+public class Communicator {
+  static var shared: Communicator = Communicator()
+  private(set) var httpConfiguration: HTTPConfiguration? = nil
+
+  public struct HTTPConfiguration {
+    let runnerPort: UInt16
+    let parentPort: UInt16
+
+    public init(processInfo: ProcessInfo) {
+      self.runnerPort = Utility.port(environment: ProcessInfo.processInfo.environment, indexType: .runnerPort)
+      self.parentPort = Utility.port(environment: ProcessInfo.processInfo.environment, indexType: .parentPort)
+    }
+
+    struct Utility {
+      enum IndexType {
+          case runnerPort
+          case parentPort
+      }
+
+      static func port(environment: [String: String], indexType: IndexType) -> UInt16 {
+        func parseCloneNumber() -> Int {
+          // e.g. CoreSimulator 917 - Device: Clone 2 of iPhone 14 Pro
+          let simulatorString = environment["SIMULATOR_VERSION_INFO"]!
+
+          // Define a regular expression to find the number after 'Clone'
+          do {
+            let regex = try NSRegularExpression(pattern: "Clone (\\d+)", options: [])
+
+            guard let match = regex.firstMatch(in: simulatorString, options: [], range: NSRange(location: 0, length: simulatorString.utf16.count)) else {
+              fatalError("Unable to determine port to use")
+            }
+
+            let range = match.range(at: 1)
+            guard let swiftRange = Range(range, in: simulatorString),
+                let cloneNumber = Int(simulatorString[swiftRange]) else {
+              fatalError("Unable to determine port to use")
+            }
+
+            return cloneNumber
+          } catch {
+            fatalError("Unable to determine port to use: \(error.localizedDescription)")
+          }
+        }
+
+        let cloneNumber = parseCloneNumber()
+        return port(at: cloneNumber, type: indexType)
+      }
+
+      static func port(at index: Int, type: IndexType) -> UInt16 {
+          let startIndex = 49152
+          let endIndex = 65535
+          let value: Int
+          switch type {
+          case .runnerPort:
+              value = startIndex + index
+          case .parentPort:
+              value = endIndex - index
+          }
+          if value >= startIndex, value <= endIndex {
+              return UInt16(value)
+          } else {
+              fatalError("Unable to find a port to use")
+          }
+      }
+    }
+  }
 
   struct Action: Codable, Equatable {
     let identifier: String
@@ -49,16 +113,30 @@ class Communicator {
   private struct Constants {
     static let runnerBundlePath = "Automated UI Testing-Runner.app"
     static let isRunner: Bool = Bundle.main.bundlePath.contains(Constants.runnerBundlePath)
-    static let sourceConfiguration: Configuration = {
-      return isRunner ? runnerConfiguration : parentConfiguration
-    }()
-    static let destinationConfiguration: Configuration = {
-      return isRunner ? parentConfiguration : runnerConfiguration
-    }()
-
-    static let runnerConfiguration = Configuration(serverPath: "/toRunner", port: 8090)
-    static let parentConfiguration = Configuration(serverPath: "/toParent", port: 8091)
   }
+
+  private lazy var sourceConfiguration: Configuration = {
+    return Constants.isRunner ? runnerConfiguration : parentConfiguration
+  }()
+  private lazy var destinationConfiguration: Configuration = {
+    return Constants.isRunner ? parentConfiguration : runnerConfiguration
+  }()
+
+  private lazy var runnerConfiguration = {
+    guard let httpConfiguration = httpConfiguration else {
+      fatalError("Communicator must be configured with an identifier and port before being used.")
+    }
+
+    return Configuration(serverPath: "/toRunner", port: httpConfiguration.runnerPort)
+  }()
+
+  private lazy var parentConfiguration = {
+    guard let httpConfiguration = httpConfiguration else {
+      fatalError("Communicator must be configured with an identifier and port before being used.")
+    }
+
+    return Configuration(serverPath: "/toParent", port: httpConfiguration.parentPort)
+  }()
 
   struct Configuration {
     let serverPath: String
@@ -84,9 +162,11 @@ class Communicator {
 
   let sendSerialQueue = DispatchQueue(label: "com.ui-tests.Communicator.sendSerialQueue")
 
-  func start() {
-    server[Constants.sourceConfiguration.serverPath] = { [weak self] request in
+  // Provide a unique identifier and parent to share between runner and parent to avoid crossing wires in a parellelized environment.
+  func start(httpConfiguration: HTTPConfiguration) {
+    self.httpConfiguration = httpConfiguration
 
+    server[sourceConfiguration.serverPath] = { [weak self] request in
       func handle(_ request: HttpRequest) {
         let action = request.bodyData.decodedAction()
         switch action?.invocation {
@@ -103,10 +183,10 @@ class Communicator {
     }
 
     do {
-      try server.start(Constants.sourceConfiguration.port, forceIPv4: true)
+      try server.start(sourceConfiguration.port, forceIPv4: true)
       print("Server has started ( port = \(try server.port()) ).")
     } catch {
-      print("Server start error: \(error)")
+      fatalError("Server start error: \(error)")
     }
   }
 
@@ -140,7 +220,7 @@ class Communicator {
       let action = Communicator.Action(invocation)
       completionHandlers[action.identifier] = completion
 
-      if let urlRequest = Constants.destinationConfiguration.urlRequest(with: action) {
+      if let urlRequest = destinationConfiguration.urlRequest(with: action) {
         let operation = BlockOperation {
           let semaphore = DispatchSemaphore(value: 0)
 

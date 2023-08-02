@@ -72,6 +72,9 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "Automated_UI_Testing">
+               </Test>
+               <Test
                   Identifier = "ParentAppTestCase">
                </Test>
             </SkippedTests>
