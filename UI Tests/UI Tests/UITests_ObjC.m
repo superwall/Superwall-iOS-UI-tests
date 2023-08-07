@@ -1762,4 +1762,260 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+// MARK: - Surveys
+
+/// Choose non-other option from a paywall exit survey that shows 100% of the time.
+- (void)test64WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(6)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *surveyResponseEventHolder = [SWKValueDescriptionHolder new];
+  surveyResponseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
+        surveyResponseEventHolder.intValue += 1;
+        surveyResponseEventHolder.stringValue = @"Yes";
+        break;
+      case SWKSuperwallEventPaywallClose:
+        surveyResponseEventHolder.intValue += 1;
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(356, 86);
+    [weakSelf touch:closeButton];
+
+    // Assert the survey is displayed
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Tap the first option
+      CGPoint firstOption = CGPointMake(196, 733);
+      [weakSelf touch:firstOption];
+
+      // Assert that paywall has disappeared and the feature block called.
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        // Open the paywall again
+        [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other" params:nil handler:nil];
+
+        // Assert that paywall has disappeared and the feature block called.
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+          [weakSelf touch:closeButton];
+
+          // Assert paywall closed without showing survey.
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Assert that `.surveyResponse` and `.paywallClose` was called
+            NSString *value = surveyResponseEventHolder.description;
+            TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+          }));
+        }));
+      }));
+    }));
+  }));
+}
+
+/// Choose other option from a paywall exit survey that shows 100% of the time.
+- (void)test65WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(5)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *surveyResponseEventHolder = [SWKValueDescriptionHolder new];
+  surveyResponseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
+        surveyResponseEventHolder.intValue += 1;
+        surveyResponseEventHolder.stringValue = @"Yes";
+        break;
+      case SWKSuperwallEventPaywallClose:
+        surveyResponseEventHolder.intValue += 1;
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(356, 86);
+    [weakSelf touch:closeButton];
+
+    // Assert the survey is displayed
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Tap the other option
+      CGPoint otherOption = CGPointMake(196, 790);
+      [weakSelf touch:otherOption];
+
+      // Assert that alert controller with textfield has disappeared and the feature block called.
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        [weakSelf typeText:@"Test" completionHandler:^{
+          // Tap the other option
+          CGPoint submitButton = CGPointMake(196, 350);
+          [weakSelf touch:submitButton];
+
+          // Assert that paywall has disappeared and the feature block called.
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            NSString *value = surveyResponseEventHolder.description;
+            TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+          }));
+        }];
+      }));
+    }));
+  }));
+}
+
+/// Choose other option from a paywall exit survey that shows 100% of the time.
+- (void)test66WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *surveyResponseEventHolder = [SWKValueDescriptionHolder new];
+  surveyResponseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
+        surveyResponseEventHolder.intValue += 1;
+        surveyResponseEventHolder.stringValue = @"Yes";
+        break;
+      case SWKSuperwallEventPaywallClose:
+        surveyResponseEventHolder.intValue += 1;
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"zero_percent_survey" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(356, 86);
+    [weakSelf touch:closeButton];
+
+    // Assert that paywall has disappeared, no survey, and the feature block called.
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      NSString *value = surveyResponseEventHolder.description;
+      TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+    }));
+  }));
+}
+
+/// Assert survey is displayed after swiping down to dismiss a paywall.
+- (void)test67WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *surveyResponseEventHolder = [SWKValueDescriptionHolder new];
+  surveyResponseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
+        surveyResponseEventHolder.intValue += 1;
+        surveyResponseEventHolder.stringValue = @"Yes";
+        break;
+      case SWKSuperwallEventPaywallClose:
+        surveyResponseEventHolder.intValue += 1;
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"modal_paywall_with_survey" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    [weakSelf swipeDown];
+
+    // Assert the survey is displayed
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
+  }));
+}
+
 @end

@@ -154,6 +154,10 @@ public extension NSObject {
     }
   }
 
+  @objc func typeText(_ text: String) async {
+    await Communicator.shared.send(.type(text: text))
+  }
+
   @objc func failTransactions() async {
     await Communicator.shared.send(.failTransactions)
   }

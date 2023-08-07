@@ -91,6 +91,7 @@ public class Communicator {
 
       // Parent tells the test app
       case relaunchApp
+      case type(text: String)
       case springboard
       case assert(testName: String, precision: Float, captureArea: CaptureArea)
       case assertValue(testName: String, value: String)

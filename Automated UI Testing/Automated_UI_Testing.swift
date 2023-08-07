@@ -40,6 +40,10 @@ class Automated_UI_Testing: XCTestCase {
         app.activate()
         Communicator.shared.completed(action: action)
 
+      case .type(let text):
+        app.typeText(text)
+        Communicator.shared.completed(action: action)
+
       case .springboard:
         XCUIDevice.shared.press(.home)
         Communicator.shared.completed(action: action)
