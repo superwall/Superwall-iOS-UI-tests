@@ -1775,6 +1775,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: surveyResponseEventHolder.description)
   }
 
+  // getPaywall survey tests
   // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
   // Superwall.shared.track(event: "present_urls")
   // Test: not calling dismiss on main thread
