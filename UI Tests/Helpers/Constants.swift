@@ -61,6 +61,11 @@ public class Constants: NSObject {
   @objc public static let transactionFailAPIKey: String =
   "pk_b6cd945401435766da627080a3fbe349adb2dcd69ab767f3"
 
+  // Contains a campaign with a `transaction_fail` trigger.
+  // https://superwall.com/applications/1965/
+  @objc public static let surveyResponseAPIKey: String =
+  "pk_3698d9fe123f1e4aa8014ceca111096ca06fd68d31d9e662"
+
   @objc public static let configurationType = {
     return ProcessInfo.processInfo.environment["configurationType"]!
   }()
