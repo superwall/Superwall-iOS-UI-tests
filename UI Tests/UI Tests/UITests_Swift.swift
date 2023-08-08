@@ -1747,7 +1747,7 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-    // Assert the paywall has displayed
+    // Assert that paywall was presented
     await assert(after: Constants.paywallPresentationDelay)
 
     // Close the paywall
@@ -1769,6 +1769,141 @@ final class UITests_Swift: NSObject, Testable {
     touch(newCloseButton)
 
     // Assert paywall closed and feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` and `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Assert survey is displayed after swiping down to dismiss a paywall presented by `getPaywall`.
+  func test69() async throws {
+    // Create Superwall delegate
+    let superwallDelegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(superwallDelegate)
+
+    // Set delegate
+    Superwall.shared.delegate = superwallDelegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    // Create Superwall delegate
+    let paywallVcDelegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(paywallVcDelegate)
+
+    paywallVcDelegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      DispatchQueue.main.async {
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(
+      forEvent: "modal_paywall_with_survey",
+      delegate: paywallVcDelegate
+    ) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .pageSheet
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    swipeDown()
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the first option
+    let firstOption = CGPoint(x: 196, y: 733)
+    touch(firstOption)
+
+    // Assert that paywall has disappeared and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` and `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
+  func test70() async throws {
+    // Create Superwall delegate
+    let superwallDelegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(superwallDelegate)
+
+    // Set delegate
+    Superwall.shared.delegate = superwallDelegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    // Create Superwall delegate
+    let paywallVcDelegate = Configuration.MockPaywallViewControllerDelegate()
+    paywallVcDelegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      DispatchQueue.main.async {
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
+      }
+    }
+    holdStrongly(paywallVcDelegate)
+
+    if let viewController = try? await Superwall.shared.getPaywall(
+      forEvent: "show_survey_with_other",
+      delegate: paywallVcDelegate
+    ) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the first option
+    let firstOption = CGPoint(x: 196, y: 733)
+    touch(firstOption)
+
+    // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
 
     // Assert that `.surveyResponse` and `.paywallClose` was called
