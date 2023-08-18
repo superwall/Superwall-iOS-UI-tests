@@ -2221,7 +2221,6 @@ static id<SWKTestConfiguration> kConfiguration;
 
       // Assert the survey is displayed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-
         // Tap the first option
         CGPoint point = CGPointMake(196, 733);
         [weakSelf touch:point];
@@ -2236,5 +2235,91 @@ static id<SWKTestConfiguration> kConfiguration;
     }));
   }];
 }
+
+/// Purchase from paywall that has a survey attached and make sure survey doesn't show.
+- (void)test71WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *surveyResponseEventHolder = [SWKValueDescriptionHolder new];
+  surveyResponseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
+        surveyResponseEventHolder.intValue += 1;
+        surveyResponseEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"survey_with_purchase_button" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(196, 750);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    CGRect customFrame = CGRectMake(0, 488, 393, 300);
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(196, 766);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+        CGPoint okButton = CGPointMake(196, 495);
+        [weakSelf touch:okButton];
+
+        // Assert the paywall has disappeared and no survey displayed.
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+          // Assert that `.surveyResponse` not called.
+          NSString *value = surveyResponseEventHolder.description;
+          TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+        })
+      }];
+    }));
+  }));
+}
+
+/// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
+//- (void)test72WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+//  TEST_START_NUM_ASSERTS(2)
+//
+//  [[Superwall sharedInstance] registerWithEvent:@"no_paywalljs"];
+//
+//  // Assert infinite loading
+//  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+//    // Tap the close button
+//    CGPoint point = CGPointMake(43, 103);
+//    [weakSelf touch:point];
+//
+//    // Assert that the paywall has disappeared
+//    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}))
+//  }))
+//}
 
 @end

@@ -1910,16 +1910,103 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: surveyResponseEventHolder.description)
   }
 
-  // getPaywall survey tests
-  // Open URLs in Safari, In-App, and Deep Link (closes paywall, then opens Placeholder view controller
-  // Superwall.shared.track(event: "present_urls")
+  /// Purchase from paywall that has a survey attached and make sure survey doesn't show.
+  func test71() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "survey_with_purchase_button") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Assert the paywall has disappeared and no survey displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` not called.
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
+//  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
+//  func test72() async throws {
+//    Superwall.shared.register(event: "no_paywalljs")
+//
+//    // Assert infinite loading
+//    await assert(after: Constants.paywallPresentationDelay)
+//
+//    // Tap the close button
+//    let closeButton = CGPoint(x: 43, y: 103)
+//    touch(closeButton)
+//
+//    // Assert that the paywall has disappeared
+//    await assert(after: Constants.paywallPresentationDelay)
+//  }
+
+  /// Assert localized paywall presented for given locale
+//  func testOptions73() -> TestOptions {
+//    let options = SuperwallOptions()
+//    options.localeIdentifier = "es"
+//    return TestOptions(options: options)
+//  }
+// TODO: Currently there's an issue where it doesn't seem to substitute data on the paywall
+//  func test73() async throws {
+//    Superwall.shared.register(event: "present_localized")
+//
+//    // Assert infinite loading
+//    await assert(after: Constants.paywallPresentationDelay)
+//  }
+
+  // Deep Link (closes paywall, then opens Placeholder view controller
   // Test: not calling dismiss on main thread
   // Test whatever logic comes out of new track API
   //  22. Infinite loading
-  //      1. make sure exit / refresh shows up if paywall.js isn’t installed on page
-  //      2. make sure exit closes out for sure
-  //      3. make sure refresh loads it again from a fresh start
-  //      4. test this for modal + normal presentation + on nil + on another view controller
+  //      1. make sure refresh button loads it again from a fresh start
+  //      2. test this for modal + normal presentation + on nil + on another view controller
   // Test custom actions
   // Test localization based on system settings (-AppleLocale fr_FR)
   // Test localized paywall when available and unavailable using Superwall options

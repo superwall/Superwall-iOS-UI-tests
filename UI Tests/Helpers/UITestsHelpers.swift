@@ -34,11 +34,20 @@ public class TestOptions: NSObject {
   // API for the Superwall account. Modified for use of implicit triggers like `app_open`
   let apiKey: String
 
-  init(allowNetworkRequests: Bool = true, automaticallyConfigure: Bool = true, purchasedProductIdentifier: String? = nil, apiKey: String = Constants.defaultAPIKey) {
+  let options: SuperwallOptions
+
+  init(
+    allowNetworkRequests: Bool = true,
+    automaticallyConfigure: Bool = true,
+    purchasedProductIdentifier: String? = nil,
+    apiKey: String = Constants.defaultAPIKey,
+    options: SuperwallOptions = .init()
+  ) {
     self.allowNetworkRequests = allowNetworkRequests
     self.automaticallyConfigure = automaticallyConfigure
     self.purchasedProductIdentifier = purchasedProductIdentifier
     self.apiKey = apiKey
+    self.options = options
     super.init()
   }
 
@@ -66,8 +75,22 @@ public class TestOptions: NSObject {
     return TestOptions(apiKey: apiKey)
   }
 
-  static func testOptions(allowNetworkRequests: Bool, automaticallyConfigure: Bool, apiKey: String) -> TestOptions {
-    return TestOptions(allowNetworkRequests: allowNetworkRequests, automaticallyConfigure: automaticallyConfigure, apiKey: apiKey)
+  static func testOptions(options: SuperwallOptions) -> TestOptions {
+    return TestOptions(options: options)
+  }
+
+  static func testOptions(
+    allowNetworkRequests: Bool,
+    automaticallyConfigure: Bool,
+    apiKey: String,
+    options: SuperwallOptions
+  ) -> TestOptions {
+    return TestOptions(
+      allowNetworkRequests: allowNetworkRequests,
+      automaticallyConfigure: automaticallyConfigure,
+      apiKey: apiKey,
+      options: options
+    )
   }
 }
 

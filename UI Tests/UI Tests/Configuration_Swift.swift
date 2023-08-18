@@ -54,7 +54,10 @@ extension Configuration {
       // Begin fetching products for use in other test cases
       await StoreKitHelper.shared.fetchCustomProducts()
 
-      Superwall.configure(apiKey: Constants.currentTestOptions.apiKey)
+      Superwall.configure(
+        apiKey: Constants.currentTestOptions.apiKey,
+        options: Constants.currentTestOptions.options
+      )
     }
 
     func tearDown() async {
@@ -82,7 +85,11 @@ extension Configuration {
       // Begin fetching products for use in other test cases
       await StoreKitHelper.shared.fetchCustomProducts()
 
-      Superwall.configure(apiKey: Constants.currentTestOptions.apiKey, purchaseController: purchaseController)
+      Superwall.configure(
+        apiKey: Constants.currentTestOptions.apiKey,
+        purchaseController: purchaseController,
+        options: Constants.currentTestOptions.options
+      )
 
       // Set status
       Superwall.shared.subscriptionStatus = .inactive
