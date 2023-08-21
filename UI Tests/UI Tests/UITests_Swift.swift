@@ -1971,9 +1971,31 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: surveyResponseEventHolder.description)
   }
 
+  /// Check that calling identify restores the seed value. This is async and dependent on config so needs to sleep after calling identify.
+  func test72() async throws {
+    // Create value handler
+    let seedHolder = ValueDescriptionHolder()
+
+    Superwall.shared.identify(userId: "abc")
+
+    try? await Task.sleep(for: .seconds(1))
+
+    seedHolder.intValue = Superwall.shared.userAttributes["seed"] as? Int ?? -1
+    await assert(value: seedHolder.description)
+
+    Superwall.shared.reset()
+
+    Superwall.shared.identify(userId: "abc")
+
+    try? await Task.sleep(for: .seconds(1))
+
+    seedHolder.intValue = Superwall.shared.userAttributes["seed"] as? Int ?? -1
+    await assert(value: seedHolder.description)
+  }
+
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
-//  func test72() async throws {
+//  func test73() async throws {
 //    Superwall.shared.register(event: "no_paywalljs")
 //
 //    // Assert infinite loading
@@ -1988,13 +2010,13 @@ final class UITests_Swift: NSObject, Testable {
 //  }
 
   /// Assert localized paywall presented for given locale
-//  func testOptions73() -> TestOptions {
+//  func testOptions74() -> TestOptions {
 //    let options = SuperwallOptions()
 //    options.localeIdentifier = "es"
 //    return TestOptions(options: options)
 //  }
 // TODO: Currently there's an issue where it doesn't seem to substitute data on the paywall
-//  func test73() async throws {
+//  func test74() async throws {
 //    Superwall.shared.register(event: "present_localized")
 //
 //    // Assert infinite loading

@@ -2305,8 +2305,42 @@ static id<SWKTestConfiguration> kConfiguration;
   }));
 }
 
+/// Check that calling identify restores the seed value. This is async and dependent on config so needs to sleep after calling identify.
+- (void)test72WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create value handler
+  SWKValueDescriptionHolder *seedHolder = [SWKValueDescriptionHolder new];
+
+  [[Superwall sharedInstance] identifyWithUserId:@"abc"];
+
+  [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    NSDictionary *userAttributes = [[Superwall sharedInstance] userAttributes];
+    NSString *seedValueString = userAttributes[@"seed"];
+    int seedValueInt = [seedValueString intValue];
+    seedHolder.intValue = seedValueInt;
+
+    NSString *value = seedHolder.description;
+    TEST_ASSERT_VALUE_COMPLETION(value, ^{
+      [[Superwall sharedInstance] reset];
+
+      [[Superwall sharedInstance] identifyWithUserId:@"abc"];
+
+      [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        NSDictionary *userAttributes = [[Superwall sharedInstance] userAttributes];
+        NSString *seedValueString = userAttributes[@"seed"];
+        int seedValueInt = [seedValueString intValue];
+        seedHolder.intValue = seedValueInt;
+
+        NSString *value = seedHolder.description;
+        TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+      }];
+    });
+  }];
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
-//- (void)test72WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+//- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
 //
 //  [[Superwall sharedInstance] registerWithEvent:@"no_paywalljs"];
