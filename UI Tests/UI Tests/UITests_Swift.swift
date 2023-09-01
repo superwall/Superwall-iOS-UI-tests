@@ -1295,13 +1295,20 @@ final class UITests_Swift: NSObject, Testable {
     // Set delegate
     Superwall.shared.delegate = delegate
 
-    // Create value handler
+    // Create paywall decline value handler
     let paywallDeclineEventHolder = ValueDescriptionHolder()
     paywallDeclineEventHolder.stringValue = "No"
+
+    // Create survey response value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
       switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
       case .paywallDecline:
         paywallDeclineEventHolder.intValue += 1
         paywallDeclineEventHolder.stringValue = "Yes"
@@ -1318,10 +1325,21 @@ final class UITests_Swift: NSObject, Testable {
     let declineButton = CGPoint(x: 358, y: 59)
     touch(declineButton)
 
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the first option
+    let firstOption = CGPoint(x: 196, y: 733)
+    touch(firstOption)
+
+    // Assert the next paywall is displayed
     await assert(after: Constants.paywallPresentationDelay)
 
     // Assert that `.paywallDecline` was called once
     await assert(value: paywallDeclineEventHolder.description)
+
+    // Assert that `.surveyResponse` was called once
+    await assert(value: surveyResponseEventHolder.description)
   }
 
   /// Present paywall after a `transaction_fail` event.
@@ -1482,8 +1500,6 @@ final class UITests_Swift: NSObject, Testable {
     // Assert paywall not finished.
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
-
-  // MARK: - Surveys
 
   /// Choose non-other option from a paywall exit survey that shows 100% of the time. Then open and close the paywall again to make sure survey doesn't show again.
   func test64() async throws {

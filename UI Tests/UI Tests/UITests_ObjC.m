@@ -1606,7 +1606,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 - (SWKTestOptions *)testOptions59 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.paywallDeclineAPIKey]; }
 - (void)test59WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(3)
+  TEST_START_NUM_ASSERTS(5)
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
@@ -1615,9 +1615,13 @@ static id<SWKTestConfiguration> kConfiguration;
   // Set delegate
   [Superwall sharedInstance].delegate = delegate;
 
-  // Create value handler
+  // Create paywall decline value handler
   SWKValueDescriptionHolder *paywallDeclineEventHolder = [SWKValueDescriptionHolder new];
   paywallDeclineEventHolder.stringValue = @"No";
+
+  // Create survey response value handler
+  SWKValueDescriptionHolder *surveyResponseEventHolder = [SWKValueDescriptionHolder new];
+  surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
   [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
@@ -1626,6 +1630,9 @@ static id<SWKTestConfiguration> kConfiguration;
         paywallDeclineEventHolder.intValue += 1;
         paywallDeclineEventHolder.stringValue = @"Yes";
         break;
+      case SWKSuperwallEventSurveyResponse:
+        surveyResponseEventHolder.intValue += 1;
+        surveyResponseEventHolder.stringValue = @"Yes";
       default:
         break;
     }
@@ -1639,9 +1646,20 @@ static id<SWKTestConfiguration> kConfiguration;
     CGPoint declineButton = CGPointMake(358, 59);
     [weakSelf touch:declineButton];
 
+    // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
-      // Assert that `.paywallDecline` was called once
-      TEST_ASSERT_VALUE_COMPLETION(paywallDeclineEventHolder.description, ^{});
+      // Tap the first option
+      CGPoint firstOption = CGPointMake(196, 733);
+      [weakSelf touch:firstOption];
+
+      // Assert the next paywall is displayed
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+        // Assert that `.paywallDecline` was called once
+        TEST_ASSERT_VALUE_COMPLETION(paywallDeclineEventHolder.description, ^{});
+
+        // Assert that `.surveyResponse` was called once
+        TEST_ASSERT_VALUE_COMPLETION(surveyResponseEventHolder.description, ^{});
+      });
     });
   }));
 }
@@ -1760,8 +1778,6 @@ static id<SWKTestConfiguration> kConfiguration;
     }));
   }];
 }
-
-// MARK: - Surveys
 
 /// Choose non-other option from a paywall exit survey that shows 100% of the time.
 - (void)test64WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {

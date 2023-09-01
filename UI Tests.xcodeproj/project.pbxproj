@@ -946,7 +946,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/superwall-me/SuperwallKit-iOS";
 			requirement = {
-				branch = develop;
+				branch = "feature/fix-paywall-decline-with-survey";
 				kind = branch;
 			};
 		};
