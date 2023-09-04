@@ -2009,6 +2009,48 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: seedHolder.description)
   }
 
+  /// Present paywall after a `survey_response` event.
+  func testOptions73() -> TestOptions { return TestOptions(apiKey: Constants.touchesBeganAPIKey) }
+  func test73() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let touchesBeganEventHolder = ValueDescriptionHolder()
+    touchesBeganEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .touchesBegan:
+        touchesBeganEventHolder.intValue += 1
+        touchesBeganEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    // Wait until config has been retrieved
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Touch the paywall
+    let centreOfScreen = CGPoint(x: 197, y: 426)
+    touch(centreOfScreen)
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Touch the paywall again
+    touch(centreOfScreen)
+
+    // Assert .touchesBegan has been called only once
+    await assert(value: touchesBeganEventHolder.description)
+  }
+
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
 //  func test73() async throws {

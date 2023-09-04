@@ -66,6 +66,11 @@ public class Constants: NSObject {
   @objc public static let surveyResponseAPIKey: String =
   "pk_3698d9fe123f1e4aa8014ceca111096ca06fd68d31d9e662"
 
+  // Contains a campaign with a `touches_began` trigger.
+  // https://superwall.com/applications/2098/
+  @objc public static let touchesBeganAPIKey: String =
+  "pk_decd38c6de66a726af2b5e786897ce7ef4aaf0c0959bd061"
+
   @objc public static let configurationType = {
     return ProcessInfo.processInfo.environment["configurationType"]!
   }()

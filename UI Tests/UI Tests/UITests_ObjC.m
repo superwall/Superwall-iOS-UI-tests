@@ -2355,6 +2355,48 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+- (SWKTestOptions *)testOptions73 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.touchesBeganAPIKey]; }
+- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *touchesBeganEventHolder = [SWKValueDescriptionHolder new];
+  touchesBeganEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTouchesBegan:
+        touchesBeganEventHolder.intValue += 1;
+        touchesBeganEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Wait until config has been retrieved
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Touch the paywall
+    CGPoint centreOfScreen = CGPointMake(197, 426);
+    [weakSelf touch:centreOfScreen];
+
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      [weakSelf touch:centreOfScreen];
+
+      NSString *value = touchesBeganEventHolder.description;
+      TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+    }));
+  }));
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
