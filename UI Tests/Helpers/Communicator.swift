@@ -37,7 +37,8 @@ public class Communicator {
             let regex = try NSRegularExpression(pattern: "Clone (\\d+)", options: [])
 
             guard let match = regex.firstMatch(in: simulatorString, options: [], range: NSRange(location: 0, length: simulatorString.utf16.count)) else {
-              fatalError("Unable to determine port to use")
+              // If it can't match "Clone", it means it's just opened one simulator and not running in parallel.
+              return 999
             }
 
             let range = match.range(at: 1)
