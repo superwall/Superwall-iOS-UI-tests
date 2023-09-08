@@ -79,8 +79,8 @@ public class Constants: NSObject {
     return ProcessInfo.processInfo.environment["language"]! == "swift" ? .swift : .objc
   }()
 
-  public static let httpConfiguration: Communicator.HTTPConfiguration = {
-    return .init(processInfo: ProcessInfo.processInfo)
+  public static let channelID: String = {
+    return ProcessInfo.processInfo.environment["channel-id"]!
   }()
   
   // Time interval constants

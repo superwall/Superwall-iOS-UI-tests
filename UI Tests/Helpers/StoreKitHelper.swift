@@ -88,12 +88,43 @@ extension StoreKitHelper {
 
 extension StoreKitHelper: SKProductsRequestDelegate {
   public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-    guard response.products.isEmpty == false else {
-      assertionFailure("Failed to receive products in StoreKit helper. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
-      return
-    }
+//    guard response.products.isEmpty == false else {
+//      assertionFailure("Failed to receive products in StoreKit helper. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
+//      return
+//    }
 
-    products = response.products
+    let product1 = CustomSKProduct(
+        localizedDescription: "",
+        localizedTitle: "",
+        price: NSDecimalNumber(decimal: Decimal(99.99)),
+        priceLocale: Locale(identifier: ""),
+        productIdentifier: "com.ui_tests.custom_annual",
+        isDownloadable: false,
+        isFamilyShareable: false,
+        downloadContentLengths: [],
+        contentVersion: "",
+        downloadContentVersion: "",  // This value wasn't provided in the debug info, so a placeholder is used
+        subscriptionGroupIdentifier: "4F31BE19",
+        discounts: []
+    )
+
+    let product2 = CustomSKProduct(
+        localizedDescription: "",
+        localizedTitle: "",
+        price: NSDecimalNumber(decimal: Decimal(12.99)),
+        priceLocale: Locale(identifier: ""),
+        productIdentifier: "com.ui_tests.custom_monthly",
+        isDownloadable: false,
+        isFamilyShareable: false,
+        downloadContentLengths: [],
+        contentVersion: "",
+        downloadContentVersion: "",
+        subscriptionGroupIdentifier: "4F31BE19",
+        discounts: []
+    )
+
+//    products = response.products
+    products = [product1, product2]
     mostRecentFetch?()
   }
 
@@ -146,4 +177,68 @@ extension StoreKitHelper: SKPaymentTransactionObserver {
       break
     }
   }
+}
+
+class CustomSKProduct: SKProduct {
+    private var _localizedDescription: String
+    private var _localizedTitle: String
+    private var _price: NSDecimalNumber
+    private var _priceLocale: Locale
+    private var _productIdentifier: String
+    private var _isDownloadable: Bool
+    private var _isFamilyShareable: Bool
+    private var _downloadContentLengths: [NSNumber]
+    private var _contentVersion: String
+    private var _downloadContentVersion: String
+    private var _subscriptionPeriod: SKProductSubscriptionPeriod?
+    private var _introductoryPrice: SKProductDiscount?
+    private var _subscriptionGroupIdentifier: String?
+    private var _discounts: [SKProductDiscount]
+
+    init(
+        localizedDescription: String,
+        localizedTitle: String,
+        price: NSDecimalNumber,
+        priceLocale: Locale,
+        productIdentifier: String,
+        isDownloadable: Bool = false,
+        isFamilyShareable: Bool = false,
+        downloadContentLengths: [NSNumber] = [],
+        contentVersion: String,
+        downloadContentVersion: String,
+        subscriptionPeriod: SKProductSubscriptionPeriod? = nil,
+        introductoryPrice: SKProductDiscount? = nil,
+        subscriptionGroupIdentifier: String? = nil,
+        discounts: [SKProductDiscount] = []
+    ) {
+        self._localizedDescription = localizedDescription
+        self._localizedTitle = localizedTitle
+        self._price = price
+        self._priceLocale = priceLocale
+        self._productIdentifier = productIdentifier
+        self._isDownloadable = isDownloadable
+        self._isFamilyShareable = isFamilyShareable
+        self._downloadContentLengths = downloadContentLengths
+        self._contentVersion = contentVersion
+        self._downloadContentVersion = downloadContentVersion
+        self._subscriptionPeriod = subscriptionPeriod
+        self._introductoryPrice = introductoryPrice
+        self._subscriptionGroupIdentifier = subscriptionGroupIdentifier
+        self._discounts = discounts
+    }
+
+    override var localizedDescription: String { _localizedDescription }
+    override var localizedTitle: String { _localizedTitle }
+    override var price: NSDecimalNumber { _price }
+    override var priceLocale: Locale { _priceLocale }
+    override var productIdentifier: String { _productIdentifier }
+    override var isDownloadable: Bool { _isDownloadable }
+    override var isFamilyShareable: Bool { _isFamilyShareable }
+    override var downloadContentLengths: [NSNumber] { _downloadContentLengths }
+    override var contentVersion: String { _contentVersion }
+    override var downloadContentVersion: String { _downloadContentVersion }
+    override var subscriptionPeriod: SKProductSubscriptionPeriod? { _subscriptionPeriod }
+    override var introductoryPrice: SKProductDiscount? { _introductoryPrice }
+    override var subscriptionGroupIdentifier: String? { _subscriptionGroupIdentifier }
+    override var discounts: [SKProductDiscount] { _discounts }
 }

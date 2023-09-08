@@ -18,20 +18,19 @@ class Automated_UI_Testing: XCTestCase {
 
   struct Constants {
     typealias LaunchEnvironment = [String: String]
+    static let channelID = UUID().uuidString
     static let launchEnvironment = {
-      return ProcessInfo.processInfo.environment
+      var environment = ProcessInfo.processInfo.environment
+      environment["channel-id"] = channelID
+      return environment
     }()
     static let snapshotsPathComponent: String = {
       return BuildHelpers.Constants.isCIEnvironment ? "CI_Snapshots" : "Snapshots"
     }()
-
-    static let httpConfiguration = {
-      return Communicator.HTTPConfiguration(processInfo: ProcessInfo.processInfo)
-    }()
   }
 
   override class func setUp() {
-    Communicator.shared.start(httpConfiguration: Constants.httpConfiguration)
+    Communicator.shared.start(channelID: Constants.channelID)
   }
 
   func handle(_ action: Communicator.Action) {
