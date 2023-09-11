@@ -13,8 +13,6 @@
 		540E793E2989B16600EE1425 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 540E793C2989B16600EE1425 /* Main.storyboard */; };
 		540E79402989B16600EE1425 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 540E793F2989B16600EE1425 /* Assets.xcassets */; };
 		540E79432989B16600EE1425 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 540E79412989B16600EE1425 /* LaunchScreen.storyboard */; };
-		5418873E2A98295600D3CF79 /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 5418873D2A98295600D3CF79 /* Ably */; };
-		541887402A98296100D3CF79 /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 5418873F2A98296100D3CF79 /* Ably */; };
 		5472D0002A5CBA2300B50CE4 /* BuildHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5472CFFF2A5CBA2300B50CE4 /* BuildHelpers.swift */; };
 		5472D0012A5CBA2300B50CE4 /* BuildHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5472CFFF2A5CBA2300B50CE4 /* BuildHelpers.swift */; };
 		54CAAD0B29BBD0A0008D728C /* Automated_UI_Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD0A29BBD0A0008D728C /* Automated_UI_Testing.swift */; };
@@ -26,8 +24,6 @@
 		54CAAD2D29BC4CFD008D728C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAACF529B82653008D728C /* Constants.swift */; };
 		54CAAD2E29BC4CFD008D728C /* StoreKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540E79992991CCD600EE1425 /* StoreKitHelper.swift */; };
 		54CAAD2F29BC4D00008D728C /* Configuration_Swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAACE529B6BE90008D728C /* Configuration_Swift.swift */; };
-		54CAAD3229BC4DC0008D728C /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 54CAAD3129BC4DC0008D728C /* SnapshotTesting */; };
-		54CAAD3529BC4DDB008D728C /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 54CAAD3429BC4DDB008D728C /* SuperwallKit */; };
 		54CAAD3729BC5176008D728C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3629BC5176008D728C /* Extensions.swift */; };
 		54CAAD3829BC5257008D728C /* Communicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD2429BC045C008D728C /* Communicator.swift */; };
 		54CAAD3929BC5C47008D728C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAAD3629BC5176008D728C /* Extensions.swift */; };
@@ -54,6 +50,11 @@
 		54CFF7802A1D7AB80035DC9C /* Data+Gzip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CFF77E2A1D7AB80035DC9C /* Data+Gzip.swift */; };
 		54CFF7822A1D7BB20035DC9C /* NetworkEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CFF7812A1D7BB20035DC9C /* NetworkEvaluator.swift */; };
 		54CFF7842A1D7C680035DC9C /* NoActionRequestRedirector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CFF7832A1D7C680035DC9C /* NoActionRequestRedirector.swift */; };
+		54DBFD7A2AAFAEC400A8AE9E /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 54DBFD792AAFAEC400A8AE9E /* SuperwallKit */; };
+		54DBFD7D2AAFAEE700A8AE9E /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 54DBFD7C2AAFAEE700A8AE9E /* Ably */; };
+		54DBFD802AAFAF0A00A8AE9E /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 54DBFD7F2AAFAF0A00A8AE9E /* SnapshotTesting */; };
+		54DBFD822AAFB51300A8AE9E /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 54DBFD812AAFB51300A8AE9E /* SuperwallKit */; };
+		54DBFD842AAFB51500A8AE9E /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 54DBFD832AAFB51500A8AE9E /* Ably */; };
 		8845B67829C1F98F001B0013 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 540E79522989B1A900EE1425 /* Products.storekit */; };
 /* End PBXBuildFile section */
 
@@ -123,8 +124,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				541887402A98296100D3CF79 /* Ably in Frameworks */,
-				54CAAD3529BC4DDB008D728C /* SuperwallKit in Frameworks */,
+				54DBFD842AAFB51500A8AE9E /* Ably in Frameworks */,
+				54DBFD822AAFB51300A8AE9E /* SuperwallKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,8 +133,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5418873E2A98295600D3CF79 /* Ably in Frameworks */,
-				54CAAD3229BC4DC0008D728C /* SnapshotTesting in Frameworks */,
+				54DBFD802AAFAF0A00A8AE9E /* SnapshotTesting in Frameworks */,
+				54DBFD7D2AAFAEE700A8AE9E /* Ably in Frameworks */,
+				54DBFD7A2AAFAEC400A8AE9E /* SuperwallKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,8 +365,8 @@
 			);
 			name = "UI Tests";
 			packageProductDependencies = (
-				54CAAD3429BC4DDB008D728C /* SuperwallKit */,
-				5418873F2A98296100D3CF79 /* Ably */,
+				54DBFD812AAFB51300A8AE9E /* SuperwallKit */,
+				54DBFD832AAFB51500A8AE9E /* Ably */,
 			);
 			productName = "UI Tests";
 			productReference = 540E79332989B16600EE1425 /* UI Tests.app */;
@@ -386,8 +388,9 @@
 			);
 			name = "Automated UI Testing";
 			packageProductDependencies = (
-				54CAAD3129BC4DC0008D728C /* SnapshotTesting */,
-				5418873D2A98295600D3CF79 /* Ably */,
+				54DBFD792AAFAEC400A8AE9E /* SuperwallKit */,
+				54DBFD7C2AAFAEE700A8AE9E /* Ably */,
+				54DBFD7F2AAFAF0A00A8AE9E /* SnapshotTesting */,
 			);
 			productName = "Automated UI Testing";
 			productReference = 54CAAD0829BBD09F008D728C /* Automated UI Testing.xctest */;
@@ -423,9 +426,9 @@
 			);
 			mainGroup = 540E792A2989B16600EE1425;
 			packageReferences = (
-				54CAAD3029BC4DC0008D728C /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
-				54CAAD3329BC4DDB008D728C /* XCRemoteSwiftPackageReference "SuperwallKit-iOS" */,
-				5418873C2A98295600D3CF79 /* XCRemoteSwiftPackageReference "ably-cocoa" */,
+				54DBFD782AAFAEC400A8AE9E /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+				54DBFD7B2AAFAEE700A8AE9E /* XCRemoteSwiftPackageReference "ably-cocoa" */,
+				54DBFD7E2AAFAF0A00A8AE9E /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			productRefGroup = 540E79342989B16600EE1425 /* Products */;
 			projectDirPath = "";
@@ -926,15 +929,23 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5418873C2A98295600D3CF79 /* XCRemoteSwiftPackageReference "ably-cocoa" */ = {
+		54DBFD782AAFAEC400A8AE9E /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/superwall-me/Superwall-iOS";
+			requirement = {
+				branch = develop;
+				kind = branch;
+			};
+		};
+		54DBFD7B2AAFAEE700A8AE9E /* XCRemoteSwiftPackageReference "ably-cocoa" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ably/ably-cocoa";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				kind = exactVersion;
+				version = 1.2.20;
 			};
 		};
-		54CAAD3029BC4DC0008D728C /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+		54DBFD7E2AAFAF0A00A8AE9E /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
 			requirement = {
@@ -942,36 +953,33 @@
 				revision = f5489a273ddd57239fd68b9889b3b541bdcbfa3a;
 			};
 		};
-		54CAAD3329BC4DDB008D728C /* XCRemoteSwiftPackageReference "SuperwallKit-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/superwall-me/SuperwallKit-iOS";
-			requirement = {
-				branch = develop;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5418873D2A98295600D3CF79 /* Ably */ = {
+		54DBFD792AAFAEC400A8AE9E /* SuperwallKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5418873C2A98295600D3CF79 /* XCRemoteSwiftPackageReference "ably-cocoa" */;
+			package = 54DBFD782AAFAEC400A8AE9E /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
+		};
+		54DBFD7C2AAFAEE700A8AE9E /* Ably */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 54DBFD7B2AAFAEE700A8AE9E /* XCRemoteSwiftPackageReference "ably-cocoa" */;
 			productName = Ably;
 		};
-		5418873F2A98296100D3CF79 /* Ably */ = {
+		54DBFD7F2AAFAF0A00A8AE9E /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5418873C2A98295600D3CF79 /* XCRemoteSwiftPackageReference "ably-cocoa" */;
-			productName = Ably;
-		};
-		54CAAD3129BC4DC0008D728C /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 54CAAD3029BC4DC0008D728C /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			package = 54DBFD7E2AAFAF0A00A8AE9E /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
 		};
-		54CAAD3429BC4DDB008D728C /* SuperwallKit */ = {
+		54DBFD812AAFB51300A8AE9E /* SuperwallKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 54CAAD3329BC4DDB008D728C /* XCRemoteSwiftPackageReference "SuperwallKit-iOS" */;
+			package = 54DBFD782AAFAEC400A8AE9E /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
 			productName = SuperwallKit;
+		};
+		54DBFD832AAFB51500A8AE9E /* Ably */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 54DBFD7B2AAFAEE700A8AE9E /* XCRemoteSwiftPackageReference "ably-cocoa" */;
+			productName = Ably;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
