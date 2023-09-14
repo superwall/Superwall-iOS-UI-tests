@@ -129,6 +129,7 @@ public class Communicator {
       guard let self else { return }
 
       guard let completionHandler = completionHandlers[action.identifier] else {
+        print("test")
         fatalError("There should have been a completion handler for \(action.identifier)")
       }
 
@@ -184,7 +185,17 @@ public class Communicator {
 
   let completedActionIdentifiers: NSMutableSet = NSMutableSet(array: [])
 
+  let allCompletionActionIdentifiers: NSMutableSet = NSMutableSet(array: [])
+
   func completed(action: Communicator.Action) {
+    print("[COMPLETION] Starting a task to create a completion action for: \(action.identifier)")
+
+    if allCompletionActionIdentifiers.contains(action.identifier) {
+      print("stop")
+    }
+
+    allCompletionActionIdentifiers.add(action.identifier)
+
     Task {
       print("[COMPLETION] Calling completed for action: \(action.identifier)")
       await Communicator.shared.send(.completed(action: action))
