@@ -2397,6 +2397,55 @@ static id<SWKTestConfiguration> kConfiguration;
   }));
 }
 
+- (void)test74WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create survey response value handler
+  SWKValueDescriptionHolder *surveyCloseEventHolder = [SWKValueDescriptionHolder new];
+  surveyCloseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyClose:
+        surveyCloseEventHolder.intValue += 1;
+        surveyCloseEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  [[Superwall sharedInstance] registerWithEvent:@"survey_with_close_option"];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(356, 154);
+    [weakSelf touch:closeButton];
+
+    // Assert the survey is displayed
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+      // Tap the close option
+      CGPoint closeOption = CGPointMake(196, 792);
+      [weakSelf touch:closeOption];
+
+      // Assert the paywall has disappeared
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+        // Assert that `.surveyClose` was called once
+        TEST_ASSERT_VALUE_COMPLETION(surveyCloseEventHolder.description, ^{});
+      })
+    });
+  }));
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)

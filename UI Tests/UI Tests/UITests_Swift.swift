@@ -2009,7 +2009,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: seedHolder.description)
   }
 
-  /// Present paywall after a `survey_response` event.
+  /// Present paywall after a `touches_began` event.
   func testOptions73() -> TestOptions { return TestOptions(apiKey: Constants.touchesBeganAPIKey) }
   func test73() async throws {
     // Create Superwall delegate
@@ -2049,6 +2049,53 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert .touchesBegan has been called only once
     await assert(value: touchesBeganEventHolder.description)
+  }
+
+  /// Assert a `survey_close` event when closing a survey that has a close button.
+  func test74() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyCloseEventHolder = ValueDescriptionHolder()
+    surveyCloseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyClose:
+        surveyCloseEventHolder.intValue += 1
+        surveyCloseEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "survey_with_close_option")
+
+    // Assert the paywall is presented
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 154)
+    touch(closeButton)
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the close option
+    let closeOption = CGPoint(x: 196, y: 792)
+    touch(closeOption)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert .surveyClose has been called only once
+    await assert(value: surveyCloseEventHolder.description)
   }
 
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
