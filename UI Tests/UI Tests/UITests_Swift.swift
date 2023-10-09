@@ -57,7 +57,11 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  /// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
+  /// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video 
+  /// at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close.
+  /// This paywall should have a video playing and should be started from the beginning with a 0 on
+  /// the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and
+  /// we want to capture the video as quickly as possible.
   func test4() async throws {
     // Present the paywall.
     Superwall.shared.register(event: "present_video")
@@ -73,7 +77,8 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: 2.0, precision: .video)
   }
 
-  /// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at $12.99 and 1 annual at $99.99.
+  /// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at
+  /// $12.99 and 1 annual at $99.99.
   func test5() async throws {
     guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
@@ -149,7 +154,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. 
+  /// After dismiss, paywall should be presented again with override products: 1 monthly at $12.99
+  /// and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
+  /// After dismiss, paywall should be presented one last time with no override products.
   func test10() async throws {
     // Present the paywall.
     Superwall.shared.register(event: "present_products")
@@ -2096,6 +2104,60 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert .surveyClose has been called only once
     await assert(value: surveyCloseEventHolder.description)
+  }
+
+  /// Present the paywall and purchase. Make sure the transaction, product, and paywallInfo data is passed back to delegate.
+  func test75() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionCompleteEventHolder = ValueDescriptionHolder()
+    transactionCompleteEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, paywallInfo):
+        transactionCompleteEventHolder.intValue += 1
+        transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "present_data")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert .transactionComplete has been called with transaction details
+    await assert(value: transactionCompleteEventHolder.description)
   }
 
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.

@@ -302,3 +302,7 @@ class Automated_UI_Testing_test74: Automated_UI_Testing {
   func test74() async throws { try await performSDKTest(number: 74) }
 }
 
+class Automated_UI_Testing_test75: Automated_UI_Testing {
+  func test75() async throws { try await performSDKTest(number: 75) }
+}
+

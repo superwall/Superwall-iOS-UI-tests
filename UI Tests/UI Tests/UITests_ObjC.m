@@ -2446,6 +2446,69 @@ static id<SWKTestConfiguration> kConfiguration;
   }));
 }
 
+/// Present the paywall and purchase. Make sure the transaction, product, and paywallInfo data is passed back to delegate.
+- (void)test75WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *transactionCompleteEventHolder = [SWKValueDescriptionHolder new];
+  transactionCompleteEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionComplete: {
+        transactionCompleteEventHolder.intValue += 1;
+        NSString *transactionId = eventInfo.params[@"transaction_id"];
+        NSString *productId = eventInfo.params[@"product_id"];
+        NSString *paywallId = eventInfo.params[@"paywall_id"];
+        
+        transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%@,%@,%@", transactionId, productId, paywallId];
+        break;
+      }
+      default:
+        break;
+    }
+  }];
+
+  // Register event to present the paywall
+  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(196, 750);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    CGRect customFrame = CGRectMake(0, 488, 393, 300);
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(196, 766);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+        CGPoint okButton = CGPointMake(196, 495);
+        [weakSelf touch:okButton];
+
+        // Try to present paywall again
+        [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+
+        // Ensure the paywall doesn't present.
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+      }];
+    }));
+  }));
+}
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
