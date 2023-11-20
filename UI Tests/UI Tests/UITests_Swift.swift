@@ -1274,7 +1274,6 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     Superwall.shared.register(event: "campaign_trigger")
-    
 
     await assert(after: Constants.paywallPresentationDelay)
 
