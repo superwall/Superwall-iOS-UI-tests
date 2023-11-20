@@ -2509,6 +2509,21 @@ static id<SWKTestConfiguration> kConfiguration;
     }));
   }));
 }
+
+/// Register event and land in holdout. Register again and present paywall.
+- (void)test76WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  [[Superwall sharedInstance] registerWithEvent:@"holdout_one_time_occurrence"];
+
+  // Assert that no paywall appears (holdout)
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    [[Superwall sharedInstance] registerWithEvent:@"holdout_one_time_occurrence"];
+
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
+  }));
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)

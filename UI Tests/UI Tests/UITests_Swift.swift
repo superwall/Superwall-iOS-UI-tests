@@ -1275,6 +1275,7 @@ final class UITests_Swift: NSObject, Testable {
 
     Superwall.shared.register(event: "campaign_trigger")
     
+
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
@@ -1293,7 +1294,8 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: transactionAbandonEventHolder.description)
   }
 
-  /// Present paywall after a `paywall_decline` event.
+  /// Present paywall after a `paywall_decline` event. The declined paywall has a survey attached to it.
+  /// This is answered before `paywall_decline` is called.
   func testOptions59() -> TestOptions { return TestOptions(apiKey: Constants.paywallDeclineAPIKey) }
   func test59() async throws {
     // Create Superwall delegate
@@ -2158,6 +2160,19 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert .transactionComplete has been called with transaction details
     await assert(value: transactionCompleteEventHolder.description)
+  }
+
+  /// Register event and land in holdout. Register again and present paywall.
+  func test76() async throws {
+    Superwall.shared.register(event: "holdout_one_time_occurrence")
+
+    // Assert that no paywall appears (holdout)
+    await assert(after: Constants.paywallPresentationDelay)
+
+    Superwall.shared.register(event: "holdout_one_time_occurrence")
+
+    // Assert that a paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
