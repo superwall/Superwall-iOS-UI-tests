@@ -2524,6 +2524,57 @@ static id<SWKTestConfiguration> kConfiguration;
   }));
 }
 
+- (void)test77WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Get the primary and secondary products
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+
+  if (!primary || !secondary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
+  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
+
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProductsByName:@{@"primary": primaryProduct, @"secondary": secondaryProduct}];
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [self holdStrongly:delegate];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [viewController dismissViewControllerAnimated:NO completion:nil];
+    });
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+
+      // Assert after a delay
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+    } else {
+      // Handle error
+      completionHandler(result.error);
+    }
+  }];
+}
+
+// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
+- (void)test78WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Paywall Overrides don't work with register")
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
