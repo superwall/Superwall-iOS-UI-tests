@@ -71,6 +71,17 @@ public class Constants: NSObject {
   @objc public static let touchesBeganAPIKey: String =
   "pk_decd38c6de66a726af2b5e786897ce7ef4aaf0c0959bd061"
 
+  // Contains a campaign with a `paywall_decline`,
+  // `transaction_abandon`, and `transaction_fail` trigger.
+  // https://superwall.com/applications/3843/
+  @objc public static let gatedAPIKey: String =
+  "pk_8d769657b3cc26993439cfb4b065bdfb01cc7ddf8982a708"
+
+  // Contains a campaign with a `paywall_decline` trigger.
+  // https://superwall.com/applications/3861/
+  @objc public static let noRuleMatchGatedAPIKey: String =
+  "pk_22d152e6b039c39c7e1a1e5d0bb3921e4fdd578411c80612"
+
   @objc public static let configurationType = {
     return ProcessInfo.processInfo.environment["configurationType"]!
   }()

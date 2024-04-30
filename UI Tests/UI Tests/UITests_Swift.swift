@@ -57,7 +57,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  /// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video 
+  /// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video
   /// at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close.
   /// This paywall should have a video playing and should be started from the beginning with a 0 on
   /// the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and
@@ -154,7 +154,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
-  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. 
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
   /// After dismiss, paywall should be presented again with override products: 1 monthly at $12.99
   /// and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
   /// After dismiss, paywall should be presented one last time with no override products.
@@ -313,7 +313,7 @@ final class UITests_Swift: NSObject, Testable {
         let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
         let action = UIAlertAction(title: "OK", style: .default)
         alertController.addAction(action)
-        
+
         Superwall.shared.presentedViewController?.present(alertController, animated: false)
       }
     }
@@ -894,7 +894,7 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   /// https://www.notion.so/superwall/No-internet-feature-gating-b383af91a0fc49d9b7402d1cf09ada6a?pvs=4
-  #warning("change `subscribed` param to product id")
+#warning("change `subscribed` param to product id")
   func executeRegisterFeatureClosureTest(subscribed: Bool, gated: Bool, testName: String = #function) async {
     // Mock user as subscribed
     if subscribed {
@@ -1025,11 +1025,11 @@ final class UITests_Swift: NSObject, Testable {
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
       switch eventInfo.event {
-        case .appInstall:
-          appInstallEventHolder.intValue += 1
-          appInstallEventHolder.stringValue = "Yes"
-        default:
-          return
+      case .appInstall:
+        appInstallEventHolder.intValue += 1
+        appInstallEventHolder.stringValue = "Yes"
+      default:
+        return
       }
     }
 
@@ -1058,11 +1058,11 @@ final class UITests_Swift: NSObject, Testable {
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
       switch eventInfo.event {
-        case .appLaunch:
-          appLaunchEventHolder.intValue += 1
-          appLaunchEventHolder.stringValue = "Yes"
-        default:
-          return
+      case .appLaunch:
+        appLaunchEventHolder.intValue += 1
+        appLaunchEventHolder.stringValue = "Yes"
+      default:
+        return
       }
     }
 
@@ -1090,11 +1090,11 @@ final class UITests_Swift: NSObject, Testable {
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
       switch eventInfo.event {
-        case .sessionStart:
-          sessionStartEventHolder.intValue += 1
-          sessionStartEventHolder.stringValue = "Yes"
-        default:
-          return
+      case .sessionStart:
+        sessionStartEventHolder.intValue += 1
+        sessionStartEventHolder.stringValue = "Yes"
+      default:
+        return
       }
     }
 
@@ -1455,7 +1455,7 @@ final class UITests_Swift: NSObject, Testable {
     // Expire subscription
     await expireSubscription(productIdentifier: StoreKitHelper.Constants.freeTrialProductIdentifier)
 
-    #warning("need to restart before continuing here")
+#warning("need to restart before continuing here")
 
     // Try to present paywall again
     Superwall.shared.register(event: "present_free_trial")
@@ -2273,6 +2273,149 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Present non-gated `paywall_decline` paywall from gated paywall and make sure the feature block isn't called.
+  func testOptions79() -> TestOptions { return TestOptions(apiKey: Constants.gatedAPIKey) }
+  func test79() async throws {
+    // Present the gated paywall.
+    Superwall.shared.register(event: "campaign_trigger") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Wait for gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Wait for non-gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    touch(closeButton)
+
+    // Assert the feature block wasn't called.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Present non-gated `transaction_abandon` paywall from gated paywall and make sure the feature block isn't called.
+  func testOptions80() -> TestOptions { return TestOptions(apiKey: Constants.gatedAPIKey) }
+  func test80() async throws {
+    // Present the gated paywall.
+    Superwall.shared.register(event: "campaign_trigger") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Wait for gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Continue on the paywall
+    let continueButton = CGPoint(x: 196, y: 786)
+    touch(continueButton)
+
+    await sleep(timeInterval: 2)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 786)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    let abandonTransactionButton = CGPoint(x: 359, y: 515)
+    touch(abandonTransactionButton)
+
+    // Wait for non-gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert the feature block wasn't called.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Present non-gated `transaction_fail` paywall from gated paywall and make sure the feature block isn't called.
+  func testOptions81() -> TestOptions { return TestOptions(apiKey: Constants.gatedAPIKey) }
+  func test81() async throws {
+    await failTransactions()
+
+    // Present the gated paywall.
+    Superwall.shared.register(event: "campaign_trigger") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Wait for gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Continue on the paywall
+    let continueButton = CGPoint(x: 196, y: 786)
+    touch(continueButton)
+
+    await sleep(timeInterval: 2)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 786)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for non-gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert the feature block wasn't called.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Make sure feature block of gated paywall isn't called when `paywall_decline` returns a `noRuleMatch`
+  func testOptions82() -> TestOptions { return TestOptions(apiKey: Constants.noRuleMatchGatedAPIKey) }
+  func test82() async throws {
+    // Present the gated paywall.
+    Superwall.shared.register(event: "campaign_trigger") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Wait for gated paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 56, y: 86)
+    touch(closeButton)
+
+    // Make sure no paywall_decline paywall shows and the feature block isn't called.
     await assert(after: Constants.paywallPresentationDelay)
   }
 

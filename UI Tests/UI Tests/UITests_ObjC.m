@@ -2575,6 +2575,166 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_SKIP(@"Paywall Overrides don't work with register")
 }
 
+/// Present non-gated `paywall_decline` paywall from gated paywall and make sure the feature block isn't called.
+- (SWKTestOptions *)testOptions79 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.gatedAPIKey]; }
+- (void)test79WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that alert appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(356, 86);
+    [weakSelf touch:closeButton];
+
+    // Wait for non-gated paywall to show
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+      // Close the paywall
+      [weakSelf touch:closeButton];
+
+      // Assert the feature block wasn't called.
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}))
+    })
+  }));
+}
+
+/// Present non-gated `transaction_abandon` paywall from gated paywall and make sure the feature block isn't called.
+- (SWKTestOptions *)testOptions80 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.gatedAPIKey]; }
+- (void)test80WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Wait for gated paywall to show
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Continue on the paywall
+    CGPoint button = CGPointMake(196, 786);
+    [weakSelf touch:button];
+
+    [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
+      // Purchase on the paywall
+      [weakSelf touch:button];
+
+      // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+      CGRect customFrame = CGRectMake(0, 488, 393, 300);
+      TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+        CGPoint abandonTransactionButton = CGPointMake(359, 515);
+        [weakSelf touch:abandonTransactionButton];
+
+        // Wait for non-gated paywall to show
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+          // Close the paywall
+          CGPoint closeButton = CGPointMake(356, 86);
+          [weakSelf touch:closeButton];
+
+          // Assert the feature block wasn't called.
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}))
+        })
+      }));
+    }];
+  }));
+}
+
+/// Present non-gated `transaction_fail` paywall from gated paywall and make sure the feature block isn't called.
+- (SWKTestOptions *)testOptions81 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.gatedAPIKey]; }
+- (void)test81WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+
+  // Fail all transactions
+  [self failTransactionsWithCompletionHandler:^{
+    // Register event and present an alert controller
+    [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+      dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                                 message:@"This is an alert message"
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alertController addAction:action];
+        [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+      });
+    }];
+
+    // Wait for gated paywall to show
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Continue on the paywall
+      CGPoint button = CGPointMake(196, 786);
+      [weakSelf touch:button];
+
+      [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
+        // Purchase on the paywall
+        [weakSelf touch:button];
+
+        // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+        CGRect customFrame = CGRectMake(0, 488, 393, 300);
+        TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+          // Tap the Subscribe button
+          CGPoint subscribeButton = CGPointMake(196, 766);
+          [weakSelf touch:subscribeButton];
+
+          // Wait for non-gated paywall to show
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+            // Close the paywall
+            CGPoint closeButton = CGPointMake(356, 86);
+            [weakSelf touch:closeButton];
+
+            // Assert the feature block wasn't called.
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}))
+          })
+        }));
+      }];
+    }));
+  }];
+}
+
+/// Make sure feature block of gated paywall isn't called when `paywall_decline` returns a `noRuleMatch`
+- (SWKTestOptions *)testOptions82 { return [SWKTestOptions testOptionsWithApiKey:SWKConstants.noRuleMatchGatedAPIKey]; }
+- (void)test82WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Wait for gated paywall to show
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(56, 86);
+    [weakSelf touch:closeButton];
+
+    // Assert the feature block wasn't called.
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}))
+  }));
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
