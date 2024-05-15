@@ -1217,6 +1217,41 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+- (void)executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:(BOOL)subscribed gated:(BOOL)gated testName:(NSString * _Nonnull)testNameOverride completionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+  testName = testNameOverride;
+
+  // Perform subscribe again in case of advanced setup which can't be configured before SDK configuration.
+  [self handleSubscriptionMockingWithSubscribed:subscribed completionHandler:^{
+    NSString *event = gated ? @"register_gated_paywall_v4" : @"register_nongated_paywall_v4";
+
+    SWKValueDescriptionHolder *errorHandlerHolder = [SWKValueDescriptionHolder new];
+    errorHandlerHolder.stringValue = @"No";
+
+    SWKPaywallPresentationHandler *paywallPresentationHandler = [[SWKPaywallPresentationHandler alloc] init];
+    [paywallPresentationHandler onError:^(NSError * _Nonnull error) {
+      errorHandlerHolder.intValue += 1;
+      errorHandlerHolder.stringValue = @"Yes";
+    }];
+
+    SWKValueDescriptionHolder *featureClosureHolder = [SWKValueDescriptionHolder new];
+    featureClosureHolder.stringValue = @"No";
+
+    [[Superwall sharedInstance] registerWithEvent:event params:nil handler:paywallPresentationHandler feature:^{
+      dispatch_async(dispatch_get_main_queue(), ^{
+        featureClosureHolder.intValue += 1;
+        featureClosureHolder.stringValue = @"Yes";
+      });
+    }];
+
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      TEST_ASSERT_VALUE_COMPLETION(errorHandlerHolder.description, (^{
+        TEST_ASSERT_VALUE_COMPLETION(featureClosureHolder.description, ^{});
+      }));
+    }));
+  }];
+}
+
 // Unable to fetch config, not subscribed, and not gated.
 - (SWKTestOptions *)testOptions41 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
 - (void)test41WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
@@ -2732,6 +2767,607 @@ static id<SWKTestConfiguration> kConfiguration;
 
     // Assert the feature block wasn't called.
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}))
+  }));
+}
+
+// Finished purchase with a result type of `restored`
+// Same as test37 but with v4 paywall
+- (void)test83WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Create a ValueDescriptionHolder to store the paywall did finish result value
+  SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Mock user as subscribed
+      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+        // Press restore
+        CGPoint restoreButton = CGPointMake(196, 136);
+        [weakSelf touch:restoreButton];
+
+        // Wait for the delegate function to be called
+        [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
+          // Assert didFinish paywall result value
+          NSString *value = paywallDidFinishResultValueHolder.stringValue;
+          TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+        }];
+      }];
+    }));
+  }];
+}
+
+// Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?)
+// Same as test39 but with v4 paywall
+- (void)test84WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
+  [weakSelf holdStrongly:delegate];
+
+  // Create a ValueDescriptionHolder to store the paywall did finish result value
+  SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationPageSheet;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Mock user as subscribed
+      [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+        // Press restore
+        CGPoint restoreButton = CGPointMake(196, 196);
+        [weakSelf touch:restoreButton];
+
+        // Wait for the delegate function to be called
+        [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
+          // Assert paywall did finish result value ("restored")
+          NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
+          TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, (^{
+            // Modify the paywall didFinish result value
+            paywallDidFinishResultValueHolder.stringValue = @"empty value";
+
+            // Swipe the paywall down to dismiss
+            [weakSelf swipeDown];
+
+            // Assert the paywall was dismissed
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+              // Assert paywall did finish result value ("empty value")
+              NSString *paywallDidFinishValue = paywallDidFinishResultValueHolder.stringValue;
+              TEST_ASSERT_VALUE_COMPLETION(paywallDidFinishValue, ^{});
+            }));
+          }));
+        }];
+      }];
+    }));
+  }];
+}
+
+// Finished purchase with a result type of `restored`
+// Same as test63 but with v4 paywall
+- (void)test85WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Create a ValueDescriptionHolder to store the paywall did finish result value
+  SWKValueDescriptionHolder *paywallDidFinishResultValueHolder = [SWKValueDescriptionHolder new];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    paywallDidFinishResultValueHolder.stringValue = [SWKPaywallResultValueObjcHelper description:result];
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+
+      // Press restore
+      CGPoint restoreButton = CGPointMake(196, 135);
+      [weakSelf touch:restoreButton];
+
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallDelegateResponseDelay, (^{
+        NSString *value = paywallDidFinishResultValueHolder.stringValue;
+        TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+      }));
+    }));
+  }];
+}
+
+/// Case: Unsubscribed user, register event with a gating handler
+/// Result: paywall should display, code in gating closure should not execute
+/// Same as test26 but with v4 paywall
+- (void)test86WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Register event and present an alert controller
+  [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall_v4" params:nil handler:nil feature:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                               message:@"This is an alert message"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:action];
+      [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  // Assert that alert appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint purchaseButton = CGPointMake(352, 65);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that nothing else appears
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+  }));
+}
+
+/// Case: Subscribed user, register event with a gating handler
+/// Result: paywall should NOT display, code in gating closure should execute
+/// Same as test27 but with v4 paywall
+- (SWKTestOptions *)testOptions87 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test87WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Mock user as subscribed
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+
+    // Register event and present an alert controller
+    [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall_v4" params:nil handler:nil feature:^{
+      dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
+                                                                                 message:@"This is an alert message"
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alertController addAction:action];
+        [[SWKRootViewController sharedInstance] presentViewController:alertController animated:NO completion:nil];
+      });
+    }];
+
+    // Assert that alert controller appears
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+  }];
+}
+
+/// Case: Unsubscribed user, register event without a gating handler
+/// Result: paywall should display
+/// Same as test23 but with v4 paywall
+- (void)test88WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Register event
+  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+/// Case: Subscribed user, register event without a gating handler
+/// Result: paywall should NOT display
+/// Same as test24 but with v4 paywall
+- (SWKTestOptions *)testOptions89 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test89WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Mock user as subscribed
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+
+    // Register event
+    [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+
+    // Assert that paywall DOES not appear
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+  }];
+}
+
+/// Case: Unsubscribed user, register event without a gating handler, user subscribes, after dismiss register another event without a gating handler
+/// Result: paywall should display, after user subscribes, don't show another paywall
+/// Same as test25 but with v4 paywall
+- (void)test90WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Register event
+  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+
+  // Assert that paywall appears
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(196, 748);
+    [weakSelf touch:purchaseButton];
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    CGRect customFrame = CGRectMake(0, 488, 393, 300);
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(196, 766);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+        CGPoint okButton = CGPointMake(196, 495);
+        [weakSelf touch:okButton];
+
+        [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+          // Try to present paywall again
+          [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+
+          // Ensure the paywall doesn't present.
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+        }];
+      }];
+    }));
+  }));
+}
+
+// Unable to fetch config, not subscribed, and not gated.
+/// Same as test41 but with v4 paywall
+- (SWKTestOptions *)testOptions91 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (void)test91WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:NO gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Unable to fetch config, not subscribed, and gated.
+/// Same as test42 but with v4 paywall
+- (SWKTestOptions *)testOptions92 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO]; }
+- (void)test92WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:NO gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Unable to fetch config, subscribed, and not gated.
+/// Same as test43 but with v4 paywall
+- (SWKTestOptions *)testOptions93 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO purchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test93WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Unable to fetch config, subscribed, and gated.
+/// Same as test44 but with v4 paywall
+- (SWKTestOptions *)testOptions94 { return [SWKTestOptions testOptionsWithAllowNetworkRequests:NO purchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test94WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, not subscribed, and not gated.
+/// Same as test45 but with v4 paywall
+- (void)test95WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:NO gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, not subscribed, and gated.
+/// Same as test46 but with v4 paywall
+- (void)test96WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:NO gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, subscribed, and not gated.
+/// Same as test47 but with v4 paywall
+- (SWKTestOptions *)testOptions97 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test97WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:YES gated:NO testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Fetched config, subscribed, and gated.
+/// Same as test48 but with v4 paywall
+- (SWKTestOptions *)testOptions98 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test98WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  [self executeRegisterFeatureClosureTestWithSubscribedWithV4Paywall:YES gated:YES testName:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__] completionHandler:completionHandler];
+}
+
+// Present regardless of status
+/// Same as test9 but with v4 paywall
+- (SWKTestOptions *)testOptions99 { return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier]; }
+- (void)test99WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+    [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+  }];
+}
+
+// Test trigger: not-allowed standard event (paywall_close)
+/// Same as test14 but with v4 paywall
+- (void)test100WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+
+  // After delay, assert that there was a presentation
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+      // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+    }];
+  }));
+}
+
+// Clusterfucks by Jake™
+/// Same as test15 but with v4 paywall
+- (void)test101WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present paywall
+  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:@{@"some_param_1": @"hello"}];
+  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+
+  // After delay, assert that there was a presentation
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Dismiss any view controllers
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+      [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+      [[Superwall sharedInstance] identifyWithUserId:@"1111"];
+      [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+
+      // After delay, assert that there was a presentation
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        // Dismiss any view controllers
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+          SWKPaywallPresentationHandler *handler = [[SWKPaywallPresentationHandler alloc] init];
+          __block NSString *experimentId;
+
+          [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
+            [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+            experimentId = paywallInfo.experiment.id;
+            // Wait and assert.
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+              TEST_ASSERT_VALUE_COMPLETION(experimentId, ^{});
+            });
+          }];
+
+          // Present paywall
+          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:nil handler:handler];
+        }];
+      }));
+    }];
+  }));
+}
+
+// Present an alert on Superwall.presentedViewController from the onPresent callback
+/// Same as test16 but with v4 paywall
+- (void)test102WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  SWKPaywallPresentationHandler *handler = [[SWKPaywallPresentationHandler alloc] init];
+  [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert" message:@"This is an alert message" preferredStyle:UIAlertControllerStyleAlert];
+      UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+      [alertController addAction:okAction];
+
+      UIViewController *presentingViewController = [Superwall sharedInstance].presentedViewController;
+      [presentingViewController presentViewController:alertController animated:NO completion:nil];
+    });
+  }];
+
+  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:nil handler:handler];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+// Uses the identify function. Should see the name 'Jack' in the paywall.
+/// Same as test0 but with v4 paywall
+- (void)test103WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  [[Superwall sharedInstance] identifyWithUserId:@"test0"];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+// Uses the identify function. Should see the name 'Kate' in the paywall.
+/// Same as test1 but with v4 paywall
+- (void)test104WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Set identity
+  [[Superwall sharedInstance] identifyWithUserId:@"test1a"];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
+
+  // Set new identity.
+  [[Superwall sharedInstance] identifyWithUserId:@"test1b"];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Kate" }];
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+// Calls `reset()`. No first name should be displayed.
+/// Same as test2 but with v4 paywall
+- (void)test105WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Set identity
+  [[Superwall sharedInstance] identifyWithUserId:@"test2"];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
+
+  // Reset the user identity
+  [[Superwall sharedInstance] reset];
+
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+// Calls `reset()` multiple times. No first name should be displayed.
+/// Same as test3 but with v4 paywall
+- (void)test106WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Set identity
+  [[Superwall sharedInstance] identifyWithUserId:@"test3"];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
+
+  // Reset the user identity twice
+  [[Superwall sharedInstance] reset];
+  [[Superwall sharedInstance] reset];
+
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+// Clear a specific user attribute.
+/// Same as test11 but with v4 paywall
+- (void)test107WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3);
+
+  // Add user attribute
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Claire" }];
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  // Assert that the first name is displayed
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+      // Remove user attribute
+      [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
+      [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+      // Assert that the first name is NOT displayed
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+          // Add new user attribute
+          [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Sawyer" }];
+          [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+        }];
+      }));
+    }];
+  }));
+}
+
+// Clusterfucks by Jake™
+- (void)test108WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  [[Superwall sharedInstance] identifyWithUserId:@"test0"];
+  [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+      // Set identity
+      [[Superwall sharedInstance] identifyWithUserId:@"test2"];
+      [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
+
+      // Reset the user identity
+      [[Superwall sharedInstance] reset];
+
+      [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+          // Present paywall
+          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:@{@"some_param_1": @"hello"}];
+          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+        }];
+      }));
+    }];
+  }));
+}
+/// Assert a `survey_close` event when closing a survey that has a close button.
+/// Same as test74 but with v4 paywall
+- (void)test109WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+  // TODO: THIS IS FAILINIG FOR SOME REASON
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create survey response value handler
+  SWKValueDescriptionHolder *surveyCloseEventHolder = [SWKValueDescriptionHolder new];
+  surveyCloseEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyClose:
+        surveyCloseEventHolder.intValue += 1;
+        surveyCloseEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  [[Superwall sharedInstance] registerWithEvent:@"survey_with_close_option_v4"];
+
+  // Assert that paywall was presented
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Close the paywall
+    CGPoint closeButton = CGPointMake(356, 154);
+    [weakSelf touch:closeButton];
+
+    // Assert the survey is displayed
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+      // Tap the close option
+      CGPoint closeOption = CGPointMake(196, 792);
+      [weakSelf touch:closeOption];
+
+      // Assert the paywall has disappeared
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+        // Assert that `.surveyClose` was called once
+        TEST_ASSERT_VALUE_COMPLETION(surveyCloseEventHolder.description, ^{});
+      })
+    });
   }));
 }
 

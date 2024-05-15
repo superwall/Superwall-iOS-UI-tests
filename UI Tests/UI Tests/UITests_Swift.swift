@@ -942,6 +942,55 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: featureClosureHolder.description, after: Constants.paywallPresentationDelay, testName: testName)
   }
 
+  /// https://www.notion.so/superwall/No-internet-feature-gating-b383af91a0fc49d9b7402d1cf09ada6a?pvs=4
+#warning("change `subscribed` param to product id")
+  func executeRegisterFeatureClosureTestWithV4Paywall(subscribed: Bool, gated: Bool, testName: String = #function) async {
+    // Mock user as subscribed
+    if subscribed {
+      // Mock user as subscribed
+      await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+    }
+
+    // Determine gating event
+    let event: String = {
+      if gated {
+        return "register_gated_paywall_v4"
+      } else {
+        return "register_nongated_paywall_v4"
+      }
+    }()
+
+    // Create paywall presentation handler
+    let errorHandlerHolder = ValueDescriptionHolder()
+    errorHandlerHolder.stringValue = "No"
+
+    let paywallPresentationHandler = PaywallPresentationHandler()
+    paywallPresentationHandler.onError { error in
+      errorHandlerHolder.intValue += 1
+      errorHandlerHolder.stringValue = "Yes"
+    }
+
+    // Keep a reference to the value
+    let featureClosureHolder = ValueDescriptionHolder()
+    featureClosureHolder.stringValue = "No"
+
+    Superwall.shared.register(event: event, handler: paywallPresentationHandler) {
+      DispatchQueue.main.async {
+        featureClosureHolder.intValue += 1
+        featureClosureHolder.stringValue = "Yes"
+      }
+    }
+
+    // Assert paywall visibility
+    await assert(after: Constants.paywallPresentationDelay, testName: testName)
+
+    // Assert error handler execution
+    await assert(value: errorHandlerHolder.description, after: Constants.paywallPresentationDelay, testName: testName)
+
+    // Assert feature closure execution
+    await assert(value: featureClosureHolder.description, after: Constants.paywallPresentationDelay, testName: testName)
+  }
+
   /// Unable to fetch config, not subscribed, and not gated.
   func testOptions41() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
   func test41() async throws {
@@ -2418,6 +2467,520 @@ final class UITests_Swift: NSObject, Testable {
     // Make sure no paywall_decline paywall shows and the feature block isn't called.
     await assert(after: Constants.paywallPresentationDelay)
   }
+
+  /// Finished purchase with a result type of `restored` on v4 paywall (same as test37)
+  func test83() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { _, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.stringValue = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore_v4", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    // Press restore
+    let restoreButton = CGPoint(x: 196, y: 136)
+    touch(restoreButton)
+
+    // Assert paywall result value
+    await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
+  }
+
+  /// Finished restore with a result type of `restored` and then swiping the paywall view controller away (does it get called twice?).
+  /// Same as test39 but with a v4 paywall
+  func test84() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.stringValue = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore_v4", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .pageSheet
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    // Press restore
+    let restoreButton = CGPoint(x: 196, y: 196)
+    touch(restoreButton)
+
+    // Assert paywall finished result value ("restored")
+    await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
+
+    // Modify the paywall result value
+    paywallDidFinishResultValueHolder.stringValue = "empty value"
+
+    // Swipe the paywall down to dismiss
+    swipeDown()
+
+    // Assert the paywall was dismissed (and waits to see if the delegate got called again)
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert paywall result value ("empty value")
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
+  }
+
+  /// Restore but don't have an active subscription.
+  /// Same as test63 but with a v4 paywall.
+  func test85() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    let paywallDidFinishResultValueHolder = ValueDescriptionHolder()
+    delegate.paywallViewControllerDidFinish { _, result, shouldDismiss in
+      paywallDidFinishResultValueHolder.stringValue = result.description
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "restore_v4", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Press restore
+    let restoreButton = CGPoint(x: 196, y: 136)
+    touch(restoreButton)
+
+    // Assert no subscription alert appeared.
+    await assert(after: Constants.paywallDelegateResponseDelay)
+
+    // Assert paywall not finished.
+    await assert(value: paywallDidFinishResultValueHolder.stringValue)
+  }
+
+  /// Case: Unsubscribed user, register event with a gating handler
+  /// Result: paywall should display, code in gating closure should not execute
+  /// Same as test26 but with v4 paywall
+  func test86() async throws {
+    Superwall.shared.register(event: "register_gated_paywall_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert that alert does not appear
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 352, y: 65)
+    touch(closeButton)
+
+    // Assert that nothing else appears
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Case: Subscribed user, register event with a gating handler
+  /// Result: paywall should NOT display, code in gating closure should execute
+  /// Same as test27 but with v4 paywall
+  func testOptions87() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test87() async throws {
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    Superwall.shared.register(event: "register_gated_paywall_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert that alert controller appears appears
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Case: Unsubscribed user, register event without a gating handler
+  /// Result: paywall should display
+  /// Same as test23 but with v4 paywall
+  func test88() async throws {
+    // Register event
+    Superwall.shared.register(event: "register_nongated_paywall_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Case: Subscribed user, register event without a gating handler
+  /// Result: paywall should NOT display
+  /// Same as test24 but with v4 paywall.
+  func testOptions89() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test89() async throws {
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    // Register event
+    Superwall.shared.register(event: "register_nongated_paywall_v4")
+
+    // Assert that paywall DOES not appear
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Case: Unsubscribed user, register event without a gating handler, user subscribes, after dismiss register another event without a gating handler
+  /// Result: paywall should display, after user subscribes, don't show another paywall
+  /// Same as test25 but with v4 paywall
+  func test90() async throws {
+    Superwall.shared.register(event: "register_nongated_paywall_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 748)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Wait for dismiss
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Try to present paywall again
+    Superwall.shared.register(event: "register_nongated_paywall_v4")
+
+    // Ensure the paywall doesn't present.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Unable to fetch config, not subscribed, and not gated.
+  /// Same as test41 but with v4 paywall
+  func testOptions91() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
+  func test91() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: false, gated: false)
+  }
+
+  /// Unable to fetch config, not subscribed, and gated.
+  /// Same as test42 but with v4 paywall
+  func testOptions92() -> TestOptions { return TestOptions(allowNetworkRequests: false) }
+  func test92() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: false, gated: true)
+  }
+
+  /// Unable to fetch config, subscribed, and not gated.
+  /// Same as test43 but with v4 paywall
+  func testOptions93() -> TestOptions { return TestOptions(allowNetworkRequests: false, purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test93() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: true, gated: false)
+  }
+
+  /// Unable to fetch config, subscribed, and gated.
+  /// Same as test44 but with v4 paywall
+  func testOptions94() -> TestOptions { return TestOptions(allowNetworkRequests: false, purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test94() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: true, gated: true)
+  }
+
+  /// Fetched config, not subscribed, and not gated.
+  /// Same as test45 but with v4 paywall
+  func test95() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: false, gated: false)
+  }
+
+  /// Fetched config, not subscribed, and gated.
+  /// Same as test46 but with v4 paywall
+  func test96() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: false, gated: true)
+  }
+
+  /// Fetched config, subscribed, and not gated.
+  /// Same as test47 but with v4 paywall
+  func testOptions97() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test97() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: true, gated: false)
+  }
+
+  /// Fetched config, subscribed, and gated.
+  /// Same as test48 but with v4 paywall 
+  func testOptions98() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test98() async throws {
+    await executeRegisterFeatureClosureTestWithV4Paywall(subscribed: true, gated: true)
+  }
+
+  /// Present regardless of status
+  /// Same as test9 but with v4 paywall
+  func testOptions99() -> TestOptions { return TestOptions(purchasedProductIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier) }
+  func test99() async throws {
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    Superwall.shared.register(event: "present_always_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test trigger: not-allowed standard event (paywall_close)
+  /// Same as test14 but with v4 paywall
+  func test100() async throws {
+    // Show a paywall
+    Superwall.shared.register(event: "present_always_v4")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Clusterfucks by Jake™
+  /// Same as test15 but with v4 paywall
+  func test101() async throws {
+    Superwall.shared.register(event: "present_always_v4")
+    Superwall.shared.register(event: "present_always_v4", params: ["some_param_1": "hello"])
+    Superwall.shared.register(event: "present_always_v4")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    Superwall.shared.register(event: "present_always_v4")
+    Superwall.shared.identify(userId: "1111")
+    Superwall.shared.register(event: "present_always_v4")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    let handler = PaywallPresentationHandler()
+
+    var experimentId = ""
+    handler.onPresent { info in
+      experimentId = info.experiment?.id ?? ""
+      Superwall.shared.register(event: "present_always_v4")
+    }
+    Superwall.shared.register(event: "present_always_v4", handler: handler)
+
+    await assert(after: Constants.paywallPresentationDelay)
+    await assert(value: experimentId)
+  }
+
+  /// Present an alert on Superwall.presentedViewController from the onPresent callback
+  /// Same as test16 but with v4 paywall
+  func test102() async throws {
+    let handler = PaywallPresentationHandler()
+    handler.onPresent { _ in
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+
+        Superwall.shared.presentedViewController?.present(alertController, animated: false)
+      }
+    }
+    Superwall.shared.register(event: "present_always_v4", handler: handler)
+
+    await assert(after: Constants.paywallPresentationDelay, precision: .transparency)
+  }
+
+  /// Uses the identify function. Should see the name 'Jack' in the paywall.
+  /// Same as test0 but with v4 paywall
+  func test103() async throws {
+    Superwall.shared.identify(userId: "test0")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Uses the identify function. Should see the name 'Kate' in the paywall.
+  /// Same as test1 but with v4 paywall
+  func test104() async throws {
+    // Set identity
+    Superwall.shared.identify(userId: "test1a")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    // Set new identity
+    Superwall.shared.identify(userId: "test1b")
+    Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Calls `reset()`. No first name should be displayed.
+  /// Same as test2 but with v4 paywall
+  func test105() async throws {
+    // Set identity
+    Superwall.shared.identify(userId: "test2")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    Superwall.shared.reset()
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Calls `reset()` multiple times. No first name should be displayed.
+  /// Same as test3 but with v4 paywall
+  func test106() async throws {
+    // Set identity
+    Superwall.shared.identify(userId: "test3")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    Superwall.shared.reset()
+    Superwall.shared.reset()
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Clear a specific user attribute.
+  /// Same as test11 but with v4 paywall
+  func test107() async throws {
+    Superwall.shared.setUserAttributes([ "first_name": "Claire" ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+      // TODO: THIS FAILS, DOESN'T CLEAR
+    Superwall.shared.setUserAttributes([ "first_name": nil ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    Superwall.shared.setUserAttributes([ "first_name": "Sawyer" ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Clusterfucks by Jake™
+  /// Same as test17 but with v4 paywall
+  func test108() async throws {
+    Superwall.shared.identify(userId: "test0")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    // Assert Jack displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await dismissViewControllers()
+
+    // Set identity
+    Superwall.shared.identify(userId: "test2")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    // Reset the user identity
+    Superwall.shared.reset()
+
+    Superwall.shared.register(event: "present_data_v4")
+
+    // Assert no name displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await dismissViewControllers()
+
+    // Present paywall
+    Superwall.shared.register(event: "present_always_v4")
+    Superwall.shared.register(event: "present_always_v4", params: ["some_param_1": "hello"])
+    Superwall.shared.register(event: "present_always_v4")
+
+    // Assert Present Always paywall displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Assert a `survey_close` event when closing a survey that has a close button.
+  /// Same as test74 but with v4 paywall
+  func test109() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyCloseEventHolder = ValueDescriptionHolder()
+    surveyCloseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyClose:
+        surveyCloseEventHolder.intValue += 1
+        surveyCloseEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "survey_with_close_option_v4")
+
+    // Assert the paywall is presented
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 196, y: 820)
+    touch(closeButton)
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the close option
+    let closeOption = CGPoint(x: 196, y: 792)
+    touch(closeOption)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert .surveyClose has been called only once
+    await assert(value: surveyCloseEventHolder.description)
+  }
+
+
 
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
