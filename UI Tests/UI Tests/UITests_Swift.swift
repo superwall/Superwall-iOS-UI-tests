@@ -2980,7 +2980,434 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: surveyCloseEventHolder.description)
   }
 
+  /// Purchase from paywall that has a survey attached and make sure survey doesn't show.
+  /// Same as test71 but with v4 paywall
+  func test110() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
 
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "survey_with_purchase_button_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Assert the paywall has disappeared and no survey displayed.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` not called.
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Assert survey is displayed after swiping down to dismiss a paywall.
+  /// Same as test67 but with v4 paywall
+  func test111() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "modal_paywall_with_survey_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    swipeDown()
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Assert survey is displayed after swiping down to dismiss a paywall presented by `getPaywall`.
+  /// Same as test69 but with v4 paywall
+  func test112() async throws {
+    // Create Superwall delegate
+    let superwallDelegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(superwallDelegate)
+
+    // Set delegate
+    Superwall.shared.delegate = superwallDelegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    // Create Superwall delegate
+    let paywallVcDelegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(paywallVcDelegate)
+
+    paywallVcDelegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      DispatchQueue.main.async {
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(
+      forEvent: "modal_paywall_with_survey_v4",
+      delegate: paywallVcDelegate
+    ) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .pageSheet
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    swipeDown()
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the first option
+    let firstOption = CGPoint(x: 196, y: 733)
+    touch(firstOption)
+
+    // Assert that paywall has disappeared and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` and `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Close paywall that has a paywall exit survey set to 0%
+  /// Same as test66 but with v4 paywall
+  func test113() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "zero_percent_survey_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert that paywall has disappeared, no survey, and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that only `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Choose non-other option from a paywall exit survey that shows 100% of the time. Then open and close the paywall again to make sure survey doesn't show again.
+  /// Same as test64 but with v4 paywall
+  func test114() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "show_survey_with_other_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the first option
+    let firstOption = CGPoint(x: 196, y: 733)
+    touch(firstOption)
+
+    // Assert that paywall has disappeared and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Open the paywall again
+    Superwall.shared.register(event: "show_survey_with_other_v4")
+
+    // Wait for paywall to show
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    touch(closeButton)
+
+    // Assert paywall closed without showing survey.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` and `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Choose other option from a paywall exit survey that shows 100% of the time.
+  /// Same as test65 but with v4 paywall
+  func test115() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "show_survey_with_other_v4") {
+      DispatchQueue.main.async {
+        let alertController = UIAlertController(title: "Alert", message: "This is an alert message", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(action)
+        RootViewController.shared.present(alertController, animated: false)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the other option
+    let firstOption = CGPoint(x: 196, y: 790)
+    touch(firstOption)
+
+    // Assert that alert controller with textfield has disappeared and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await typeText("Test")
+
+    // Tap the submit button
+    let submitButton = CGPoint(x: 196, y: 350)
+    touch(submitButton)
+
+    // Assert that paywall has disappeared and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` and `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
+
+  /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
+  /// Same as test70 but with v4 paywall
+  func test116() async throws {
+    // Create Superwall delegate
+    let superwallDelegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(superwallDelegate)
+
+    // Set delegate
+    Superwall.shared.delegate = superwallDelegate
+
+    // Create value handler
+    let surveyResponseEventHolder = ValueDescriptionHolder()
+    surveyResponseEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .surveyResponse:
+        surveyResponseEventHolder.intValue += 1
+        surveyResponseEventHolder.stringValue = "Yes"
+      case .paywallClose:
+        surveyResponseEventHolder.intValue += 1
+      default:
+        return
+      }
+    }
+
+    // Create Superwall delegate
+    let paywallVcDelegate = Configuration.MockPaywallViewControllerDelegate()
+    paywallVcDelegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      DispatchQueue.main.async {
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
+      }
+    }
+    holdStrongly(paywallVcDelegate)
+
+    if let viewController = try? await Superwall.shared.getPaywall(
+      forEvent: "show_survey_with_other_v4",
+      delegate: paywallVcDelegate
+    ) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert the paywall has displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Close the paywall
+    let closeButton = CGPoint(x: 356, y: 86)
+    touch(closeButton)
+
+    // Assert the survey is displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the first option
+    let firstOption = CGPoint(x: 196, y: 733)
+    touch(firstOption)
+
+    // Assert that paywall has disappeared and the feature block called.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that `.surveyResponse` and `.paywallClose` was called
+    await assert(value: surveyResponseEventHolder.description)
+  }
 
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
