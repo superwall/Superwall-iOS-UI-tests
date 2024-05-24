@@ -122,6 +122,19 @@ import Foundation
   func test114() async throws
   func test115() async throws
   func test116() async throws
+  func test117() async throws
+  func test118() async throws
+  func test119() async throws
+  func test120() async throws
+  func test121() async throws
+  func test122() async throws
+  func test123() async throws
+  func test124() async throws
+  func test125() async throws
+  func test126() async throws
+  func test127() async throws
+  func test128() async throws
+  func test129() async throws
 
   @objc optional func testOptions0() -> TestOptions
   @objc optional func testOptions1() -> TestOptions
@@ -240,6 +253,19 @@ import Foundation
   @objc optional func testOptions114() -> TestOptions
   @objc optional func testOptions115() -> TestOptions
   @objc optional func testOptions116() -> TestOptions
+  @objc optional func testOptions117() -> TestOptions
+  @objc optional func testOptions118() -> TestOptions
+  @objc optional func testOptions119() -> TestOptions
+  @objc optional func testOptions120() -> TestOptions
+  @objc optional func testOptions121() -> TestOptions
+  @objc optional func testOptions122() -> TestOptions
+  @objc optional func testOptions123() -> TestOptions
+  @objc optional func testOptions124() -> TestOptions
+  @objc optional func testOptions125() -> TestOptions
+  @objc optional func testOptions126() -> TestOptions
+  @objc optional func testOptions127() -> TestOptions
+  @objc optional func testOptions128() -> TestOptions
+  @objc optional func testOptions129() -> TestOptions
 }
 
 extension RootViewController {
@@ -363,6 +389,19 @@ extension RootViewController {
         case 114: return testable.testOptions114?()
         case 115: return testable.testOptions115?()
         case 116: return testable.testOptions116?()
+        case 117: return testable.testOptions117?()
+        case 118: return testable.testOptions118?()
+        case 119: return testable.testOptions119?()
+        case 120: return testable.testOptions120?()
+        case 121: return testable.testOptions121?()
+        case 122: return testable.testOptions122?()
+        case 123: return testable.testOptions123?()
+        case 124: return testable.testOptions124?()
+        case 125: return testable.testOptions125?()
+        case 126: return testable.testOptions126?()
+        case 127: return testable.testOptions127?()
+        case 128: return testable.testOptions128?()
+        case 129: return testable.testOptions129?()
         default:
           fatalError("Test options have not been defined.")
       }
@@ -496,6 +535,19 @@ extension RootViewController {
       case 114: try await testable.test114()
       case 115: try await testable.test115()
       case 116: try await testable.test116()
+      case 117: try await testable.test117()
+      case 118: try await testable.test118()
+      case 119: try await testable.test119()
+      case 120: try await testable.test120()
+      case 121: try await testable.test121()
+      case 122: try await testable.test122()
+      case 123: try await testable.test123()
+      case 124: try await testable.test124()
+      case 125: try await testable.test125()
+      case 126: try await testable.test126()
+      case 127: try await testable.test127()
+      case 128: try await testable.test128()
+      case 129: try await testable.test129()
       default:
         fatalError("Test has not been defined above.")
     }

@@ -3409,6 +3409,391 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: surveyResponseEventHolder.description)
   }
 
+  /// Clusterfucks by Jake™
+  /// Same as test19 but with v4 paywalls.
+  func test117() async throws {
+    // Set identity
+    Superwall.shared.identify(userId: "test19a")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    Superwall.shared.reset()
+    Superwall.shared.reset()
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    _ = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user_v4")
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Show a paywall
+    Superwall.shared.register(event: "present_always_v4")
+
+    // Assert that paywall was displayed
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Assert that no paywall is displayed as a result of the Superwall-owned `paywall_close` standard event.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Set identity
+    Superwall.shared.identify(userId: "test19b")
+    Superwall.shared.setUserAttributes([ "first_name": "Jack" ])
+
+    // Set new identity
+    Superwall.shared.identify(userId: "test19c")
+    Superwall.shared.setUserAttributes([ "first_name": "Kate" ])
+    Superwall.shared.register(event: "present_data_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
+  /// Same as test7 but with v4 paywalls
+  func test118() async throws {
+    Superwall.shared.identify(userId: "test7")
+    Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 14 ])
+    Superwall.shared.register(event: "present_and_rule_user_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Remove those attributes.
+    Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
+    Superwall.shared.register(event: "present_and_rule_user_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
+  /// Same as test8 but with v4 paywall
+  func test119() async throws {
+    Superwall.shared.identify(userId: "test7")
+    Superwall.shared.setUserAttributes([ "first_name": "Charlie", "should_display": true, "some_value": 12 ])
+    Superwall.shared.register(event: "present_and_rule_user_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Presentation result: `noRuleMatch`
+  /// Same as test29 but with v4 paywall
+  func test120() async {
+    Superwall.shared.setUserAttributes([ "should_display": nil, "some_value": nil ])
+    let result = await Superwall.shared.getPresentationResult(forEvent: "present_and_rule_user_v4")
+    await assert(value: result.description)
+  }
+
+  /// Open In-App Safari view controller from manually presented paywall
+  /// Same as test18 but with v4 paywall
+  func test121() async throws {
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_urls_v4", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert paywall presented.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Position of the perform button to open a URL in Safari
+    let point = CGPoint(x: 330, y: 212)
+    touch(point)
+
+    // Verify that In-App Safari has opened
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Press the done button to go back
+    let donePoint = CGPoint(x: 30, y: 70)
+    touch(donePoint)
+
+    // Verify that the paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Verify that external URLs can be opened in native Safari from paywall
+  /// Same as test20 but with v4 paywall
+  func test122() async throws {
+    // Present paywall with URLs
+    Superwall.shared.register(event: "present_urls_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Position of the perform button to open a URL in Safari
+    let point = CGPoint(x: 330, y: 136)
+    touch(point)
+
+    // Verify that Safari has opened.
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .safari)
+
+    // Relaunch the parent app.
+    await relaunch()
+
+    // Ensure nothing has changed.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Verify that an invalid URL like `#` doesn't crash the app
+  /// Same as test62 but with v4 paywall
+  func test123() async throws {
+    // Present paywall with URLs
+    Superwall.shared.register(event: "present_urls_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Tap the open # URL button
+    let point = CGPoint(x: 330, y: 360)
+    touch(point)
+
+    // Verify that nothing happened
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at
+  /// $12.99 and 1 annual at $99.99.
+  /// Same as test5 but with v4 paywall
+  func test124() async throws {
+    guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+
+    let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
+    let paywallOverrides = PaywallOverrides(products: products)
+
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      DispatchQueue.main.async {
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products_v4", paywallOverrides: paywallOverrides, delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
+  /// Same as test6 but with v4 paywall
+  func test125() async throws {
+    // Present the paywall.
+    Superwall.shared.register(event: "present_products_v4")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
+  /// After dismiss, paywall should be presented again with override products: 1 monthly at $12.99
+  /// and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
+  /// After dismiss, paywall should be presented one last time with no override products.
+  /// Same as test10 but with v4 paywall
+  func test126() async throws {
+    // Present the paywall.
+    Superwall.shared.register(event: "present_products_v4")
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Create override products
+    guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+
+    let products = PaywallProducts(primary: StoreProduct(sk1Product: primary), secondary: StoreProduct(sk1Product: secondary))
+    let paywallOverrides = PaywallOverrides(products: products)
+
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { viewController, _, shouldDismiss in
+      DispatchQueue.main.async {
+        viewController.dismiss(animated: false)
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products_v4", paywallOverrides: paywallOverrides, delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert override products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Present the paywall.
+    Superwall.shared.register(event: "present_products_v4")
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Present manually again, but with no overrides
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products_v4", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at
+  /// $12.99 and 1 annual at $99.99.
+  /// Same as test77 but with v4 paywall
+  func test127() async throws {
+    guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+
+    let paywallOverrides = PaywallOverrides(productsByName: [
+      "primary": StoreProduct(sk1Product: primary),
+      "secondary": StoreProduct(sk1Product: secondary)
+    ])
+
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { viewController, result, shouldDismiss in
+      DispatchQueue.main.async {
+        if shouldDismiss {
+          viewController.dismiss(animated: false)
+        }
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products_v4", paywallOverrides: paywallOverrides, delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// This is the same as test10 but with the new `PaywallOverrides` init
+  /// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
+  /// After dismiss, paywall should be presented again with override products: 1 monthly at $12.99
+  /// and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products.
+  /// After dismiss, paywall should be presented one last time with no override products.
+  /// Same as test78 but with v4 paywall
+  func test128() async throws {
+    // Present the paywall.
+    Superwall.shared.register(event: "present_products_v4")
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Create override products
+    guard let primary = StoreKitHelper.shared.monthlyProduct, let secondary = StoreKitHelper.shared.annualProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+
+    let paywallOverrides = PaywallOverrides(productsByName: [
+      "primary": StoreProduct(sk1Product: primary),
+      "secondary": StoreProduct(sk1Product: secondary)
+    ])
+
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    delegate.paywallViewControllerDidFinish { viewController, _, shouldDismiss in
+      DispatchQueue.main.async {
+        viewController.dismiss(animated: false)
+      }
+    }
+
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products_v4", paywallOverrides: paywallOverrides, delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert override products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Present the paywall.
+    Superwall.shared.register(event: "present_products_v4")
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Dismiss any view controllers
+    await dismissViewControllers()
+
+    // Present manually again, but with no overrides
+    if let viewController = try? await Superwall.shared.getPaywall(forEvent: "present_products_v4", delegate: delegate) {
+      DispatchQueue.main.async {
+        viewController.modalPresentationStyle = .fullScreen
+        RootViewController.shared.present(viewController, animated: true)
+      }
+    }
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video
+  /// at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close.
+  /// This paywall should have a video playing and should be started from the beginning with a 0 on
+  /// the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and
+  /// we want to capture the video as quickly as possible.
+  /// Same as test4 but with v4 paywall
+  func test129() async throws {
+    // Present the paywall.
+    Superwall.shared.register(event: "present_video_v4")
+
+    // Dismiss after 4 seconds
+    await sleep(timeInterval: 4.0)
+    await dismissViewControllers()
+
+    // Present again after 1 second
+    await sleep(timeInterval: 1.0)
+    Superwall.shared.register(event: "present_video_v4")
+
+    await assert(after: 2.0, precision: .video)
+  }
+
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
 //  func test73() async throws {

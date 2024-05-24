@@ -3845,6 +3845,331 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+/// Clusterfucks by Jake™
+/// Same as test19 but with v4 paywalls.
+- (void)test117WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(4)
+
+  // Set identity
+  [[Superwall sharedInstance] identifyWithUserId:@"test19a"];
+  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Jack"}];
+
+  [[Superwall sharedInstance] reset];
+  [[Superwall sharedInstance] reset];
+  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Dismiss any view controllers
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+      [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user_v4" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+
+        // Dismiss any view controllers
+        [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+          // Show a paywall
+          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+
+          // Assert that paywall was displayed
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Dismiss any view controllers
+            [weakSelf dismissViewControllersWithCompletionHandler:^{
+              // Assert that no paywall is displayed as a result of the Superwall-owned paywall_close standard event.
+              TEST_ASSERT_DELAY_COMPLETION(0, (^{
+                // Dismiss any view controllers
+                [weakSelf dismissViewControllersWithCompletionHandler:^{
+
+                  // Set identity
+                  [[Superwall sharedInstance] identifyWithUserId:@"test19b"];
+                  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Jack"}];
+
+                  // Set new identity
+                  [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
+                  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
+                  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                }];
+              }));
+            }];
+          }));
+        }];
+      }];
+    }];
+  }));
+}
+
+/// Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12. Then remove those attributes and make sure it's not presented.
+/// Same as test7 but with v4 paywalls
+- (void)test118WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
+  [[Superwall sharedInstance] identifyWithUserId:@"test7"];
+  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
+  [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user_v4"];
+
+  // Assert after a delay
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    [weakSelf dismissViewControllersWithCompletionHandler:^{
+      // Remove those attributes.
+      [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
+      [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user_v4"];
+
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+    }];
+  }));
+}
+
+/// Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
+/// Same as test8 but with v4 paywall
+- (void)test119WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
+  [[Superwall sharedInstance] identifyWithUserId:@"test7"];
+  [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
+  [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+/// Presentation result: `noRuleMatch`
+/// Same as test29 but with v4 paywall
+- (void)test120WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Remove user attributes
+  [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
+
+  // Get the presentation result for the specified event
+  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user_v4" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+    // Assert the value of the result's description
+    NSString *value = [SWKPresentationValueObjcHelper description:result.value];
+    TEST_ASSERT_VALUE_COMPLETION(value, ^{})
+  }];
+}
+
+/// Open In-App Safari view controller from manually presented paywall
+/// Same as test18 but with v4 paywall
+- (void)test121WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [self holdStrongly:delegate];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_urls_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+    }
+
+    // Assert that paywall is presented
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+      // Position of the perform button to open a URL in Safari
+      CGPoint point = CGPointMake(330, 212);
+      [weakSelf touch:point];
+
+      // Verify that In-App Safari has opened
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+        // Press the done button to go back
+        CGPoint donePoint = CGPointMake(30, 70);
+        [weakSelf touch:donePoint];
+
+        // Verify that the paywall appears
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+      }));
+    }));
+  }];
+}
+
+/// Verify that external URLs can be opened in native Safari from paywall
+- (void)test122WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present paywall with URLs
+  [[Superwall sharedInstance] registerWithEvent:@"present_urls_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Position of the perform button to open a URL in Safari
+    CGPoint point = CGPointMake(330, 136);
+    [weakSelf touch:point];
+
+    // Verify that Safari has opened.
+    TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea safari], ^{
+      // Relaunch the parent app.
+      [weakSelf relaunchWithCompletionHandler:^{
+        // Ensure nothing has changed.
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+      }];
+    });
+  }));
+}
+
+/// Verify that an invalid URL like `#` doesn't crash the app
+/// Same as test62 but with v4 paywall
+- (void)test123WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Present paywall with URLs
+  [[Superwall sharedInstance] registerWithEvent:@"present_urls_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Tap the open # URL button
+    CGPoint point = CGPointMake(330, 360);
+    [weakSelf touch:point];
+
+    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+  }));
+}
+
+/// Show paywall with override products. Paywall should appear with 2 products: 1 monthly at
+/// $12.99 and 1 annual at $99.99.
+/// Same as test5 but with v4 paywall
+- (void)test124WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Get the primary and secondary products
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+
+  if (!primary || !secondary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
+  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
+
+  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
+
+  // Create PaywallOverrides
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProducts:products];
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [self holdStrongly:delegate];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [viewController dismissViewControllerAnimated:NO completion:nil];
+    });
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_products_v4" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+
+      // Assert after a delay
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+    } else {
+      // Handle error
+      completionHandler(result.error);
+    }
+  }];
+}
+
+/// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99.
+/// Same as test6 but with v4 paywall
+- (void)test125WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Present the paywall.
+  [[Superwall sharedInstance] registerWithEvent:@"present_products_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+}
+
+// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
+/// Same as test10 but with v4 paywall
+- (void)test126WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Paywall Overrides don't work with register")
+}
+
+- (void)test127WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  // Get the primary and secondary products
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+
+  if (!primary || !secondary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
+  SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
+
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProductsByName:@{@"primary": primaryProduct, @"secondary": secondaryProduct}];
+
+  // Create and hold strongly the delegate
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [self holdStrongly:delegate];
+
+  // Set the delegate's paywallViewControllerDidFinish block
+  [delegate setPaywallViewControllerDidFinish:^(SWKPaywallViewController *viewController, SWKPaywallResult result, BOOL shouldDismiss) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [viewController dismissViewControllerAnimated:NO completion:nil];
+    });
+  }];
+
+  // Get the paywall view controller
+  [[Superwall sharedInstance] getPaywallForEvent:@"present_products_v4" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+    UIViewController *viewController = result.paywall;
+    if (viewController) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[SWKRootViewController sharedInstance] presentViewController:viewController animated:YES completion:nil];
+      });
+
+      // Assert after a delay
+      TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+    } else {
+      // Handle error
+      completionHandler(result.error);
+    }
+  }];
+}
+
+// Paywall should appear with 2 products: 1 monthly at $4.99 and 1 annual at $29.99. After dismiss, paywall should be presented again with override products: 1 monthly at $12.99 and 1 annual at $99.99. After dismiss, paywall should be presented again with no override products. After dismiss, paywall should be presented one last time with no override products.
+/// Same as test78 but with v4 paywall
+- (void)test128WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Paywall Overrides don't work with register")
+}
+
+// This paywall will open with a video playing that shows a 0 in the video at t0 and a 2 in the video at t2. It will close after 4 seconds. A new paywall will be presented 1 second after close. This paywall should have a video playing and should be started from the beginning with a 0 on the screen. Only a presentation delay of 1 sec as the paywall should already be loaded and we want to capture the video as quickly as possible.
+/// Same as test4 but with v4 paywall
+- (void)test129WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START
+
+  [[Superwall sharedInstance] registerWithEvent:@"present_video_v4"];
+
+  // Wait 4 seconds before dismissing the video
+  [self sleepWithTimeInterval:4.0 completionHandler:^{
+    [[Superwall sharedInstance] dismissWithCompletion:^{
+      // Once the video has been dismissed, wait 1 second before dismissing again
+      [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [[Superwall sharedInstance] registerWithEvent:@"present_video_v4"];
+
+        // Assert that the video has started from the 0 sec mark (video simply counts from 0sec to 2sec and only displays those 2 values)
+        TEST_ASSERT_DELAY_COMPLETION(2.0, ^{})
+      }];
+    }];
+  }];
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
