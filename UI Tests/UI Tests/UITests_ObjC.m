@@ -4170,6 +4170,436 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+/// Purchase a product without a paywall.
+- (void)test130WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. Weirdly skips the capture area completion block so needs fixing.")
+//  TEST_START_NUM_ASSERTS(3)
+//
+//  // Get the primary and secondary products
+//  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+//
+//  if (!primary) {
+//    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+//    return;
+//  }
+//
+//  // Create Superwall delegate
+//  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+//  [self holdStrongly:delegate];
+//
+//  // Set delegate
+//  [Superwall sharedInstance].delegate = delegate;
+//
+//  // Create value handler
+//  SWKValueDescriptionHolder *transactionCompleteEventHolder = [SWKValueDescriptionHolder new];
+//  transactionCompleteEventHolder.stringValue = @"No";
+//  SWKValueDescriptionHolder *subscriptionStartEventHolder = [SWKValueDescriptionHolder new];
+//  subscriptionStartEventHolder.stringValue = @"No";
+//  SWKValueDescriptionHolder *purchaseResultValueHolder = [SWKValueDescriptionHolder new];
+//  purchaseResultValueHolder.stringValue = @"No";
+//
+//  // Respond to Superwall events
+//  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+//    switch (eventInfo.event) {
+//      case SWKSuperwallEventTransactionComplete:
+//        transactionCompleteEventHolder.intValue += 1;
+//        transactionCompleteEventHolder.stringValue = @"Yes";
+//        break;
+//      case SWKSuperwallEventSubscriptionStart:
+//        subscriptionStartEventHolder.intValue += 1;
+//        subscriptionStartEventHolder.stringValue = @"Yes";
+//        break;
+//      default:
+//        break;
+//    }
+//  }];
+//
+//  [[Superwall sharedInstance] purchase:primary completion:^(enum SWKPurchaseResult result) {
+//    switch (result) {
+//      case SWKPurchaseResultPurchased:
+//        purchaseResultValueHolder.intValue += 1;
+//        purchaseResultValueHolder.stringValue = @"Yes";
+//        break;
+//      default:
+//        break;
+//    }
+//  }];
+//
+//  // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+//  CGRect customFrame = CGRectMake(0, 488, 393, 300);
+//  NSLog(@"Before TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION");
+//
+//  TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+//    NSLog(@"Inside TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION block");
+//
+//    // Tap the Subscribe button
+//    CGPoint subscribeButton = CGPointMake(196, 766);
+//    NSLog(@"Touching Subscribe Button");
+//    [weakSelf touch:subscribeButton];
+//
+//    // Wait for subscribe to occur
+//    [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+//      // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+//      CGPoint okButton = CGPointMake(196, 495);
+//      NSLog(@"Touching OK Button");
+//      [weakSelf touch:okButton];
+//
+//      TEST_ASSERT_VALUE_COMPLETION(purchaseResultValueHolder.description, ^{});
+//      TEST_ASSERT_VALUE_COMPLETION(transactionCompleteEventHolder.description, ^{});
+//    }];
+//  }));
+//
+//  NSLog(@"After TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION");
+}
+
+/// Cancel purchase of product without a paywall.
+- (void)test131WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  // Get the primary and secondary products
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+
+  if (!primary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *transactionAbandonEventHolder = [SWKValueDescriptionHolder new];
+  transactionAbandonEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *cancelledResultValueHolder = [SWKValueDescriptionHolder new];
+  cancelledResultValueHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionAbandon:
+        transactionAbandonEventHolder.intValue += 1;
+        transactionAbandonEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  [[Superwall sharedInstance] purchase:primary completion:^(enum SWKPurchaseResult result) {
+    switch (result) {
+      case SWKPurchaseResultCancelled:
+        cancelledResultValueHolder.intValue += 1;
+        cancelledResultValueHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+  CGRect customFrame = CGRectMake(0, 488, 393, 300);
+  TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+    // Abandon the transaction
+    CGPoint abandonTransactionButton = CGPointMake(359, 20);
+    [weakSelf touch:abandonTransactionButton];
+
+    TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, cancelledResultValueHolder.description, ^{});
+    TEST_ASSERT_VALUE_COMPLETION(transactionAbandonEventHolder.description, ^{});
+  }));
+}
+
+/// Restore purchases  with automatic configuration.
+- (void)test132WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  if ([self.configuration isKindOfClass:[SWKConfigurationAdvanced class]]) {
+    TEST_SKIP(@"Skipping test. The restore performs differently in the advanced configuration.")
+    return;
+  }
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *restoreStartEventHolder = [SWKValueDescriptionHolder new];
+  restoreStartEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoreCompleteEventHolder = [SWKValueDescriptionHolder new];
+  restoreCompleteEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoredResultValueHolder = [SWKValueDescriptionHolder new];
+  restoredResultValueHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
+        restoreStartEventHolder.intValue += 1;
+        restoreStartEventHolder.stringValue = @"Yes";
+        break;
+      case SWKSuperwallEventRestoreComplete:
+        restoreCompleteEventHolder.intValue += 1;
+        restoreCompleteEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+    [[Superwall sharedInstance] restorePurchasesWithCompletion:^(enum SWKRestorationResult result) {
+      switch (result) {
+        case SWKRestorationResultRestored:
+          restoredResultValueHolder.intValue += 1;
+          restoredResultValueHolder.stringValue = @"Yes";
+          break;
+        default:
+          break;
+      }
+
+      TEST_ASSERT_VALUE_COMPLETION(restoredResultValueHolder.description, ^{});
+      TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{});
+      TEST_ASSERT_VALUE_COMPLETION(restoreCompleteEventHolder.description, ^{});
+    }];
+  }];
+}
+
+/// Failed restore of purchases  under automatic configuration.
+- (void)test133WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  if ([self.configuration isKindOfClass:[SWKConfigurationAdvanced class]]) {
+    TEST_SKIP(@"Skipping test. The restore performs differently in the advanced configuration.")
+    return;
+  }
+  TEST_START_NUM_ASSERTS(4)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *restoreStartEventHolder = [SWKValueDescriptionHolder new];
+  restoreStartEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoreFailEventHolder = [SWKValueDescriptionHolder new];
+  restoreFailEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoredValueHolder = [SWKValueDescriptionHolder new];
+  restoredValueHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
+        restoreStartEventHolder.intValue += 1;
+        restoreStartEventHolder.stringValue = @"Yes";
+        break;
+      case SWKRestorationResultFailed:
+        restoreFailEventHolder.intValue += 1;
+        restoreFailEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // User is not subscribed
+
+  [[Superwall sharedInstance] restorePurchasesWithCompletion:^(enum SWKRestorationResult result) {
+    switch (result) {
+      case SWKRestorationResultRestored:
+        // Result is still restored even though alert shows. This is because
+        // the user is unsubscribed but result is restored.
+        restoredValueHolder.intValue += 1;
+        restoredValueHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+
+    TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{});
+
+    TEST_ASSERT_VALUE_COMPLETION(restoredValueHolder.description, ^{});
+    TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{});
+    TEST_ASSERT_VALUE_COMPLETION(restoreFailEventHolder.description, ^{});
+  }];
+}
+
+/// Failed restore of purchases  under advanced configuration.
+- (void)test134WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  if ([self.configuration isKindOfClass:[SWKConfigurationAutomatic class]]) {
+    TEST_SKIP(@"Skipping test. The restore performs differently in the automatic configuration.")
+    return;
+  }
+  TEST_START_NUM_ASSERTS(4)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *restoreStartEventHolder = [SWKValueDescriptionHolder new];
+  restoreStartEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoreFailEventHolder = [SWKValueDescriptionHolder new];
+  restoreFailEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoredValueHolder = [SWKValueDescriptionHolder new];
+  restoredValueHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
+        restoreStartEventHolder.intValue += 1;
+        restoreStartEventHolder.stringValue = @"Yes";
+        break;
+      case SWKRestorationResultFailed:
+        restoreFailEventHolder.intValue += 1;
+        restoreFailEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  // User is not subscribed
+
+  [[Superwall sharedInstance] restorePurchasesWithCompletion:^(enum SWKRestorationResult result) {
+    switch (result) {
+      case SWKRestorationResultRestored:
+        // Result is still restored even though alert shows. This is because
+        // the user is unsubscribed but result is restored.
+        restoredValueHolder.intValue += 1;
+        restoredValueHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+
+    TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{});
+
+    TEST_ASSERT_VALUE_COMPLETION(restoredValueHolder.description, ^{});
+    TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{});
+    TEST_ASSERT_VALUE_COMPLETION(restoreFailEventHolder.description, ^{});
+  }];
+}
+
+/// Restored result from purchase without a paywall.
+- (void)test135WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(2)
+
+  // Get the primary and secondary products
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+
+  if (!primary) {
+    FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
+    return;
+  }
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *transactionCompleteEventHolder = [SWKValueDescriptionHolder new];
+  transactionCompleteEventHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreComplete:
+        transactionCompleteEventHolder.intValue += 1;
+        transactionCompleteEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customMonthlyProductIdentifier completionHandler:^{
+    [[Superwall sharedInstance] purchase:primary completion:^(enum SWKPurchaseResult result) {}];
+  }];
+
+  // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+  CGRect customFrame = CGRectMake(0, 0, 393, 390);
+  TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
+    // Abandon the OK button
+    CGPoint okButton = CGPointMake(261, 526);
+    [weakSelf touch:okButton];
+
+    [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      TEST_ASSERT_VALUE_COMPLETION(transactionCompleteEventHolder.description, ^{});
+    }];
+  }));
+}
+
+/// Restore purchases with advanced configuration.
+- (void)test136WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  if ([self.configuration isKindOfClass:[SWKConfigurationAutomatic class]]) {
+    TEST_SKIP(@"Skipping test. The restore performs differently in the automatic configuration.")
+    return;
+  }
+  TEST_START_NUM_ASSERTS(3)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Create value handler
+  SWKValueDescriptionHolder *restoreStartEventHolder = [SWKValueDescriptionHolder new];
+  restoreStartEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoreCompleteEventHolder = [SWKValueDescriptionHolder new];
+  restoreCompleteEventHolder.stringValue = @"No";
+  SWKValueDescriptionHolder *restoredResultValueHolder = [SWKValueDescriptionHolder new];
+  restoredResultValueHolder.stringValue = @"No";
+
+  // Respond to Superwall events
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
+        restoreStartEventHolder.intValue += 1;
+        restoreStartEventHolder.stringValue = @"Yes";
+        break;
+      case SWKSuperwallEventRestoreComplete:
+        restoreCompleteEventHolder.intValue += 1;
+        restoreCompleteEventHolder.stringValue = @"Yes";
+        break;
+      default:
+        break;
+    }
+  }];
+
+  [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
+    [[Superwall sharedInstance] restorePurchasesWithCompletion:^(enum SWKRestorationResult result) {
+      switch (result) {
+        case SWKRestorationResultRestored:
+          restoredResultValueHolder.intValue += 1;
+          restoredResultValueHolder.stringValue = @"Yes";
+          break;
+        default:
+          break;
+      }
+
+      TEST_ASSERT_VALUE_COMPLETION(restoredResultValueHolder.description, ^{});
+      TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{});
+      TEST_ASSERT_VALUE_COMPLETION(restoreCompleteEventHolder.description, ^{});
+    }];
+  }];
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)

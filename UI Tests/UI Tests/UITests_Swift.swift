@@ -3794,6 +3794,393 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: 2.0, precision: .video)
   }
 
+  /// Purchase a product without a paywall.
+  func test130() async throws {
+    guard let product = StoreKitHelper.shared.monthlyProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionCompleteEventHolder = ValueDescriptionHolder()
+    transactionCompleteEventHolder.stringValue = "No"
+    let subscriptionStartEventHolder = ValueDescriptionHolder()
+    subscriptionStartEventHolder.stringValue = "No"
+    let purchaseResultValueHolder = ValueDescriptionHolder()
+    purchaseResultValueHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .transactionComplete:
+        transactionCompleteEventHolder.intValue += 1
+        transactionCompleteEventHolder.stringValue = "Yes"
+      case .subscriptionStart:
+        subscriptionStartEventHolder.intValue += 1
+        subscriptionStartEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    Task {
+      let result = await Superwall.shared.purchase(product)
+      switch result {
+      case .purchased:
+        purchaseResultValueHolder.intValue += 1
+        purchaseResultValueHolder.stringValue = "Yes"
+      default:
+        break
+      }
+    }
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    await assert(value: purchaseResultValueHolder.description, after: Constants.paywallPresentationDelay)
+    await assert(value: transactionCompleteEventHolder.description)
+  }
+
+  /// Cancel purchase of product without a paywall.
+  func test131() async throws {
+    guard let product = StoreKitHelper.shared.monthlyProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionAbandonEventHolder = ValueDescriptionHolder()
+    transactionAbandonEventHolder.stringValue = "No"
+    let cancelledResultValueHolder = ValueDescriptionHolder()
+    cancelledResultValueHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .transactionAbandon:
+        transactionAbandonEventHolder.intValue += 1
+        transactionAbandonEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+
+    Task {
+      let result = await Superwall.shared.purchase(product)
+      switch result {
+      case .cancelled:
+        cancelledResultValueHolder.intValue += 1
+        cancelledResultValueHolder.stringValue = "Yes"
+      default:
+        break
+      }
+    }
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Abandon the transaction
+    let abandonTransactionButton = CGPoint(x: 359, y: 20)
+    touch(abandonTransactionButton)
+
+    await assert(value: cancelledResultValueHolder.description, after: Constants.paywallPresentationDelay)
+    await assert(value: transactionAbandonEventHolder.description)
+  }
+
+  /// Restore purchases with automatic config.
+  func test132() async throws {
+    if configuration is Configuration.Advanced {
+      skip("Skipping test. The restore performs differently in the advanced configuration.")
+      return
+    }
+
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let restoreStartEventHolder = ValueDescriptionHolder()
+    restoreStartEventHolder.stringValue = "No"
+    let restoreCompleteEventHolder = ValueDescriptionHolder()
+    restoreCompleteEventHolder.stringValue = "No"
+    let restoredResultValueHolder = ValueDescriptionHolder()
+    restoredResultValueHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .restoreStart:
+        restoreStartEventHolder.intValue += 1
+        restoreStartEventHolder.stringValue = "Yes"
+      case .restoreComplete:
+        restoreCompleteEventHolder.intValue += 1
+        restoreCompleteEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    let result = await Superwall.shared.restorePurchases()
+    switch result {
+    case .restored:
+      restoredResultValueHolder.intValue += 1
+      restoredResultValueHolder.stringValue = "Yes"
+    default:
+      break
+    }
+
+    await assert(value: restoredResultValueHolder.description)
+    await assert(value: restoreStartEventHolder.description)
+    await assert(value: restoreCompleteEventHolder.description)
+  }
+
+  /// Failed restore of purchases under automatic configuration.
+  func test133() async throws {
+    if configuration is Configuration.Advanced {
+      skip("Skipping test. The restore performs differently in the advanced configuration.")
+      return
+    }
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let restoreStartEventHolder = ValueDescriptionHolder()
+    restoreStartEventHolder.stringValue = "No"
+    let restoreFailEventHolder = ValueDescriptionHolder()
+    restoreFailEventHolder.stringValue = "No"
+    let restoredValueHolder = ValueDescriptionHolder()
+    restoredValueHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .restoreStart:
+        restoreStartEventHolder.intValue += 1
+        restoreStartEventHolder.stringValue = "Yes"
+      case .restoreFail:
+        restoreFailEventHolder.intValue += 1
+        restoreFailEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    // User is not subscribed
+
+    let result = await Superwall.shared.restorePurchases()
+    switch result {
+    case .restored:
+      // Result is still restored even though alert shows. This is because
+      // the user is unsubscribed but result is restored.
+      restoredValueHolder.intValue += 1
+      restoredValueHolder.stringValue = "Yes"
+    default:
+      break
+    }
+
+    // Assert alert shows.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await assert(value: restoredValueHolder.description)
+    await assert(value: restoreStartEventHolder.description)
+    await assert(value: restoreFailEventHolder.description)
+  }
+
+  /// Failed restore of purchases.
+  func test134() async throws {
+    if configuration is Configuration.Automatic {
+      skip("Skipping test. The restore performs differently in the automatic configuration.")
+      return
+    }
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let restoreStartEventHolder = ValueDescriptionHolder()
+    restoreStartEventHolder.stringValue = "No"
+    let restoreFailEventHolder = ValueDescriptionHolder()
+    restoreFailEventHolder.stringValue = "No"
+    let restoredValueHolder = ValueDescriptionHolder()
+    restoredValueHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .restoreStart:
+        restoreStartEventHolder.intValue += 1
+        restoreStartEventHolder.stringValue = "Yes"
+      case .restoreFail:
+        restoreFailEventHolder.intValue += 1
+        restoreFailEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+
+    // User is not subscribed
+
+    let result = await Superwall.shared.restorePurchases()
+    switch result {
+    case .restored:
+      // Result is still restored even though alert shows. This is because
+      // the user is unsubscribed but result is restored.
+      restoredValueHolder.intValue += 1
+      restoredValueHolder.stringValue = "Yes"
+    default:
+      break
+    }
+
+    // Assert original products.
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await assert(value: restoredValueHolder.description)
+    await assert(value: restoreStartEventHolder.description)
+    await assert(value: restoreFailEventHolder.description)
+  }
+
+  /// Restored result from purchase without a paywall.
+  func test135() async throws {
+    skip("Simulator sometimes returns purchased instead of restored so hard to use")
+//    guard let product = StoreKitHelper.shared.monthlyProduct else {
+//      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+//    }
+//
+//    let delegate = Configuration.MockSuperwallDelegate()
+//    holdStrongly(delegate)
+//
+//    // Set delegate
+//    Superwall.shared.delegate = delegate
+//
+//    // Create value handler
+//    let transactionRestoreEventHolder = ValueDescriptionHolder()
+//    transactionRestoreEventHolder.stringValue = "No"
+//
+//    // Respond to Superwall events
+//    delegate.handleSuperwallEvent { eventInfo in
+//      switch eventInfo.event {
+//      case .transactionRestore:
+//        print("**** RESTOREDDDD")
+//        transactionRestoreEventHolder.intValue += 1
+//        transactionRestoreEventHolder.stringValue = "Yes"
+//      default:
+//        return
+//      }
+//    }
+//
+//    // Mock user as subscribed
+//    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customMonthlyProductIdentifier)
+//
+//    Task {
+//      let _ = await Superwall.shared.purchase(product)
+//
+//      // Not checking this because in the simulator it can sometime be purchased
+////      switch result {
+////      case .restored:
+////        restoredResultValueHolder.intValue += 1
+////        restoredResultValueHolder.stringValue = "Yes"
+////      default:
+////        break
+////      }
+//    }
+//
+//    // Assert that the 'currently subscribed to product' alert is displayed.
+//    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 0), size: .init(width: 393, height: 390))))
+//
+//    // Tap the OK button
+//    let okButton = CGPoint(x: 261, y: 526)
+//    touch(okButton)
+//
+//    await sleep(timeInterval: Constants.paywallPresentationDelay)
+//
+//    await assert(value: transactionRestoreEventHolder.description)
+  }
+
+  /// Restore purchases with advanced config.
+  func test136() async throws {
+    if configuration is Configuration.Automatic {
+      skip("Skipping test. The restore performs differently in the automatic configuration.")
+      return
+    }
+
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let restoreStartEventHolder = ValueDescriptionHolder()
+    restoreStartEventHolder.stringValue = "No"
+    let restoreCompleteEventHolder = ValueDescriptionHolder()
+    restoreCompleteEventHolder.stringValue = "No"
+    let restoredResultValueHolder = ValueDescriptionHolder()
+    restoredResultValueHolder.stringValue = "No"
+
+    // Respond to Superwall events, these shouldn't be called
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case .restoreStart:
+        restoreStartEventHolder.intValue += 1
+        restoreStartEventHolder.stringValue = "Yes"
+      case .restoreComplete:
+        restoreCompleteEventHolder.intValue += 1
+        restoreCompleteEventHolder.stringValue = "Yes"
+      default:
+        return
+      }
+    }
+
+    // Mock user as subscribed
+    await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
+
+    let result = await Superwall.shared.restorePurchases()
+    switch result {
+    case .restored:
+      restoredResultValueHolder.intValue += 1
+      restoredResultValueHolder.stringValue = "Yes"
+    default:
+      break
+    }
+
+    await assert(value: restoredResultValueHolder.description)
+    await assert(value: restoreStartEventHolder.description)
+    await assert(value: restoreCompleteEventHolder.description)
+  }
+
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
 //  func test73() async throws {
