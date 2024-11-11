@@ -4254,6 +4254,10 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Cancel purchase of product without a paywall.
 - (void)test131WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  if ([self.configuration isKindOfClass:[SWKConfigurationAdvanced class]]) {
+    TEST_SKIP(@"Skipping test. In the advanced configuration we assume the purchase is within the purchase controller so the delegate won't get called and the result will not return.")
+    return;
+  }
   TEST_START_NUM_ASSERTS(3)
 
   // Get the primary and secondary products

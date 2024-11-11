@@ -3796,6 +3796,13 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Purchase a product without a paywall.
   func test130() async throws {
+    if configuration is Configuration.Advanced {
+      skip("Skipping test. In the advanced configuration we assume the purchase is "
+           + "within the purchase controller so the delegate won't get called and "
+           + "the result will not return."
+      )
+      return
+    }
     guard let product = StoreKitHelper.shared.monthlyProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
     }
@@ -3816,6 +3823,7 @@ final class UITests_Swift: NSObject, Testable {
 
     // Respond to Superwall events
     delegate.handleSuperwallEvent { eventInfo in
+      print(eventInfo.event.description)
       switch eventInfo.event {
       case .transactionComplete:
         transactionCompleteEventHolder.intValue += 1
@@ -3859,6 +3867,13 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Cancel purchase of product without a paywall.
   func test131() async throws {
+    if configuration is Configuration.Advanced {
+      skip("Skipping test. In the advanced configuration we assume the purchase is "
+           + "within the purchase controller so the delegate won't get called and "
+           + "the result will not return."
+      )
+      return
+    }
     guard let product = StoreKitHelper.shared.monthlyProduct else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
     }
