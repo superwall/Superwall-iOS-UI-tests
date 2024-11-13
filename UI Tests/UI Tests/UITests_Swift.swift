@@ -4196,6 +4196,173 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: restoreCompleteEventHolder.description)
   }
 
+  /// Superwall purchases with observer mode enabled.
+  func testOptions137() -> TestOptions {
+    let options = SuperwallOptions()
+    options.shouldObservePurchases = true
+    return TestOptions(options: options)
+  }
+  func test137() async throws {
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionCompleteEventHolder = ValueDescriptionHolder()
+    transactionCompleteEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, paywallInfo):
+        transactionCompleteEventHolder.intValue += 1
+        transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
+      default:
+        return
+      }
+    }
+
+    Superwall.shared.register(event: "present_data")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 196, y: 750)
+    touch(purchaseButton)
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert .transactionComplete has been called with transaction details
+    await assert(value: transactionCompleteEventHolder.description)
+  }
+
+  /// Native SK1 purchase with observer mode enabled.
+  func testOptions138() -> TestOptions {
+    let options = SuperwallOptions()
+    options.shouldObservePurchases = true
+    return TestOptions(options: options)
+  }
+  func test138() async throws {
+    guard let product = StoreKitHelper.shared.monthlyProduct else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionCompleteEventHolder = ValueDescriptionHolder()
+    transactionCompleteEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, paywallInfo):
+        transactionCompleteEventHolder.intValue += 1
+        transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
+      default:
+        return
+      }
+    }
+
+    Task {
+      _ = await StoreKitHelper.shared.purchase(product: product)
+    }
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Assert .transactionComplete has been called with transaction details
+    await assert(value: transactionCompleteEventHolder.description, after: 8)
+  }
+
+  /// Native SK2 purchase with observer mode enabled.
+  func testOptions139() -> TestOptions {
+    let options = SuperwallOptions()
+    options.shouldObservePurchases = true
+    return TestOptions(options: options)
+  }
+  func test139() async throws {
+    guard let product = await StoreKitHelper.shared.getSk2MonthlyProduct() else {
+      fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
+    }
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
+
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Create value handler
+    let transactionCompleteEventHolder = ValueDescriptionHolder()
+    transactionCompleteEventHolder.stringValue = "No"
+
+    // Respond to Superwall events
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, paywallInfo):
+        transactionCompleteEventHolder.intValue += 1
+        transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
+      default:
+        return
+      }
+    }
+
+    Task {
+      _ = await StoreKitHelper.shared.purchaseSk2Product(product)
+    }
+
+    // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
+    await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 196, y: 766)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    let okButton = CGPoint(x: 196, y: 495)
+    touch(okButton)
+
+    // Assert .transactionComplete has been called with transaction details
+    await assert(value: transactionCompleteEventHolder.description, after: 8)
+  }
+
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
 //  func test73() async throws {

@@ -83,7 +83,11 @@ static BOOL kHasConfigured = NO;
 
   // Begin fetching products for use in other test cases
   [[SWKStoreKitHelper sharedInstance] fetchCustomProductsWithCompletionHandler:^{
-    [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey];
+    [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey
+      purchaseController: NULL
+      options:SWKConstants.currentTestOptions.options
+      completion: NULL
+    ];
     completionHandler();
   }];
 
@@ -122,7 +126,11 @@ static BOOL kHasConfigured = NO;
 
   // Begin fetching products for use in other test cases
   [[SWKStoreKitHelper sharedInstance] fetchCustomProductsWithCompletionHandler:^{
-    [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey purchaseController:self.purchaseController options:nil completion:NULL];
+    [Superwall configureWithApiKey:SWKConstants.currentTestOptions.apiKey
+      purchaseController:self.purchaseController
+      options:SWKConstants.currentTestOptions.options
+      completion:NULL
+    ];
 
     // Set status
     [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;

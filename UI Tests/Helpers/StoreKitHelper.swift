@@ -25,6 +25,14 @@ public class StoreKitHelper: NSObject {
     return products.first(where: { $0.productIdentifier == Constants.customMonthlyProductIdentifier })
   }
 
+  public func getSk2MonthlyProduct() async -> StoreKit.Product? {
+    return try? await StoreKit.Product.products(for: [Constants.customMonthlyProductIdentifier]).first
+  }
+
+  public func getSk2AnnualProduct() async -> StoreKit.Product? {
+    return try? await StoreKit.Product.products(for: [Constants.customAnnualProductIdentifier]).first
+  }
+
   @objc public var annualProduct: SKProduct? {
     return products.first(where: { $0.productIdentifier == Constants.customAnnualProductIdentifier })
   }
@@ -61,6 +69,16 @@ public class StoreKitHelper: NSObject {
         continuation.resume(returning: (result, error))
         self?.mostRecentPurchaseResultObjc = nil
       }
+    }
+  }
+
+  public func purchaseSk2Product(_ product: StoreKit.Product) async {
+    do {
+      Superwall.shared.observe(.purchaseWillBegin(for: product))
+      let result = try await product.purchase()
+      Superwall.shared.observe(.purchaseResult(result))
+    } catch let error {
+      Superwall.shared.observe(.purchaseError(error))
     }
   }
 
