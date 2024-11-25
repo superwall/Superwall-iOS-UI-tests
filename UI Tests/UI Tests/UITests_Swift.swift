@@ -4253,6 +4253,11 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert .transactionComplete has been called with transaction details
     await assert(value: transactionCompleteEventHolder.description)
+
+    Superwall.shared.register(event: "campaign_trigger")
+
+    // Make sure paywall isn't presented
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Native SK1 purchase with observer mode enabled.
@@ -4288,7 +4293,12 @@ final class UITests_Swift: NSObject, Testable {
     }
 
     Task {
-      _ = await StoreKitHelper.shared.purchase(product: product)
+      let result = await StoreKitHelper.shared.purchase(product: product)
+
+      if configuration is Configuration.Advanced,
+        result == .purchased {
+        Superwall.shared.subscriptionStatus = .active
+      }
     }
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
@@ -4307,6 +4317,11 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert .transactionComplete has been called with transaction details
     await assert(value: transactionCompleteEventHolder.description, after: 8)
+
+    Superwall.shared.register(event: "campaign_trigger")
+
+    // Make sure paywall isn't presented
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   /// Native SK2 purchase with observer mode enabled.
@@ -4361,6 +4376,12 @@ final class UITests_Swift: NSObject, Testable {
 
     // Assert .transactionComplete has been called with transaction details
     await assert(value: transactionCompleteEventHolder.description, after: 8)
+
+    Superwall.shared.register(event: "campaign_trigger")
+
+    // TODO: This actually shows a paywall. It shouldn't but its because SK2 purchases aren't detectable from the SK1 receipt.
+    // Make sure paywall isn't presented
+    await assert(after: Constants.paywallPresentationDelay)
   }
 
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.

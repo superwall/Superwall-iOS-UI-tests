@@ -4614,7 +4614,7 @@ static id<SWKTestConfiguration> kConfiguration;
   return [SWKTestOptions testOptionsWithOptions:options];
 }
 - (void)test137WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(4)
+  TEST_START_NUM_ASSERTS(5)
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
@@ -4669,7 +4669,13 @@ static id<SWKTestConfiguration> kConfiguration;
 
         // Ensure the paywall doesn't present.
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
-          TEST_ASSERT_VALUE_COMPLETION(transactionCompleteEventHolder.description, ^{})
+          TEST_ASSERT_VALUE_COMPLETION(transactionCompleteEventHolder.description, ^{
+            // Register event to present the paywall
+            [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+
+            // Assert that paywall appears
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
+          })
         })
       }];
     }));
@@ -4683,7 +4689,7 @@ static id<SWKTestConfiguration> kConfiguration;
   return [SWKTestOptions testOptionsWithOptions:options];
 }
 - (void)test138WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(2)
+  TEST_START_NUM_ASSERTS(3)
 
   SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
 
@@ -4716,7 +4722,11 @@ static id<SWKTestConfiguration> kConfiguration;
     }
   }];
 
-  [SWKStoreKitHelper.sharedInstance purchaseWithProduct:primary completionHandler:^(enum SWKPurchaseResult result, NSError * _Nullable error) {}];
+  [SWKStoreKitHelper.sharedInstance purchaseWithProduct:primary completionHandler:^(enum SWKPurchaseResult result, NSError * _Nullable error) {
+    if (result == SWKPurchaseResultPurchased) {
+      [[Superwall sharedInstance] setSubscriptionStatus:SWKSubscriptionStatusActive];
+    }
+  }];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
   CGRect customFrame = CGRectMake(0, 488, 393, 300);
@@ -4732,7 +4742,13 @@ static id<SWKTestConfiguration> kConfiguration;
       [weakSelf touch:okButton];
 
       // Assert .transactionComplete has been called with transaction details
-      TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, transactionCompleteEventHolder.description, ^{})
+      TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, transactionCompleteEventHolder.description, ^{
+        // Register event to present the paywall
+        [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+
+        // Assert that paywall appears
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
+      })
     }];
   }));
 }
