@@ -99,8 +99,8 @@ static id<SWKTestConfiguration> kConfiguration;
   
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
-  
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
+
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
@@ -115,7 +115,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Set new identity.
   [[Superwall sharedInstance] identifyWithUserId:@"test1b"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Kate" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -131,7 +131,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Reset the user identity
   [[Superwall sharedInstance] reset];
   
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -148,7 +148,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] reset];
   [[Superwall sharedInstance] reset];
   
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -157,14 +157,14 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test4WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
-  [[Superwall sharedInstance] registerWithEvent:@"present_video"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_video"];
   
   // Wait 4 seconds before dismissing the video
   [self sleepWithTimeInterval:4.0 completionHandler:^{
     [[Superwall sharedInstance] dismissWithCompletion:^{
       // Once the video has been dismissed, wait 1 second before dismissing again
       [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
-        [[Superwall sharedInstance] registerWithEvent:@"present_video"];
+        [[Superwall sharedInstance] registerWithPlacement:@"present_video"];
         
         // Assert that the video has started from the 0 sec mark (video simply counts from 0sec to 2sec and only displays those 2 values)
         TEST_ASSERT_DELAY_COMPLETION(2.0, ^{})
@@ -177,8 +177,8 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Get the primary and secondary products
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
-  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].sk1AnnualProduct;
   
   if (!primary || !secondary) {
     FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
@@ -187,11 +187,12 @@ static id<SWKTestConfiguration> kConfiguration;
   
   SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
   SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
-  
-  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-  
+
   // Create PaywallOverrides
-  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProducts:products];
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProductsByName:@{
+    @"primary": primaryProduct,
+    @"secondary": secondaryProduct
+  }];
   
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
@@ -205,7 +206,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -227,7 +228,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Present the paywall.
-  [[Superwall sharedInstance] registerWithEvent:@"present_products"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_products"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -239,14 +240,14 @@ static id<SWKTestConfiguration> kConfiguration;
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
-  [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user"];
   
   // Assert after a delay
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Remove those attributes.
       [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
-      [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user"];
 
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
     }];
@@ -260,7 +261,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
-  [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -271,7 +272,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
-    [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+    [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }];
@@ -284,7 +285,7 @@ static id<SWKTestConfiguration> kConfiguration;
   //  TEST_START_NUM_ASSERTS(3)
   //
   //  // Present the paywall.
-  //  [[Superwall sharedInstance] registerWithEvent:@"present_products"];
+  //  [[Superwall sharedInstance] registerWithPlacement:@"present_products"];
   //
   //  // Wait and assert.
   //  [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
@@ -332,21 +333,21 @@ static id<SWKTestConfiguration> kConfiguration;
   
   // Add user attribute
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Claire" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
   
   // Assert that the first name is displayed
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Remove user attribute
       [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
-      [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
       
       // Assert that the first name is NOT displayed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Add new user attribute
           [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Sawyer" }];
-          [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
@@ -359,7 +360,7 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test12WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
-  [[Superwall sharedInstance] registerWithEvent:@"keep_this_trigger_off"];
+  [[Superwall sharedInstance] registerWithPlacement:@"keep_this_trigger_off"];
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
@@ -367,7 +368,7 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test13WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
-  [[Superwall sharedInstance] registerWithEvent:@"i_just_made_this_up_and_it_dne"];
+  [[Superwall sharedInstance] registerWithPlacement:@"i_just_made_this_up_and_it_dne"];
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
 
@@ -375,7 +376,7 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test14WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START_NUM_ASSERTS(2)
   
-  [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
   
   // After delay, assert that there was a presentation
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -391,18 +392,18 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
   
   // Present paywall
-  [[Superwall sharedInstance] registerWithEvent:@"present_always"];
-  [[Superwall sharedInstance] registerWithEvent:@"present_always" params:@{@"some_param_1": @"hello"}];
-  [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always" params:@{@"some_param_1": @"hello"}];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
   
   // After delay, assert that there was a presentation
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       
-      [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
       [[Superwall sharedInstance] identifyWithUserId:@"1111"];
-      [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
       
       // After delay, assert that there was a presentation
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -413,7 +414,7 @@ static id<SWKTestConfiguration> kConfiguration;
           __block NSString *experimentId;
           
           [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
-            [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+            [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
             experimentId = paywallInfo.experiment.id;
             // Wait and assert.
             TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -422,7 +423,7 @@ static id<SWKTestConfiguration> kConfiguration;
           }];
           
           // Present paywall
-          [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always" params:nil handler:handler];
         }];
       }));
     }];
@@ -445,7 +446,7 @@ static id<SWKTestConfiguration> kConfiguration;
     });
   }];
   
-  [[Superwall sharedInstance] registerWithEvent:@"present_always" params:nil handler:handler];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always" params:nil handler:handler];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -456,7 +457,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
   
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
@@ -467,14 +468,14 @@ static id<SWKTestConfiguration> kConfiguration;
       // Reset the user identity
       [[Superwall sharedInstance] reset];
       
-      [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
       
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Present paywall
-          [[Superwall sharedInstance] registerWithEvent:@"present_always"];
-          [[Superwall sharedInstance] registerWithEvent:@"present_always" params:@{@"some_param_1": @"hello"}];
-          [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always" params:@{@"some_param_1": @"hello"}];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
 
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
@@ -491,7 +492,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self holdStrongly:delegate];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_urls" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -529,19 +530,19 @@ static id<SWKTestConfiguration> kConfiguration;
   
   [[Superwall sharedInstance] reset];
   [[Superwall sharedInstance] reset];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
   
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       
-      [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
-        
+      [[Superwall sharedInstance] getPresentationResultForPlacement:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+
         // Dismiss any view controllers
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           
           // Show a paywall
-          [[Superwall sharedInstance] registerWithEvent:@"present_always"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
           
           // Assert that paywall was displayed
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -559,7 +560,7 @@ static id<SWKTestConfiguration> kConfiguration;
                   // Set new identity
                   [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
                   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
-                  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+                  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
                   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
                 }];
@@ -577,7 +578,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
   
   // Present paywall with URLs
-  [[Superwall sharedInstance] registerWithEvent:@"present_urls"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_urls"];
   
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Position of the perform button to open a URL in Safari
@@ -600,7 +601,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
   
   // Register event to present the paywall
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
   
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -622,7 +623,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf touch:okButton];
         
         // Try to present paywall again
-        [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+        [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
         
         // Ensure the paywall doesn't present.
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -642,7 +643,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Register event
-  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+  [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall"];
   
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -658,7 +659,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
 
     // Register event
-    [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+    [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall"];
 
     // Assert that paywall DOES not appear
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -671,7 +672,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
   
   // Register event
-  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+  [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall"];
   
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -694,7 +695,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
         [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
           // Try to present paywall again
-          [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall"];
+          [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall"];
 
           // Ensure the paywall doesn't present.
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -710,7 +711,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
   
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"register_gated_paywall" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -742,7 +743,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
 
     // Register event and present an alert controller
-    [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall" params:nil handler:nil feature:^{
+    [[Superwall sharedInstance] registerWithPlacement:@"register_gated_paywall" params:nil handler:nil feature:^{
       dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                  message:@"This is an alert message"
@@ -763,7 +764,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Get the presentation result for the specified event
-  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPresentationResultForPlacement:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
     TEST_ASSERT_VALUE_COMPLETION(value, ^{})
@@ -778,7 +779,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
   
   // Get the presentation result for the specified event
-  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPresentationResultForPlacement:@"present_and_rule_user" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
     TEST_ASSERT_VALUE_COMPLETION(value, ^{})
@@ -790,7 +791,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Get the presentation result for the specified event
-  [[Superwall sharedInstance] getPresentationResultForEvent:@"some_random_not_found_event" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPresentationResultForPlacement:@"some_random_not_found_event" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
     TEST_ASSERT_VALUE_COMPLETION(value, ^{})
@@ -802,7 +803,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
   
   // Get the presentation result for the specified event
-  [[Superwall sharedInstance] getPresentationResultForEvent:@"holdout" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPresentationResultForPlacement:@"holdout" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
     TEST_ASSERT_VALUE_COMPLETION(value, ^{})
@@ -817,7 +818,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Mock user as subscribed
   [self handleSubscriptionMockingWithSubscribed:YES completionHandler:^{
     // Get the presentation result for the specified event
-    [[Superwall sharedInstance] getPresentationResultForEvent:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+    [[Superwall sharedInstance] getPresentationResultForPlacement:@"present_data" completionHandler:^(SWKPresentationResult * _Nonnull result) {
       // Assert the value of the result's description
       NSString *value = [SWKPresentationValueObjcHelper description:result.value];
       TEST_ASSERT_VALUE_COMPLETION(value, ^{})
@@ -834,7 +835,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] identifyWithUserId:@"test33"];
   
   // Register event
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
   
   // Assert after a delay
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -845,7 +846,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
   
   // Register event
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
   
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -874,7 +875,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -931,7 +932,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -973,7 +974,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1018,7 +1019,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1088,7 +1089,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1146,7 +1147,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
   
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_data" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1202,7 +1203,7 @@ static id<SWKTestConfiguration> kConfiguration;
     SWKValueDescriptionHolder *featureClosureHolder = [SWKValueDescriptionHolder new];
     featureClosureHolder.stringValue = @"No";
 
-    [[Superwall sharedInstance] registerWithEvent:event params:nil handler:paywallPresentationHandler feature:^{
+    [[Superwall sharedInstance] registerWithPlacement:event params:nil handler:paywallPresentationHandler feature:^{
       dispatch_async(dispatch_get_main_queue(), ^{
         featureClosureHolder.intValue += 1;
         featureClosureHolder.stringValue = @"Yes";
@@ -1237,7 +1238,7 @@ static id<SWKTestConfiguration> kConfiguration;
     SWKValueDescriptionHolder *featureClosureHolder = [SWKValueDescriptionHolder new];
     featureClosureHolder.stringValue = @"No";
 
-    [[Superwall sharedInstance] registerWithEvent:event params:nil handler:paywallPresentationHandler feature:^{
+    [[Superwall sharedInstance] registerWithPlacement:event params:nil handler:paywallPresentationHandler feature:^{
       dispatch_async(dispatch_get_main_queue(), ^{
         featureClosureHolder.intValue += 1;
         featureClosureHolder.stringValue = @"Yes";
@@ -1340,9 +1341,9 @@ static id<SWKTestConfiguration> kConfiguration;
   appInstallEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventAppInstall:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementAppInstall:
         appInstallEventHolder.intValue += 1;
         appInstallEventHolder.stringValue = @"Yes";
         break;
@@ -1377,9 +1378,9 @@ static id<SWKTestConfiguration> kConfiguration;
   appLaunchEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventAppLaunch:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementAppLaunch:
         appLaunchEventHolder.intValue += 1;
         appLaunchEventHolder.stringValue = @"Yes";
         break;
@@ -1412,9 +1413,9 @@ static id<SWKTestConfiguration> kConfiguration;
   sessionStartEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSessionStart:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSessionStart:
         sessionStartEventHolder.intValue += 1;
         sessionStartEventHolder.stringValue = @"Yes";
         break;
@@ -1446,13 +1447,13 @@ static id<SWKTestConfiguration> kConfiguration;
   appCloseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventAppClose:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementAppClose:
         appCloseEventHolder.intValue += 1;
         appCloseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventAppOpen:
+      case SWKSuperwallPlacementAppOpen:
         appOpenEventHolder.intValue += 1;
         appOpenEventHolder.stringValue = @"Yes";
         break;
@@ -1496,9 +1497,9 @@ static id<SWKTestConfiguration> kConfiguration;
   deepLinkEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventDeepLink:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementDeepLink:
         deepLinkEventHolder.intValue += 1;
         deepLinkEventHolder.stringValue = @"Yes";
         break;
@@ -1565,9 +1566,9 @@ static id<SWKTestConfiguration> kConfiguration;
   deepLinkEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventDeepLink:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementDeepLink:
         deepLinkEventHolder.intValue += 1;
         deepLinkEventHolder.stringValue = @"Yes";
         break;
@@ -1605,9 +1606,9 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionAbandonEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTransactionAbandon:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTransactionAbandon:
         transactionAbandonEventHolder.intValue += 1;
         transactionAbandonEventHolder.stringValue = @"Yes";
         break;
@@ -1616,7 +1617,7 @@ static id<SWKTestConfiguration> kConfiguration;
     }
   }];
 
-  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+  [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger"];
 
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -1659,13 +1660,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventPaywallDecline:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementPaywallDecline:
         paywallDeclineEventHolder.intValue += 1;
         paywallDeclineEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventSurveyResponse:
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
       default:
@@ -1673,7 +1674,7 @@ static id<SWKTestConfiguration> kConfiguration;
     }
   }];
 
-  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+  [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger"];
 
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -1715,9 +1716,9 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionFailEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTransactionFail:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTransactionFail:
         transactionFailEventHolder.intValue += 1;
         transactionFailEventHolder.stringValue = @"Yes";
         break;
@@ -1728,7 +1729,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Fail all transactions
   [self failTransactionsWithCompletionHandler:^{
-    [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+    [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger"];
 
     // Assert that paywall was presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -1762,7 +1763,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
 
   // Present paywall with URLs
-  [[Superwall sharedInstance] registerWithEvent:@"present_urls"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_urls"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Tap the open # URL button
@@ -1790,7 +1791,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"restore" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -1830,13 +1831,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -1845,7 +1846,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"show_survey_with_other" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -1871,7 +1872,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Assert that paywall has disappeared and the feature block called.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Open the paywall again
-        [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other" params:nil handler:nil];
+        [[Superwall sharedInstance] registerWithPlacement:@"show_survey_with_other" params:nil handler:nil];
 
         // Assert that paywall has disappeared and the feature block called.
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -1905,13 +1906,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -1920,7 +1921,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"show_survey_with_other" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -1977,13 +1978,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -1992,7 +1993,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"zero_percent_survey" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"zero_percent_survey" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2033,13 +2034,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2048,7 +2049,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"modal_paywall_with_survey" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"modal_paywall_with_survey" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2085,13 +2086,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2100,7 +2101,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2167,13 +2168,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2182,7 +2183,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"modal_paywall_with_survey" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"modal_paywall_with_survey" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -2229,13 +2230,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2255,7 +2256,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"show_survey_with_other" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"show_survey_with_other" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -2303,9 +2304,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
@@ -2315,7 +2316,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"survey_with_purchase_button" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"survey_with_purchase_button" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2406,9 +2407,9 @@ static id<SWKTestConfiguration> kConfiguration;
   touchesBeganEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTouchesBegan:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTouchesBegan:
         touchesBeganEventHolder.intValue += 1;
         touchesBeganEventHolder.stringValue = @"Yes";
         break;
@@ -2447,9 +2448,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyCloseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyClose:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyClose:
         surveyCloseEventHolder.intValue += 1;
         surveyCloseEventHolder.stringValue = @"Yes";
         break;
@@ -2458,7 +2459,7 @@ static id<SWKTestConfiguration> kConfiguration;
     }
   }];
 
-  [[Superwall sharedInstance] registerWithEvent:@"survey_with_close_option"];
+  [[Superwall sharedInstance] registerWithPlacement:@"survey_with_close_option"];
 
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -2497,14 +2498,14 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTransactionComplete: {
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTransactionComplete: {
         transactionCompleteEventHolder.intValue += 1;
-        NSString *transactionId = eventInfo.params[@"store_transaction_id"];
+        NSString *transactionId = placementInfo.params[@"store_transaction_id"];
         bool isNil = transactionId == nil;
-        NSString *productId = eventInfo.params[@"product_id"];
-        NSString *paywallId = eventInfo.params[@"paywall_identifier"];
+        NSString *productId = placementInfo.params[@"product_id"];
+        NSString *paywallId = placementInfo.params[@"paywall_identifier"];
 
         transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%s,%@,%@", isNil ? "true" : "false", productId, paywallId];
         break;
@@ -2515,7 +2516,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event to present the paywall
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -2537,7 +2538,7 @@ static id<SWKTestConfiguration> kConfiguration;
         [weakSelf touch:okButton];
 
         // Try to present paywall again
-        [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+        [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
         // Ensure the paywall doesn't present.
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -2552,11 +2553,11 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test76WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START_NUM_ASSERTS(2)
 
-  [[Superwall sharedInstance] registerWithEvent:@"holdout_one_time_occurrence"];
+  [[Superwall sharedInstance] registerWithPlacement:@"holdout_one_time_occurrence"];
 
   // Assert that no paywall appears (holdout)
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-    [[Superwall sharedInstance] registerWithEvent:@"holdout_one_time_occurrence"];
+    [[Superwall sharedInstance] registerWithPlacement:@"holdout_one_time_occurrence"];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
   }));
@@ -2566,8 +2567,8 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Get the primary and secondary products
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
-  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].sk1AnnualProduct;
 
   if (!primary || !secondary) {
     FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
@@ -2591,7 +2592,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_products" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -2619,7 +2620,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2653,7 +2654,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(4)
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2702,7 +2703,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Fail all transactions
   [self failTransactionsWithCompletionHandler:^{
     // Register event and present an alert controller
-    [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+    [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger" params:nil handler:nil feature:^{
       dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                  message:@"This is an alert message"
@@ -2751,7 +2752,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2791,7 +2792,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -2837,7 +2838,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -2896,7 +2897,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"restore_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -2927,7 +2928,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall_v4" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"register_gated_paywall_v4" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -2960,7 +2961,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
 
     // Register event and present an alert controller
-    [[Superwall sharedInstance] registerWithEvent:@"register_gated_paywall_v4" params:nil handler:nil feature:^{
+    [[Superwall sharedInstance] registerWithPlacement:@"register_gated_paywall_v4" params:nil handler:nil feature:^{
       dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                  message:@"This is an alert message"
@@ -2983,7 +2984,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Register event
-  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall_v4"];
 
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -3000,7 +3001,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
 
     // Register event
-    [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+    [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall_v4"];
 
     // Assert that paywall DOES not appear
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -3014,7 +3015,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
 
   // Register event
-  [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall_v4"];
 
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3037,7 +3038,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
         [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
           // Try to present paywall again
-          [[Superwall sharedInstance] registerWithEvent:@"register_nongated_paywall_v4"];
+          [[Superwall sharedInstance] registerWithPlacement:@"register_nongated_paywall_v4"];
 
           // Ensure the paywall doesn't present.
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -3108,7 +3109,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   [self.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
-    [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+    [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }];
@@ -3119,7 +3120,7 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test100WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START_NUM_ASSERTS(2)
 
-  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
 
   // After delay, assert that there was a presentation
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3136,18 +3137,18 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
 
   // Present paywall
-  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
-  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:@{@"some_param_1": @"hello"}];
-  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4" params:@{@"some_param_1": @"hello"}];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
 
   // After delay, assert that there was a presentation
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
 
-      [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
       [[Superwall sharedInstance] identifyWithUserId:@"1111"];
-      [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
 
       // After delay, assert that there was a presentation
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3158,7 +3159,7 @@ static id<SWKTestConfiguration> kConfiguration;
           __block NSString *experimentId;
 
           [handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
-            [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+            [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
             experimentId = paywallInfo.experiment.id;
             // Wait and assert.
             TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -3167,7 +3168,7 @@ static id<SWKTestConfiguration> kConfiguration;
           }];
 
           // Present paywall
-          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:nil handler:handler];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4" params:nil handler:handler];
         }];
       }));
     }];
@@ -3191,7 +3192,7 @@ static id<SWKTestConfiguration> kConfiguration;
     });
   }];
 
-  [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:nil handler:handler];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4" params:nil handler:handler];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -3203,7 +3204,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -3220,7 +3221,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Set new identity.
   [[Superwall sharedInstance] identifyWithUserId:@"test1b"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Kate" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -3237,7 +3238,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Reset the user identity
   [[Superwall sharedInstance] reset];
 
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -3255,7 +3256,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] reset];
   [[Superwall sharedInstance] reset];
 
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -3267,21 +3268,21 @@ static id<SWKTestConfiguration> kConfiguration;
 
   // Add user attribute
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Claire" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   // Assert that the first name is displayed
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Remove user attribute
       [[Superwall sharedInstance] removeUserAttributes:@[@"first_name"]];
-      [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
       // Assert that the first name is NOT displayed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Add new user attribute
           [[Superwall sharedInstance] setUserAttributes:@{ @"first_name": @"Sawyer" }];
-          [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
@@ -3296,7 +3297,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] identifyWithUserId:@"test0"];
   [[Superwall sharedInstance] setUserAttributes:@{ @"first_name" : @"Jack" }];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
@@ -3307,14 +3308,14 @@ static id<SWKTestConfiguration> kConfiguration;
       // Reset the user identity
       [[Superwall sharedInstance] reset];
 
-      [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf dismissViewControllersWithCompletionHandler:^{
           // Present paywall
-          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
-          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4" params:@{@"some_param_1": @"hello"}];
-          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4" params:@{@"some_param_1": @"hello"}];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
 
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
         }];
@@ -3340,9 +3341,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyCloseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyClose:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyClose:
         surveyCloseEventHolder.intValue += 1;
         surveyCloseEventHolder.stringValue = @"Yes";
         break;
@@ -3351,7 +3352,7 @@ static id<SWKTestConfiguration> kConfiguration;
     }
   }];
 
-  [[Superwall sharedInstance] registerWithEvent:@"survey_with_close_option_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"survey_with_close_option_v4"];
 
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3391,9 +3392,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
@@ -3403,7 +3404,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"survey_with_purchase_button_v4" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"survey_with_purchase_button_v4" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -3460,13 +3461,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3475,7 +3476,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"modal_paywall_with_survey_v4" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"modal_paywall_with_survey_v4" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -3523,13 +3524,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3538,7 +3539,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"modal_paywall_with_survey_v4" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"modal_paywall_with_survey_v4" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -3586,13 +3587,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3601,7 +3602,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"zero_percent_survey_v4" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"zero_percent_survey_v4" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -3642,13 +3643,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3657,7 +3658,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other_v4" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"show_survey_with_other_v4" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -3683,7 +3684,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Assert that paywall has disappeared and the feature block called.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Open the paywall again
-        [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other_v4" params:nil handler:nil];
+        [[Superwall sharedInstance] registerWithPlacement:@"show_survey_with_other_v4" params:nil handler:nil];
 
         // Assert that paywall has disappeared and the feature block called.
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3717,13 +3718,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3732,7 +3733,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event and present an alert controller
-  [[Superwall sharedInstance] registerWithEvent:@"show_survey_with_other_v4" params:nil handler:nil feature:^{
+  [[Superwall sharedInstance] registerWithPlacement:@"show_survey_with_other_v4" params:nil handler:nil feature:^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Alert"
                                                                                message:@"This is an alert message"
@@ -3790,13 +3791,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventSurveyResponse:
+  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventPaywallClose:
+      case SWKSuperwallPlacementPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3816,7 +3817,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"show_survey_with_other_v4" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"show_survey_with_other_v4" params:nil paywallOverrides:nil delegate:paywallDelegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -3859,19 +3860,19 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] reset];
   [[Superwall sharedInstance] reset];
-  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Dismiss any view controllers
     [weakSelf dismissViewControllersWithCompletionHandler:^{
 
-      [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user_v4" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+      [[Superwall sharedInstance] getPresentationResultForPlacement:@"present_and_rule_user_v4" completionHandler:^(SWKPresentationResult * _Nonnull result) {
 
         // Dismiss any view controllers
         [weakSelf dismissViewControllersWithCompletionHandler:^{
 
           // Show a paywall
-          [[Superwall sharedInstance] registerWithEvent:@"present_always_v4"];
+          [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
 
           // Assert that paywall was displayed
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3889,7 +3890,7 @@ static id<SWKTestConfiguration> kConfiguration;
                   // Set new identity
                   [[Superwall sharedInstance] identifyWithUserId:@"test19c"];
                   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Kate"}];
-                  [[Superwall sharedInstance] registerWithEvent:@"present_data_v4"];
+                  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
 
                   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
                 }];
@@ -3910,14 +3911,14 @@ static id<SWKTestConfiguration> kConfiguration;
   // Adds a user attribute to verify rule on `present_and_rule_user` presents: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @14}];
-  [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user_v4"];
 
   // Assert after a delay
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     [weakSelf dismissViewControllersWithCompletionHandler:^{
       // Remove those attributes.
       [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
-      [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user_v4"];
+      [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user_v4"];
 
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
     }];
@@ -3932,7 +3933,7 @@ static id<SWKTestConfiguration> kConfiguration;
   // Adds a user attribute to verify rule on `present_and_rule_user` DOES NOT present: user.should_display == true and user.some_value > 12
   [[Superwall sharedInstance] identifyWithUserId:@"test7"];
   [[Superwall sharedInstance] setUserAttributes:@{@"first_name": @"Charlie", @"should_display": @YES, @"some_value": @12}];
-  [[Superwall sharedInstance] registerWithEvent:@"present_and_rule_user_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -3946,7 +3947,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [[Superwall sharedInstance] removeUserAttributes:@[@"should_display", @"some_value"]];
 
   // Get the presentation result for the specified event
-  [[Superwall sharedInstance] getPresentationResultForEvent:@"present_and_rule_user_v4" completionHandler:^(SWKPresentationResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPresentationResultForPlacement:@"present_and_rule_user_v4" completionHandler:^(SWKPresentationResult * _Nonnull result) {
     // Assert the value of the result's description
     NSString *value = [SWKPresentationValueObjcHelper description:result.value];
     TEST_ASSERT_VALUE_COMPLETION(value, ^{})
@@ -3963,7 +3964,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [self holdStrongly:delegate];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_urls_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_urls_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -3996,7 +3997,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
 
   // Present paywall with URLs
-  [[Superwall sharedInstance] registerWithEvent:@"present_urls_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_urls_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Position of the perform button to open a URL in Safari
@@ -4020,7 +4021,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
 
   // Present paywall with URLs
-  [[Superwall sharedInstance] registerWithEvent:@"present_urls_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_urls_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Tap the open # URL button
@@ -4038,8 +4039,8 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Get the primary and secondary products
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
-  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].sk1AnnualProduct;
 
   if (!primary || !secondary) {
     FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
@@ -4049,11 +4050,8 @@ static id<SWKTestConfiguration> kConfiguration;
   SWKStoreProduct *primaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:primary];
   SWKStoreProduct *secondaryProduct = [[SWKStoreProduct alloc] initWithSk1Product:secondary];
 
-  SWKPaywallProducts *products = [[SWKPaywallProducts alloc] initWithPrimary:primaryProduct secondary:secondaryProduct tertiary:nil];
-
-  // Create PaywallOverrides
-  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProducts:products];
-
+  SWKPaywallOverrides *paywallOverrides = [[SWKPaywallOverrides alloc] initWithProductsByName:@{@"primary": primaryProduct, @"secondary": secondaryProduct}];
+  
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
   [self holdStrongly:delegate];
@@ -4066,7 +4064,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_products_v4" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_products_v4" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -4089,7 +4087,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Present the paywall.
-  [[Superwall sharedInstance] registerWithEvent:@"present_products_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_products_v4"];
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
 }
@@ -4104,8 +4102,8 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START
 
   // Get the primary and secondary products
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
-  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].annualProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
+  SKProduct *secondary = [SWKStoreKitHelper sharedInstance].sk1AnnualProduct;
 
   if (!primary || !secondary) {
     FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
@@ -4129,7 +4127,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Get the paywall view controller
-  [[Superwall sharedInstance] getPaywallForEvent:@"present_products_v4" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+  [[Superwall sharedInstance] getPaywallForPlacement:@"present_products_v4" params:nil paywallOverrides:paywallOverrides delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
     UIViewController *viewController = result.paywall;
     if (viewController) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -4157,14 +4155,14 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test129WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
 
-  [[Superwall sharedInstance] registerWithEvent:@"present_video_v4"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_video_v4"];
 
   // Wait 4 seconds before dismissing the video
   [self sleepWithTimeInterval:4.0 completionHandler:^{
     [[Superwall sharedInstance] dismissWithCompletion:^{
       // Once the video has been dismissed, wait 1 second before dismissing again
       [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
-        [[Superwall sharedInstance] registerWithEvent:@"present_video_v4"];
+        [[Superwall sharedInstance] registerWithPlacement:@"present_video_v4"];
 
         // Assert that the video has started from the 0 sec mark (video simply counts from 0sec to 2sec and only displays those 2 values)
         TEST_ASSERT_DELAY_COMPLETION(2.0, ^{})
@@ -4264,7 +4262,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(3)
 
   // Get the primary and secondary products
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
 
   if (!primary) {
     FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
@@ -4285,9 +4283,9 @@ static id<SWKTestConfiguration> kConfiguration;
   cancelledResultValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTransactionAbandon:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTransactionAbandon:
         transactionAbandonEventHolder.intValue += 1;
         transactionAbandonEventHolder.stringValue = @"Yes";
         break;
@@ -4343,13 +4341,13 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredResultValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventRestoreStart:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventRestoreComplete:
+      case SWKSuperwallPlacementRestoreComplete:
         restoreCompleteEventHolder.intValue += 1;
         restoreCompleteEventHolder.stringValue = @"Yes";
         break;
@@ -4400,9 +4398,9 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventRestoreStart:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
@@ -4461,9 +4459,9 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventRestoreStart:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
@@ -4503,7 +4501,7 @@ static id<SWKTestConfiguration> kConfiguration;
   TEST_START_NUM_ASSERTS(2)
 
   // Get the primary and secondary products
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
 
   if (!primary) {
     FATAL_ERROR(@"WARNING: Unable to fetch custom products. These are needed for testing.");
@@ -4522,9 +4520,9 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventRestoreComplete:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementRestoreComplete:
         transactionCompleteEventHolder.intValue += 1;
         transactionCompleteEventHolder.stringValue = @"Yes";
         break;
@@ -4574,13 +4572,13 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredResultValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventRestoreStart:
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallEventRestoreComplete:
+      case SWKSuperwallPlacementRestoreComplete:
         restoreCompleteEventHolder.intValue += 1;
         restoreCompleteEventHolder.stringValue = @"Yes";
         break;
@@ -4628,14 +4626,14 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTransactionComplete: {
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTransactionComplete: {
         transactionCompleteEventHolder.intValue += 1;
-        NSString *transactionId = eventInfo.params[@"store_transaction_id"];
+        NSString *transactionId = placementInfo.params[@"store_transaction_id"];
         bool isNil = transactionId == nil;
-        NSString *productId = eventInfo.params[@"product_id"];
-        NSString *paywallId = eventInfo.params[@"paywall_identifier"];
+        NSString *productId = placementInfo.params[@"product_id"];
+        NSString *paywallId = placementInfo.params[@"paywall_identifier"];
 
         transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%s,%@,%@", isNil ? "true" : "false", productId, paywallId];
         break;
@@ -4646,7 +4644,7 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 
   // Register event to present the paywall
-  [[Superwall sharedInstance] registerWithEvent:@"present_data"];
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
 
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -4671,7 +4669,7 @@ static id<SWKTestConfiguration> kConfiguration;
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
           TEST_ASSERT_VALUE_COMPLETION(transactionCompleteEventHolder.description, ^{
             // Register event to present the paywall
-            [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+            [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger"];
 
             // Assert that paywall appears
             TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
@@ -4691,7 +4689,7 @@ static id<SWKTestConfiguration> kConfiguration;
 - (void)test138WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
   TEST_START_NUM_ASSERTS(3)
 
-  SKProduct *primary = [SWKStoreKitHelper sharedInstance].monthlyProduct;
+  SKProduct *primary = [SWKStoreKitHelper sharedInstance].sk1MonthlyProduct;
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
@@ -4705,14 +4703,14 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
-    switch (eventInfo.event) {
-      case SWKSuperwallEventTransactionComplete: {
+  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
+    switch (placementInfo.placement) {
+      case SWKSuperwallPlacementTransactionComplete: {
         transactionCompleteEventHolder.intValue += 1;
-        NSString *transactionId = eventInfo.params[@"store_transaction_id"];
+        NSString *transactionId = placementInfo.params[@"store_transaction_id"];
         bool isNil = transactionId == nil;
-        NSString *productId = eventInfo.params[@"product_id"];
-        NSString *paywallId = eventInfo.params[@"paywall_identifier"];
+        NSString *productId = placementInfo.params[@"product_id"];
+        NSString *paywallId = placementInfo.params[@"paywall_identifier"];
 
         transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%s,%@,%@", isNil ? "true" : "false", productId, paywallId];
         break;
@@ -4724,7 +4722,8 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [SWKStoreKitHelper.sharedInstance purchaseWithProduct:primary completionHandler:^(enum SWKPurchaseResult result, NSError * _Nullable error) {
     if (result == SWKPurchaseResultPurchased) {
-      [[Superwall sharedInstance] setSubscriptionStatus:SWKSubscriptionStatusActive];
+      NSSet *activeEntitlements = [NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]];
+      [[Superwall sharedInstance].entitlements setActiveStatusWith:activeEntitlements];
     }
   }];
 
@@ -4744,7 +4743,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Assert .transactionComplete has been called with transaction details
       TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, transactionCompleteEventHolder.description, ^{
         // Register event to present the paywall
-        [[Superwall sharedInstance] registerWithEvent:@"campaign_trigger"];
+        [[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger"];
 
         // Assert that paywall appears
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{}));
@@ -4762,7 +4761,7 @@ static id<SWKTestConfiguration> kConfiguration;
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)
 //
-//  [[Superwall sharedInstance] registerWithEvent:@"no_paywalljs"];
+//  [[Superwall sharedInstance] registerWithPlacement:@"no_paywalljs"];
 //
 //  // Assert infinite loading
 //  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{

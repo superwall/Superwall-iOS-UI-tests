@@ -21,8 +21,12 @@ public class StoreKitHelper: NSObject {
     SKPaymentQueue.default().add(self)
   }
 
-  @objc public var monthlyProduct: SKProduct? {
+  @objc public var sk1MonthlyProduct: SKProduct? {
     return products.first(where: { $0.productIdentifier == Constants.customMonthlyProductIdentifier })
+  }
+
+  @objc public var sk1AnnualProduct: SKProduct? {
+    return products.first(where: { $0.productIdentifier == Constants.customAnnualProductIdentifier })
   }
 
   public func getSk2MonthlyProduct() async -> StoreKit.Product? {
@@ -31,10 +35,6 @@ public class StoreKitHelper: NSObject {
 
   public func getSk2AnnualProduct() async -> StoreKit.Product? {
     return try? await StoreKit.Product.products(for: [Constants.customAnnualProductIdentifier]).first
-  }
-
-  @objc public var annualProduct: SKProduct? {
-    return products.first(where: { $0.productIdentifier == Constants.customAnnualProductIdentifier })
   }
 
   private lazy var productsRequest: SKProductsRequest = {
@@ -72,26 +72,46 @@ public class StoreKitHelper: NSObject {
     }
   }
 
-  public func purchaseSk2Product(_ product: StoreKit.Product) async {
-    do {
-      Superwall.shared.observe(.purchaseWillBegin(for: product))
-      let result = try await product.purchase()
-      Superwall.shared.observe(.purchaseResult(result))
-    } catch let error {
-      Superwall.shared.observe(.purchaseError(error))
-    }
-  }
 
-  public func purchase(product: SKProduct) async -> PurchaseResult {
-    let payment = SKPayment(product: product)
-    SKPaymentQueue.default().add(payment)
+  public func purchase(product: StoreProduct) async -> PurchaseResult {
+    if let product = product.sk1Product {
+      let payment = SKPayment(product: product)
+      SKPaymentQueue.default().add(payment)
 
-    return await withCheckedContinuation { continuation in
-      mostRecentPurchaseResult = { [weak self] state in
-        continuation.resume(returning: state)
-        self?.mostRecentPurchaseResult = nil
+      return await withCheckedContinuation { continuation in
+        mostRecentPurchaseResult = { [weak self] state in
+          continuation.resume(returning: state)
+          self?.mostRecentPurchaseResult = nil
+        }
+      }
+    } else if let product = product.sk2Product {
+      do {
+        let purchaseDate = Date.now
+        let result = try await product.purchase()
+        switch result {
+        case .pending:
+          return .pending
+        case .success(let verificationResult):
+          switch verificationResult {
+          case .verified(let transaction):
+            if transaction.purchaseDate <= purchaseDate.addingTimeInterval(-20) {
+              return .restored
+            } else {
+              return .purchased
+            }
+          case .unverified(_, let error):
+            return .failed(error)
+          }
+        case .userCancelled:
+          return .cancelled
+        @unknown default:
+          return .cancelled
+        }
+      } catch {
+        return .failed(error)
       }
     }
+    return .cancelled
   }
 }
 

@@ -188,7 +188,7 @@ public class Communicator {
       try server.start(sourceConfiguration.port, forceIPv4: true)
       print("Server has started ( port = \(try server.port()) ).")
     } catch {
-      fatalError("Server start error: \(error)")
+      fatalError("Server start error: \(error) for port \(sourceConfiguration.port)")
     }
   }
 
