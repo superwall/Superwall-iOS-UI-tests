@@ -4548,7 +4548,10 @@ final class UITests_Swift: NSObject, Testable {
   }
   func test139() async throws {
     if #unavailable(iOS 17.2) {
-      skip("Skipping test. This can only run on iOS 17.2 simulators or later otherwise it won't work.")
+      skip(
+        "Skipping test. Observer mode for SK2 can only run on iOS 17.2 simulators or later otherwise it won't work. "
+        + "This test should be run on iOS 18.1 with iPhone 16 Pro"
+      )
       return
     }
     guard let product = await StoreKitHelper.shared.getSk2MonthlyProduct() else {
@@ -4584,8 +4587,8 @@ final class UITests_Swift: NSObject, Testable {
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
-    // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
+    // Tap the Subscribe button (set for iPhone 16 Pro on iOS 18.1)
+    let subscribeButton = CGPoint(x: 201, y: 810)
     touch(subscribeButton)
 
     // Wait for subscribe to occur
@@ -4600,11 +4603,6 @@ final class UITests_Swift: NSObject, Testable {
 
     Superwall.shared.register(placement: "campaign_trigger")
 
-
-    // TODO: The UITest isn't detecting transaction on iOS 16.4 but does on iOS 18.1. I think its because of the SK2 purchase observer failing to have decodedJwsPayload?["transactionReason"]
-
-    // TODO: This actually shows a paywall. It shouldn't but its because SK2 purchases aren't detectable from the SK1 receipt.
-    // TODO: Make sure that the transasction is detected!
     // Make sure paywall isn't presented
     await assert(after: Constants.paywallPresentationDelay)
   }
