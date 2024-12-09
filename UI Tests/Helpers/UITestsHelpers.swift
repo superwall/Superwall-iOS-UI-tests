@@ -50,6 +50,9 @@ public class TestOptions: NSObject {
 
     // TODO: REmove when merging to main
     options.networkEnvironment = .developer
+
+    // So we don't have to wait for a minute before it completely fails.
+    options.maxConfigRetryCount = 0
     self.options = options
     super.init()
   }

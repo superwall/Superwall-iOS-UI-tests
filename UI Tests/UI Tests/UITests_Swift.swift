@@ -3166,8 +3166,8 @@ final class UITests_Swift: NSObject, Testable {
     // Wait for subscribe to occur
     await sleep(timeInterval: Constants.paywallPresentationDelay)
 
-    // TODO: For some reason, this gets called twice and dismisses both the purchase alert and the feature alert
-    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env).
+    // For some reason, the tapping of OK gets called twice and dismisses both the purchase alert and the feature alert so it won't appear in screenshots.
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
@@ -4547,6 +4547,10 @@ final class UITests_Swift: NSObject, Testable {
     return TestOptions(options: options)
   }
   func test139() async throws {
+    if #unavailable(iOS 17.2) {
+      skip("Skipping test. This can only run on iOS 17.2 simulators or later otherwise it won't work.")
+      return
+    }
     guard let product = await StoreKitHelper.shared.getSk2MonthlyProduct() else {
       fatalError("WARNING: Unable to fetch custom products. These are needed for testing.")
     }
@@ -4566,7 +4570,7 @@ final class UITests_Swift: NSObject, Testable {
       switch placementInfo.placement {
       case let .transactionComplete(transaction, product, type, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
-        transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
+        transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(type.description),\(paywallInfo.identifier)"
       default:
         return
       }
@@ -4596,7 +4600,11 @@ final class UITests_Swift: NSObject, Testable {
 
     Superwall.shared.register(placement: "campaign_trigger")
 
+
+    // TODO: The UITest isn't detecting transaction on iOS 16.4 but does on iOS 18.1. I think its because of the SK2 purchase observer failing to have decodedJwsPayload?["transactionReason"]
+
     // TODO: This actually shows a paywall. It shouldn't but its because SK2 purchases aren't detectable from the SK1 receipt.
+    // TODO: Make sure that the transasction is detected!
     // Make sure paywall isn't presented
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -4901,7 +4909,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: paywallDidFinishResultValueHolder.stringValue)
   }
 
-  /// Same as test39 but with SK2. Finished restore with a result type of `rest
+  /// Same as test39 but with SK2. Finished restore with a result type of `restore`.
   func test147() async throws {
     let delegate = Configuration.MockPaywallViewControllerDelegate()
     holdStrongly(delegate)

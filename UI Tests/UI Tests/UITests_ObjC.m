@@ -173,6 +173,9 @@ static id<SWKTestConfiguration> kConfiguration;
   }];
 }
 
+- (SWKTestOptions *)testOptions5 {
+  return [SWKTestOptions testOptionsWithPurchasedProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier];
+}
 - (void)test5WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_START
   
@@ -4754,6 +4757,134 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Native SK2 purchase with observer mode enabled.
 - (void)test139WithCompletionHandler:(void (^)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test140WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test141WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test142WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test143WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test144WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test145WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test146WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test147WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test148WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test149WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test150WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test151WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test152WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test153WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test154WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test155WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test156WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test157WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test158WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test159WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test160WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test161WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test162WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test163WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test164WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test165WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test166WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test167WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test168WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test169WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test170WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+- (void)test171WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
 }
 

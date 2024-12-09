@@ -1,4 +1,14 @@
 {
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
   "identifier" : "AD417988",
   "nonRenewingSubscriptions" : [
 
@@ -7,7 +17,56 @@
 
   ],
   "settings" : {
-
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
   },
   "subscriptionGroups" : [
     {
@@ -40,7 +99,10 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "com.ui_tests.monthly",
           "subscriptionGroupID" : "4F31BE19",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
@@ -65,7 +127,10 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "com.ui_tests.annual",
           "subscriptionGroupID" : "4F31BE19",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
@@ -90,7 +155,10 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "com.ui_tests.custom_annual",
           "subscriptionGroupID" : "4F31BE19",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
@@ -115,7 +183,10 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "com.ui_tests.custom_monthly",
           "subscriptionGroupID" : "4F31BE19",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
@@ -144,13 +215,16 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "com.ui_tests.free_trial_annual",
           "subscriptionGroupID" : "4F31BE19",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     }
   ],
   "version" : {
-    "major" : 2,
+    "major" : 4,
     "minor" : 0
   }
 }
