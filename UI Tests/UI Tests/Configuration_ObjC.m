@@ -46,6 +46,7 @@ static BOOL kHasConfigured = NO;
   }
 }
 
+- (void)paywall:(SWKPaywallViewController *)paywall loadingStateDidChange:(enum SWKPaywallLoadingState)loadingState {}
 
 @end
 

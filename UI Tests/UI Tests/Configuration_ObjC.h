@@ -21,5 +21,5 @@
 @end
 
 @interface SWKMockSuperwallDelegate : NSObject <SWKSuperwallDelegate>
-- (void)handleSuperwallPlacement:(void (^)(SWKSuperwallPlacementInfo *))handler;
+- (void)handleSuperwallPlacementInfo:(void (^)(SWKSuperwallPlacementInfo *))handler;
 @end
