@@ -58,7 +58,7 @@ static BOOL kHasConfigured = NO;
 
 @implementation SWKMockSuperwallDelegate
 
-- (void)handleSuperwallPlacementInfo:(void (^)(SWKSuperwallPlacementInfo *))handler {
+- (void)handleSuperwallPlacement:(void (^)(SWKSuperwallPlacementInfo *))handler {
   self.handleSuperwallPlacement = handler;
 }
 
@@ -104,6 +104,8 @@ static BOOL kHasConfigured = NO;
 
 - (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier  completionHandler:(void (^ _Nonnull)(void))completionHandler {
   [self activateSubscriptionWithProductIdentifier:productIdentifier completionHandler:^{
+    NSSet *activeEntitlements = [NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]];
+    [[Superwall sharedInstance].entitlements setActiveStatusWith:activeEntitlements];
     completionHandler();
   }];
 }

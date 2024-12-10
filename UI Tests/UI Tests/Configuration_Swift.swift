@@ -29,6 +29,9 @@ extension Configuration {
   }
 
   class MockPaywallViewControllerDelegate: PaywallViewControllerDelegate {
+    func paywall(_ paywall: PaywallViewController, loadingStateDidChange loadingState: PaywallLoadingState) {
+    }
+    
     private var paywallViewControllerDidFinish: ((PaywallViewController, PaywallResult, Bool) -> Void)?
 
     func paywallViewControllerDidFinish(_ handler: @escaping ((PaywallViewController, PaywallResult, Bool) -> Void)) {
