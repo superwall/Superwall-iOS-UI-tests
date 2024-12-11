@@ -4322,8 +4322,9 @@ static id<SWKTestConfiguration> kConfiguration;
     CGPoint abandonTransactionButton = CGPointMake(359, 20);
     [weakSelf touch:abandonTransactionButton];
 
-    TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, cancelledResultValueHolder.description, ^{});
-    TEST_ASSERT_VALUE_COMPLETION(transactionAbandonEventHolder.description, ^{});
+    TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, cancelledResultValueHolder.description, ^{
+      TEST_ASSERT_VALUE_COMPLETION(transactionAbandonEventHolder.description, ^{});
+    });
   }));
 }
 
@@ -4384,9 +4385,12 @@ static id<SWKTestConfiguration> kConfiguration;
           break;
       }
 
-      TEST_ASSERT_VALUE_COMPLETION(restoredResultValueHolder.description, ^{});
-      TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{});
-      TEST_ASSERT_VALUE_COMPLETION(restoreCompleteEventHolder.description, ^{});
+      TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay,
+          restoredResultValueHolder.description, ^{
+        TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{
+          TEST_ASSERT_VALUE_COMPLETION(restoreCompleteEventHolder.description, ^{});
+        });
+      });
     }];
   }];
 }
@@ -4428,7 +4432,7 @@ static id<SWKTestConfiguration> kConfiguration;
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
-      case SWKRestorationResultFailed:
+      case SWKSuperwallPlacementRestoreFail:
         restoreFailEventHolder.intValue += 1;
         restoreFailEventHolder.stringValue = @"Yes";
         break;
@@ -4451,11 +4455,13 @@ static id<SWKTestConfiguration> kConfiguration;
         break;
     }
 
-    TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{});
-
-    TEST_ASSERT_VALUE_COMPLETION(restoredValueHolder.description, ^{});
-    TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{});
-    TEST_ASSERT_VALUE_COMPLETION(restoreFailEventHolder.description, ^{});
+    TEST_ASSERT_DELAY_COMPLETION(kImplicitPaywallPresentationDelay, ^{
+      TEST_ASSERT_VALUE_COMPLETION(restoredValueHolder.description, ^{
+        TEST_ASSERT_VALUE_COMPLETION(restoreStartEventHolder.description, ^{
+          TEST_ASSERT_VALUE_COMPLETION(restoreFailEventHolder.description, ^{});
+        });
+      });
+    });
   }];
 }
 
