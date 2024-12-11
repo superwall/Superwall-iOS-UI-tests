@@ -2369,7 +2369,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   [[Superwall sharedInstance] identifyWithUserId:@"abc"];
 
-  [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+  [weakSelf sleepWithTimeInterval:7.0 completionHandler:^{
     NSDictionary *userAttributes = [[Superwall sharedInstance] userAttributes];
     NSString *seedValueString = userAttributes[@"seed"];
     int seedValueInt = [seedValueString intValue];
@@ -2381,7 +2381,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
       [[Superwall sharedInstance] identifyWithUserId:@"abc"];
 
-      [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      [weakSelf sleepWithTimeInterval:7.0 completionHandler:^{
         NSDictionary *userAttributes = [[Superwall sharedInstance] userAttributes];
         NSString *seedValueString = userAttributes[@"seed"];
         int seedValueInt = [seedValueString intValue];
