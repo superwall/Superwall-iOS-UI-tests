@@ -562,3 +562,131 @@ class Automated_UI_Testing_test139: Automated_UI_Testing {
   func test139() async throws { try await performSDKTest(number: 139) }
 }
 
+class Automated_UI_Testing_test140: Automated_UI_Testing {
+  func test140() async throws { try await performSDKTest(number: 140) }
+}
+
+class Automated_UI_Testing_test141: Automated_UI_Testing {
+  func test141() async throws { try await performSDKTest(number: 141) }
+}
+
+class Automated_UI_Testing_test142: Automated_UI_Testing {
+  func test142() async throws { try await performSDKTest(number: 142) }
+}
+
+class Automated_UI_Testing_test143: Automated_UI_Testing {
+  func test143() async throws { try await performSDKTest(number: 143) }
+}
+
+class Automated_UI_Testing_test144: Automated_UI_Testing {
+  func test144() async throws { try await performSDKTest(number: 144) }
+}
+
+class Automated_UI_Testing_test145: Automated_UI_Testing {
+  func test145() async throws { try await performSDKTest(number: 145) }
+}
+
+class Automated_UI_Testing_test146: Automated_UI_Testing {
+  func test146() async throws { try await performSDKTest(number: 146) }
+}
+
+class Automated_UI_Testing_test147: Automated_UI_Testing {
+  func test147() async throws { try await performSDKTest(number: 147) }
+}
+
+class Automated_UI_Testing_test148: Automated_UI_Testing {
+  func test148() async throws { try await performSDKTest(number: 148) }
+}
+
+class Automated_UI_Testing_test149: Automated_UI_Testing {
+  func test149() async throws { try await performSDKTest(number: 149) }
+}
+
+class Automated_UI_Testing_test150: Automated_UI_Testing {
+  func test150() async throws { try await performSDKTest(number: 150) }
+}
+
+class Automated_UI_Testing_test151: Automated_UI_Testing {
+  func test151() async throws { try await performSDKTest(number: 151) }
+}
+
+class Automated_UI_Testing_test152: Automated_UI_Testing {
+  func test152() async throws { try await performSDKTest(number: 152) }
+}
+
+class Automated_UI_Testing_test153: Automated_UI_Testing {
+  func test153() async throws { try await performSDKTest(number: 153) }
+}
+
+class Automated_UI_Testing_test154: Automated_UI_Testing {
+  func test154() async throws { try await performSDKTest(number: 154) }
+}
+
+class Automated_UI_Testing_test155: Automated_UI_Testing {
+  func test155() async throws { try await performSDKTest(number: 155) }
+}
+
+class Automated_UI_Testing_test156: Automated_UI_Testing {
+  func test156() async throws { try await performSDKTest(number: 156) }
+}
+
+class Automated_UI_Testing_test157: Automated_UI_Testing {
+  func test157() async throws { try await performSDKTest(number: 157) }
+}
+
+class Automated_UI_Testing_test158: Automated_UI_Testing {
+  func test158() async throws { try await performSDKTest(number: 158) }
+}
+
+class Automated_UI_Testing_test159: Automated_UI_Testing {
+  func test159() async throws { try await performSDKTest(number: 159) }
+}
+
+class Automated_UI_Testing_test160: Automated_UI_Testing {
+  func test160() async throws { try await performSDKTest(number: 160) }
+}
+
+class Automated_UI_Testing_test161: Automated_UI_Testing {
+  func test161() async throws { try await performSDKTest(number: 161) }
+}
+
+class Automated_UI_Testing_test162: Automated_UI_Testing {
+  func test162() async throws { try await performSDKTest(number: 162) }
+}
+
+class Automated_UI_Testing_test163: Automated_UI_Testing {
+  func test163() async throws { try await performSDKTest(number: 163) }
+}
+
+class Automated_UI_Testing_test164: Automated_UI_Testing {
+  func test164() async throws { try await performSDKTest(number: 164) }
+}
+
+class Automated_UI_Testing_test165: Automated_UI_Testing {
+  func test165() async throws { try await performSDKTest(number: 165) }
+}
+
+class Automated_UI_Testing_test166: Automated_UI_Testing {
+  func test166() async throws { try await performSDKTest(number: 166) }
+}
+
+class Automated_UI_Testing_test167: Automated_UI_Testing {
+  func test167() async throws { try await performSDKTest(number: 167) }
+}
+
+class Automated_UI_Testing_test168: Automated_UI_Testing {
+  func test168() async throws { try await performSDKTest(number: 168) }
+}
+
+class Automated_UI_Testing_test169: Automated_UI_Testing {
+  func test169() async throws { try await performSDKTest(number: 169) }
+}
+
+class Automated_UI_Testing_test170: Automated_UI_Testing {
+  func test170() async throws { try await performSDKTest(number: 170) }
+}
+
+class Automated_UI_Testing_test171: Automated_UI_Testing {
+  func test171() async throws { try await performSDKTest(number: 171) }
+}
+

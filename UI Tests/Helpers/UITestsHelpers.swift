@@ -47,6 +47,12 @@ public class TestOptions: NSObject {
     self.automaticallyConfigure = automaticallyConfigure
     self.purchasedProductIdentifier = purchasedProductIdentifier
     self.apiKey = apiKey
+
+    // TODO: REmove when merging to main
+    options.networkEnvironment = .developer
+
+    // So we don't have to wait for a minute before it completely fails.
+    options.maxConfigRetryCount = 0
     self.options = options
     super.init()
   }
@@ -270,7 +276,7 @@ class ValueDescriptionHolder: NSObject {
 
 // MARK: - PresentationResult
 
-@objc (SWKPresentationValueObjcHelper)
+@objc(SWKPresentationValueObjcHelper)
 class PresentationValueObjcHelper: NSObject {
   @objc static func description(_ value: PresentationValueObjc) -> String {
     return value.description
@@ -280,18 +286,18 @@ class PresentationValueObjcHelper: NSObject {
 extension PresentationValueObjc {
   public var description: String {
     switch self {
-      case .eventNotFound:
-        return "eventNotFound"
-      case .noRuleMatch:
-        return "noRuleMatch"
-      case .paywall:
-        return "paywall"
-      case .holdout:
-        return "holdout"
-      case .userIsSubscribed:
-        return "userIsSubscribed"
-      case .paywallNotAvailable:
-        return "paywallNotAvailable"
+    case .placementNotFound:
+      return "eventNotFound"
+    case .noAudienceMatch:
+      return "noRuleMatch"
+    case .paywall:
+      return "paywall"
+    case .holdout:
+      return "holdout"
+    case .userIsSubscribed:
+      return "userIsSubscribed"
+    case .paywallNotAvailable:
+      return "paywallNotAvailable"
     }
   }
 }
@@ -299,18 +305,16 @@ extension PresentationValueObjc {
 extension PresentationResult: CustomStringConvertible {
   public var description: String {
     switch self {
-      case .eventNotFound:
-        return PresentationValueObjc.eventNotFound.description
-      case .noRuleMatch:
-        return PresentationValueObjc.noRuleMatch.description
-      case .paywall(_):
-        return PresentationValueObjc.paywall.description
-      case .holdout(_):
-        return PresentationValueObjc.holdout.description
-      case .paywallNotAvailable:
-        return PresentationValueObjc.paywallNotAvailable.description
-      case .userIsSubscribed:
-        return PresentationValueObjc.userIsSubscribed.description
+    case .placementNotFound:
+      return PresentationValueObjc.placementNotFound.description
+    case .noAudienceMatch:
+      return PresentationValueObjc.noAudienceMatch.description
+    case .paywall(_):
+      return PresentationValueObjc.paywall.description
+    case .holdout(_):
+      return PresentationValueObjc.holdout.description
+    case .paywallNotAvailable:
+      return PresentationValueObjc.paywallNotAvailable.description
     }
   }
 }

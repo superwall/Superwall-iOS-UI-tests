@@ -17,18 +17,21 @@ struct Configuration {
 
 extension Configuration {
   class MockSuperwallDelegate: SuperwallDelegate {
-    private var handleSuperwallEvent: ((SuperwallEventInfo) -> Void)?
+    private var handleSuperwallPlacement: ((SuperwallPlacementInfo) -> Void)?
 
-    func handleSuperwallEvent(_ handler: @escaping ((SuperwallEventInfo) -> Void)) {
-      handleSuperwallEvent = handler
+    func handleSuperwallPlacement(_ handler: @escaping ((SuperwallPlacementInfo) -> Void)) {
+      handleSuperwallPlacement = handler
     }
 
-    func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
-      handleSuperwallEvent?(eventInfo)
+    func handleSuperwallPlacement(withInfo placementInfo: SuperwallPlacementInfo) {
+      handleSuperwallPlacement?(placementInfo)
     }
   }
 
   class MockPaywallViewControllerDelegate: PaywallViewControllerDelegate {
+    func paywall(_ paywall: PaywallViewController, loadingStateDidChange loadingState: PaywallLoadingState) {
+    }
+    
     private var paywallViewControllerDidFinish: ((PaywallViewController, PaywallResult, Bool) -> Void)?
 
     func paywallViewControllerDidFinish(_ handler: @escaping ((PaywallViewController, PaywallResult, Bool) -> Void)) {
@@ -92,29 +95,30 @@ extension Configuration {
       )
 
       // Set status
-      Superwall.shared.subscriptionStatus = .inactive
+      Superwall.shared.entitlements.status = .inactive
     }
 
     func tearDown() async {
       // Reset status
-      Superwall.shared.subscriptionStatus = .inactive
+      Superwall.shared.entitlements.status = .inactive
 
       // Reset identity and user data
       Superwall.shared.reset()
     }
 
     func mockSubscribedUser(productIdentifier: String) async {
-      Superwall.shared.subscriptionStatus = .active
+      await activateSubscription(productIdentifier: productIdentifier)
+      Superwall.shared.entitlements.status = .active([Entitlement(id: "default")])
     }
   }
 
   class AdvancedPurchaseController: PurchaseController {
-    func purchase(product: SKProduct) async -> PurchaseResult {
+    func purchase(product: StoreProduct) async -> PurchaseResult {
       let purchaseResult = await StoreKitHelper.shared.purchase(product: product)
 
       switch purchaseResult {
         case .purchased:
-          Superwall.shared.subscriptionStatus = .active
+        Superwall.shared.entitlements.status = .active([Entitlement(id: "default")])
           fallthrough
         default:
           return purchaseResult

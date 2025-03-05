@@ -949,7 +949,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/superwall-me/SuperwallKit-iOS";
 			requirement = {
-				branch = develop;
+				branch = v4;
 				kind = branch;
 			};
 		};
