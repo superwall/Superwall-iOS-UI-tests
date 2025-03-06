@@ -5191,6 +5191,7 @@ final class UITests_Swift: NSObject, Testable {
     await sleep(timeInterval: Constants.paywallPresentationDelay)
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
+    // TODO: Note that sometimes this dismisses everything but sometimes doesn't causing test to be flakey.
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
