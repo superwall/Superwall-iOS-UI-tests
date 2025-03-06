@@ -321,7 +321,7 @@ extension PresentationResult: CustomStringConvertible {
 
 // MARK: - PaywallResult
 
-@objc (SWKPaywallResultValueObjcHelper)
+@objc(SWKPaywallResultValueObjcHelper)
 class PaywallResultValueObjcHelper: NSObject {
   @objc static func description(_ value: PaywallResultObjc) -> String {
     return value.description

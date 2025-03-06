@@ -17,14 +17,14 @@ struct Configuration {
 
 extension Configuration {
   class MockSuperwallDelegate: SuperwallDelegate {
-    private var handleSuperwallPlacement: ((SuperwallPlacementInfo) -> Void)?
+    private var handleSuperwallEvent: ((SuperwallEventInfo) -> Void)?
 
-    func handleSuperwallPlacement(_ handler: @escaping ((SuperwallPlacementInfo) -> Void)) {
-      handleSuperwallPlacement = handler
+    func handleSuperwallEvent(_ handler: @escaping ((SuperwallEventInfo) -> Void)) {
+      handleSuperwallEvent = handler
     }
 
-    func handleSuperwallPlacement(withInfo placementInfo: SuperwallPlacementInfo) {
-      handleSuperwallPlacement?(placementInfo)
+    func handleSuperwallPlacement(withInfo placementInfo: SuperwallEventInfo) {
+      handleSuperwallEvent?(placementInfo)
     }
   }
 
@@ -95,12 +95,12 @@ extension Configuration {
       )
 
       // Set status
-      Superwall.shared.entitlements.status = .inactive
+      Superwall.shared.subscriptionStatus = .inactive
     }
 
     func tearDown() async {
       // Reset status
-      Superwall.shared.entitlements.status = .inactive
+      Superwall.shared.subscriptionStatus = .inactive
 
       // Reset identity and user data
       Superwall.shared.reset()
@@ -108,7 +108,7 @@ extension Configuration {
 
     func mockSubscribedUser(productIdentifier: String) async {
       await activateSubscription(productIdentifier: productIdentifier)
-      Superwall.shared.entitlements.status = .active([Entitlement(id: "default")])
+      Superwall.shared.subscriptionStatus = .active([Entitlement(id: "default")])
     }
   }
 
@@ -118,7 +118,7 @@ extension Configuration {
 
       switch purchaseResult {
         case .purchased:
-        Superwall.shared.entitlements.status = .active([Entitlement(id: "default")])
+        Superwall.shared.subscriptionStatus = .active([Entitlement(id: "default")])
           fallthrough
         default:
           return purchaseResult

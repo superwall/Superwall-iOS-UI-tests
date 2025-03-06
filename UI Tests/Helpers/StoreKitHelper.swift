@@ -86,19 +86,14 @@ public class StoreKitHelper: NSObject {
       }
     } else if let product = product.sk2Product {
       do {
-        let purchaseDate = Date.now
         let result = try await product.purchase()
         switch result {
         case .pending:
           return .pending
         case .success(let verificationResult):
           switch verificationResult {
-          case .verified(let transaction):
-            if transaction.purchaseDate <= purchaseDate.addingTimeInterval(-20) {
-              return .restored
-            } else {
-              return .purchased
-            }
+          case .verified:
+            return .purchased
           case .unverified(_, let error):
             return .failed(error)
           }

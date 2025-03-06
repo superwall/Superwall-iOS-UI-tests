@@ -1123,8 +1123,8 @@ final class UITests_Swift: NSObject, Testable {
     appInstallEventHolder.stringValue = "No"
 
     // Respond to Superwall events
-    delegate.handleSuperwallPlacement { eventInfo in
-      switch eventInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .appInstall:
         appInstallEventHolder.intValue += 1
         appInstallEventHolder.stringValue = "Yes"
@@ -1156,8 +1156,8 @@ final class UITests_Swift: NSObject, Testable {
     appLaunchEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .appLaunch:
         appLaunchEventHolder.intValue += 1
         appLaunchEventHolder.stringValue = "Yes"
@@ -1188,8 +1188,8 @@ final class UITests_Swift: NSObject, Testable {
     sessionStartEventHolder.stringValue = "No"
 
     // Respond to Superwall events
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .sessionStart:
         sessionStartEventHolder.intValue += 1
         sessionStartEventHolder.stringValue = "Yes"
@@ -1220,8 +1220,8 @@ final class UITests_Swift: NSObject, Testable {
     appCloseEventHolder.stringValue = "No"
 
     // Respond to Superwall events
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .appClose:
         appCloseEventHolder.intValue += 1
         appCloseEventHolder.stringValue = "Yes"
@@ -1264,8 +1264,8 @@ final class UITests_Swift: NSObject, Testable {
     deepLinkEventHolder.stringValue = "No"
 
     // Respond to Superwall events
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .deepLink:
         deepLinkEventHolder.intValue += 1
         deepLinkEventHolder.stringValue = "Yes"
@@ -1328,8 +1328,8 @@ final class UITests_Swift: NSObject, Testable {
     deepLinkEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .deepLink:
         deepLinkEventHolder.intValue += 1
         deepLinkEventHolder.stringValue = "Yes"
@@ -1370,8 +1370,8 @@ final class UITests_Swift: NSObject, Testable {
     transactionAbandonEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionAbandon:
         transactionAbandonEventHolder.intValue += 1
         transactionAbandonEventHolder.stringValue = "Yes"
@@ -1427,8 +1427,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -1487,8 +1487,8 @@ final class UITests_Swift: NSObject, Testable {
     transactionFailEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionFail:
         transactionFailEventHolder.intValue += 1
         transactionFailEventHolder.stringValue = "Yes"
@@ -1650,8 +1650,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -1718,8 +1718,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -1783,8 +1783,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -1832,8 +1832,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -1877,8 +1877,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -1940,8 +1940,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    superwallDelegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -2007,8 +2007,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    superwallDelegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -2080,8 +2080,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -2163,8 +2163,8 @@ final class UITests_Swift: NSObject, Testable {
     touchesBeganEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .touchesBegan:
         touchesBeganEventHolder.intValue += 1
         touchesBeganEventHolder.stringValue = "Yes"
@@ -2204,8 +2204,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyCloseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyClose:
         surveyCloseEventHolder.intValue += 1
         surveyCloseEventHolder.stringValue = "Yes"
@@ -2256,9 +2256,9 @@ final class UITests_Swift: NSObject, Testable {
     transactionCompleteEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
-      case let .transactionComplete(transaction, product, type, paywallInfo):
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, _, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
       default:
@@ -3075,8 +3075,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyCloseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyClose:
         surveyCloseEventHolder.intValue += 1
         surveyCloseEventHolder.stringValue = "Yes"
@@ -3130,8 +3130,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -3193,8 +3193,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -3238,8 +3238,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    superwallDelegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -3306,8 +3306,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -3356,8 +3356,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -3425,8 +3425,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -3491,8 +3491,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    superwallDelegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    superwallDelegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -4001,8 +4001,8 @@ final class UITests_Swift: NSObject, Testable {
     purchaseResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionComplete:
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "Yes"
@@ -4076,8 +4076,8 @@ final class UITests_Swift: NSObject, Testable {
     cancelledResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionAbandon:
         transactionAbandonEventHolder.intValue += 1
         transactionAbandonEventHolder.stringValue = "Yes"
@@ -4138,8 +4138,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -4196,8 +4196,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -4258,8 +4258,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -4379,8 +4379,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements, these shouldn't be called
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -4429,9 +4429,9 @@ final class UITests_Swift: NSObject, Testable {
     transactionCompleteEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
-      case let .transactionComplete(transaction, product, type, paywallInfo):
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, _, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
       default:
@@ -4497,9 +4497,9 @@ final class UITests_Swift: NSObject, Testable {
     transactionCompleteEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
-      case let .transactionComplete(transaction, product, type, paywallInfo):
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, _, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
       default:
@@ -4513,7 +4513,7 @@ final class UITests_Swift: NSObject, Testable {
 
       if configuration is Configuration.Advanced,
         result == .purchased {
-        Superwall.shared.entitlements.status = .active([.init(id: "default")])
+        Superwall.shared.subscriptionStatus = .active([.init(id: "default")])
       }
     }
 
@@ -4569,8 +4569,8 @@ final class UITests_Swift: NSObject, Testable {
     transactionCompleteEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case let .transactionComplete(transaction, product, type, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(type.description),\(paywallInfo.identifier)"
@@ -4969,8 +4969,8 @@ final class UITests_Swift: NSObject, Testable {
     transactionAbandonEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionAbandon:
         transactionAbandonEventHolder.intValue += 1
         transactionAbandonEventHolder.stringValue = "Yes"
@@ -5023,8 +5023,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -5076,8 +5076,8 @@ final class UITests_Swift: NSObject, Testable {
     transactionFailEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionFail:
         transactionFailEventHolder.intValue += 1
         transactionFailEventHolder.stringValue = "Yes"
@@ -5154,8 +5154,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -5215,9 +5215,9 @@ final class UITests_Swift: NSObject, Testable {
     transactionCompleteEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
-      case let .transactionComplete(transaction, product, type, paywallInfo):
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, _, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
       default:
@@ -5503,8 +5503,8 @@ final class UITests_Swift: NSObject, Testable {
     surveyResponseEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .surveyResponse:
         surveyResponseEventHolder.intValue += 1
         surveyResponseEventHolder.stringValue = "Yes"
@@ -5797,8 +5797,8 @@ final class UITests_Swift: NSObject, Testable {
     purchaseResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionComplete:
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "Yes"
@@ -5865,8 +5865,8 @@ final class UITests_Swift: NSObject, Testable {
     cancelledResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .transactionAbandon:
         transactionAbandonEventHolder.intValue += 1
         transactionAbandonEventHolder.stringValue = "Yes"
@@ -5920,8 +5920,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -5971,8 +5971,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -6024,8 +6024,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredValueHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -6081,8 +6081,8 @@ final class UITests_Swift: NSObject, Testable {
     restoredResultValueHolder.stringValue = "No"
 
     // Respond to Superwall placements, these shouldn't be called
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
       case .restoreStart:
         restoreStartEventHolder.intValue += 1
         restoreStartEventHolder.stringValue = "Yes"
@@ -6132,9 +6132,9 @@ final class UITests_Swift: NSObject, Testable {
     transactionCompleteEventHolder.stringValue = "No"
 
     // Respond to Superwall placements
-    delegate.handleSuperwallPlacement { placementInfo in
-      switch placementInfo.placement {
-      case let .transactionComplete(transaction, product, type, paywallInfo):
+    delegate.handleSuperwallEvent { eventInfo in
+      switch eventInfo.event {
+      case let .transactionComplete(transaction, product, _, paywallInfo):
         transactionCompleteEventHolder.intValue += 1
         transactionCompleteEventHolder.stringValue = "\(transaction == nil),\(product.productIdentifier),\(paywallInfo.identifier)"
       default:

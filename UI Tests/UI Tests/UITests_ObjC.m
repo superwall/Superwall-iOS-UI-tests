@@ -1344,9 +1344,9 @@ static id<SWKTestConfiguration> kConfiguration;
   appInstallEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementAppInstall:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventAppInstall:
         appInstallEventHolder.intValue += 1;
         appInstallEventHolder.stringValue = @"Yes";
         break;
@@ -1381,9 +1381,9 @@ static id<SWKTestConfiguration> kConfiguration;
   appLaunchEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementAppLaunch:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventAppLaunch:
         appLaunchEventHolder.intValue += 1;
         appLaunchEventHolder.stringValue = @"Yes";
         break;
@@ -1416,9 +1416,9 @@ static id<SWKTestConfiguration> kConfiguration;
   sessionStartEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSessionStart:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSessionStart:
         sessionStartEventHolder.intValue += 1;
         sessionStartEventHolder.stringValue = @"Yes";
         break;
@@ -1450,13 +1450,13 @@ static id<SWKTestConfiguration> kConfiguration;
   appCloseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementAppClose:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventAppClose:
         appCloseEventHolder.intValue += 1;
         appCloseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementAppOpen:
+      case SWKSuperwallEventAppOpen:
         appOpenEventHolder.intValue += 1;
         appOpenEventHolder.stringValue = @"Yes";
         break;
@@ -1500,9 +1500,9 @@ static id<SWKTestConfiguration> kConfiguration;
   deepLinkEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementDeepLink:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventDeepLink:
         deepLinkEventHolder.intValue += 1;
         deepLinkEventHolder.stringValue = @"Yes";
         break;
@@ -1569,9 +1569,9 @@ static id<SWKTestConfiguration> kConfiguration;
   deepLinkEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementDeepLink:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventDeepLink:
         deepLinkEventHolder.intValue += 1;
         deepLinkEventHolder.stringValue = @"Yes";
         break;
@@ -1609,9 +1609,9 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionAbandonEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTransactionAbandon:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionAbandon:
         transactionAbandonEventHolder.intValue += 1;
         transactionAbandonEventHolder.stringValue = @"Yes";
         break;
@@ -1663,13 +1663,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementPaywallDecline:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventPaywallDecline:
         paywallDeclineEventHolder.intValue += 1;
         paywallDeclineEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementSurveyResponse:
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
       default:
@@ -1719,9 +1719,9 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionFailEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTransactionFail:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionFail:
         transactionFailEventHolder.intValue += 1;
         transactionFailEventHolder.stringValue = @"Yes";
         break;
@@ -1834,13 +1834,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -1909,13 +1909,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -1981,13 +1981,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2037,13 +2037,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2089,13 +2089,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2171,13 +2171,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2233,13 +2233,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -2307,9 +2307,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
@@ -2410,9 +2410,9 @@ static id<SWKTestConfiguration> kConfiguration;
   touchesBeganEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTouchesBegan:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTouchesBegan:
         touchesBeganEventHolder.intValue += 1;
         touchesBeganEventHolder.stringValue = @"Yes";
         break;
@@ -2451,9 +2451,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyCloseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyClose:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyClose:
         surveyCloseEventHolder.intValue += 1;
         surveyCloseEventHolder.stringValue = @"Yes";
         break;
@@ -2501,14 +2501,14 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTransactionComplete: {
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionComplete: {
         transactionCompleteEventHolder.intValue += 1;
-        NSString *transactionId = placementInfo.params[@"store_transaction_id"];
+        NSString *transactionId = eventInfo.params[@"store_transaction_id"];
         bool isNil = transactionId == nil;
-        NSString *productId = placementInfo.params[@"product_id"];
-        NSString *paywallId = placementInfo.params[@"paywall_identifier"];
+        NSString *productId = eventInfo.params[@"product_id"];
+        NSString *paywallId = eventInfo.params[@"paywall_identifier"];
 
         transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%s,%@,%@", isNil ? "true" : "false", productId, paywallId];
         break;
@@ -3344,9 +3344,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyCloseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyClose:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyClose:
         surveyCloseEventHolder.intValue += 1;
         surveyCloseEventHolder.stringValue = @"Yes";
         break;
@@ -3395,9 +3395,9 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
@@ -3464,13 +3464,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3527,13 +3527,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3590,13 +3590,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3646,13 +3646,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3721,13 +3721,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -3794,13 +3794,13 @@ static id<SWKTestConfiguration> kConfiguration;
   surveyResponseEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [superwallDelegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementSurveyResponse:
+  [superwallDelegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventSurveyResponse:
         surveyResponseEventHolder.intValue += 1;
         surveyResponseEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementPaywallClose:
+      case SWKSuperwallEventPaywallClose:
         surveyResponseEventHolder.intValue += 1;
         break;
       default:
@@ -4293,9 +4293,9 @@ static id<SWKTestConfiguration> kConfiguration;
   cancelledResultValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTransactionAbandon:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionAbandon:
         transactionAbandonEventHolder.intValue += 1;
         transactionAbandonEventHolder.stringValue = @"Yes";
         break;
@@ -4359,13 +4359,13 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredResultValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementRestoreStart:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementRestoreComplete:
+      case SWKSuperwallEventRestoreComplete:
         restoreCompleteEventHolder.intValue += 1;
         restoreCompleteEventHolder.stringValue = @"Yes";
         break;
@@ -4426,13 +4426,13 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementRestoreStart:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementRestoreFail:
+      case SWKSuperwallEventRestoreFail:
         restoreFailEventHolder.intValue += 1;
         restoreFailEventHolder.stringValue = @"Yes";
         break;
@@ -4496,9 +4496,9 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementRestoreStart:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
@@ -4619,13 +4619,13 @@ static id<SWKTestConfiguration> kConfiguration;
   restoredResultValueHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementRestoreStart:
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventRestoreStart:
         restoreStartEventHolder.intValue += 1;
         restoreStartEventHolder.stringValue = @"Yes";
         break;
-      case SWKSuperwallPlacementRestoreComplete:
+      case SWKSuperwallEventRestoreComplete:
         restoreCompleteEventHolder.intValue += 1;
         restoreCompleteEventHolder.stringValue = @"Yes";
         break;
@@ -4673,14 +4673,14 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTransactionComplete: {
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionComplete: {
         transactionCompleteEventHolder.intValue += 1;
-        NSString *transactionId = placementInfo.params[@"store_transaction_id"];
+        NSString *transactionId = eventInfo.params[@"store_transaction_id"];
         bool isNil = transactionId == nil;
-        NSString *productId = placementInfo.params[@"product_id"];
-        NSString *paywallId = placementInfo.params[@"paywall_identifier"];
+        NSString *productId = eventInfo.params[@"product_id"];
+        NSString *paywallId = eventInfo.params[@"paywall_identifier"];
 
         transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%s,%@,%@", isNil ? "true" : "false", productId, paywallId];
         break;
@@ -4750,14 +4750,14 @@ static id<SWKTestConfiguration> kConfiguration;
   transactionCompleteEventHolder.stringValue = @"No";
 
   // Respond to Superwall events
-  [delegate handleSuperwallPlacement:^(SWKSuperwallPlacementInfo *placementInfo) {
-    switch (placementInfo.placement) {
-      case SWKSuperwallPlacementTransactionComplete: {
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTransactionComplete: {
         transactionCompleteEventHolder.intValue += 1;
-        NSString *transactionId = placementInfo.params[@"store_transaction_id"];
+        NSString *transactionId = eventInfo.params[@"store_transaction_id"];
         bool isNil = transactionId == nil;
-        NSString *productId = placementInfo.params[@"product_id"];
-        NSString *paywallId = placementInfo.params[@"paywall_identifier"];
+        NSString *productId = eventInfo.params[@"product_id"];
+        NSString *paywallId = eventInfo.params[@"paywall_identifier"];
 
         transactionCompleteEventHolder.stringValue = [NSString stringWithFormat:@"%s,%@,%@", isNil ? "true" : "false", productId, paywallId];
         break;
@@ -4770,7 +4770,7 @@ static id<SWKTestConfiguration> kConfiguration;
   [SWKStoreKitHelper.sharedInstance purchaseWithProduct:primary completionHandler:^(enum SWKPurchaseResult result, NSError * _Nullable error) {
     if (result == SWKPurchaseResultPurchased) {
       NSSet *activeEntitlements = [NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]];
-      [[Superwall sharedInstance].entitlements setActiveStatusWith:activeEntitlements];
+      [[Superwall sharedInstance] setActiveSubscriptionStatusWith:activeEntitlements];
     }
   }];
 

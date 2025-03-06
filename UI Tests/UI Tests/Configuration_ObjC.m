@@ -53,18 +53,18 @@ static BOOL kHasConfigured = NO;
 // MARK: - SWKMockSuperwallDelegate
 
 @interface SWKMockSuperwallDelegate ()
-@property (nonatomic, copy) void (^handleSuperwallPlacement)(SWKSuperwallPlacementInfo *);
+@property (nonatomic, copy) void (^handleSuperwallEvent)(SWKSuperwallEventInfo *);
 @end
 
 @implementation SWKMockSuperwallDelegate
 
-- (void)handleSuperwallPlacement:(void (^)(SWKSuperwallPlacementInfo *))handler {
-  self.handleSuperwallPlacement = handler;
+- (void)handleSuperwallEvent:(void (^)(SWKSuperwallEventInfo *))handler {
+  self.handleSuperwallEvent = handler;
 }
 
-- (void)handleSuperwallPlacementWithInfo:(SWKSuperwallPlacementInfo *)placementInfo {
-  if (self.handleSuperwallPlacement) {
-    self.handleSuperwallPlacement(placementInfo);
+- (void)handleSuperwallEventWithInfo:(SWKSuperwallEventInfo *)eventInfo {
+  if (self.handleSuperwallEvent) {
+    self.handleSuperwallEvent(eventInfo);
   }
 }
 
@@ -105,7 +105,7 @@ static BOOL kHasConfigured = NO;
 - (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier  completionHandler:(void (^ _Nonnull)(void))completionHandler {
   [self activateSubscriptionWithProductIdentifier:productIdentifier completionHandler:^{
     NSSet *activeEntitlements = [NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]];
-    [[Superwall sharedInstance].entitlements setActiveStatusWith:activeEntitlements];
+    [[Superwall sharedInstance] setActiveSubscriptionStatusWith:activeEntitlements];
     completionHandler();
   }];
 }
@@ -137,7 +137,7 @@ static BOOL kHasConfigured = NO;
     ];
 
     // Set status
-    [[Superwall sharedInstance].entitlements setInactiveStatus];
+    [[Superwall sharedInstance] setInactiveSubscriptionStatus];
 
     completionHandler();
   }];
@@ -145,7 +145,7 @@ static BOOL kHasConfigured = NO;
 
 - (void)tearDownWithCompletionHandler:(void (^ _Nonnull)(void))completionHandler {
   // Reset status
-  [[Superwall sharedInstance].entitlements setInactiveStatus];
+  [[Superwall sharedInstance] setInactiveSubscriptionStatus];
 
   // Reset identity and user data
   [[Superwall sharedInstance] reset];
@@ -155,7 +155,7 @@ static BOOL kHasConfigured = NO;
 
 - (void)mockSubscribedUserWithProductIdentifier:(NSString * _Nonnull)productIdentifier completionHandler:(void (^ _Nonnull)(void))completionHandler {
   NSSet *activeEntitlements = [NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]];
-  [[Superwall sharedInstance].entitlements setActiveStatusWith:activeEntitlements];
+  [[Superwall sharedInstance] setActiveSubscriptionStatusWith:activeEntitlements];
   completionHandler();
 }
 
@@ -177,7 +177,7 @@ static BOOL kHasConfigured = NO;
   [[SWKStoreKitHelper sharedInstance] purchaseWithProduct:product.sk1Product completionHandler:^(SWKPurchaseResult purchaseResult, NSError *error) {
     switch (purchaseResult) {
       case SWKPurchaseResultPurchased:
-        [[Superwall sharedInstance].entitlements setActiveStatusWith:[NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]]];
+        [[Superwall sharedInstance] setActiveSubscriptionStatusWith:[NSSet setWithObject: [[SWKEntitlement alloc] initWithId:@"default"]]];
         completion(SWKPurchaseResultPurchased, nil);
         break;
       case SWKPurchaseResultPending:
