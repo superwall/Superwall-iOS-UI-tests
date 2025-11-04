@@ -96,6 +96,17 @@ class Automated_UI_Testing: XCTestCase {
         }
         Communicator.shared.completed(action: action)
 
+      case .disableAutoRenew(let productIdentifier):
+        do {
+          // Get the transaction for the product and disable auto-renew
+          if let transaction = storeKitTestSession.allTransactions().first(where: { $0.productIdentifier == productIdentifier }) {
+            try storeKitTestSession.disableAutoRenewForTransaction(identifier: transaction.identifier)
+          }
+        } catch {
+          assertionData.failure = XCTIssue(type: .uncaughtException, compactDescription: "Unable to disable auto-renew for product with SKTestSession: \(error.localizedDescription)")
+        }
+        Communicator.shared.completed(action: action)
+
       case .log(let message):
         print(message)
         Communicator.shared.completed(action: action)
@@ -110,6 +121,7 @@ class Automated_UI_Testing: XCTestCase {
   @MainActor
   func launchApp() {
     app.launchEnvironment = Constants.launchEnvironment
+    app.launchArguments.append("SUPERWALL_UI_TESTS")
     app.launch()
     _ = app.wait(for: .runningForeground, timeout: 60)
   }

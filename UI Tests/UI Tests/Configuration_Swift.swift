@@ -94,8 +94,9 @@ extension Configuration {
         options: Constants.currentTestOptions.options
       )
 
-      // Set status
-      Superwall.shared.subscriptionStatus = .inactive
+      Task {
+        await purchaseController.syncSubscriptionStatus()
+      }
     }
 
     func tearDown() async {
@@ -113,16 +114,31 @@ extension Configuration {
   }
 
   class AdvancedPurchaseController: PurchaseController {
-    func purchase(product: StoreProduct) async -> PurchaseResult {
-      let purchaseResult = await StoreKitHelper.shared.purchase(product: product)
+    func syncSubscriptionStatus() async {
+      /// Every time the customer info changes, the subscription status should be updated.
+      for await _ in Superwall.shared.customerInfoStream {
+        var products: Set<String> = []
+        for await verificationResult in Transaction.currentEntitlements {
+          switch verificationResult {
+          case .verified(let transaction):
+            products.insert(transaction.productID)
+          case .unverified:
+            break
+          }
+        }
 
-      switch purchaseResult {
-        case .purchased:
-        Superwall.shared.subscriptionStatus = .active([Entitlement(id: "default")])
-          fallthrough
-        default:
-          return purchaseResult
+        let activeDeviceEntitlements = Superwall.shared.entitlements.byProductIds(products)
+        let activeWebEntitlements = Superwall.shared.entitlements.web
+        let allActiveEntitlements = activeDeviceEntitlements.union(activeWebEntitlements)
+
+        await MainActor.run {
+          Superwall.shared.subscriptionStatus = .active(allActiveEntitlements)
+        }
       }
+    }
+
+    func purchase(product: StoreProduct) async -> PurchaseResult {
+      return await StoreKitHelper.shared.purchase(product: product)
     }
 
     func restorePurchases() async -> RestorationResult {

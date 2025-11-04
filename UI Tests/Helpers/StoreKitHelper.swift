@@ -15,6 +15,8 @@ public class StoreKitHelper: NSObject {
   public static let shared: StoreKitHelper = StoreKitHelper()
 
   private(set) var products = [SKProduct]()
+  private var retryCount = 0
+  private let maxRetries = 3
 
   override init() {
     super.init()
@@ -46,6 +48,7 @@ public class StoreKitHelper: NSObject {
   var mostRecentFetch: (() -> Void)?
 
   @objc public func fetchCustomProducts() async {
+    retryCount = 0  // Reset retry counter for each new fetch attempt
     productsRequest.start()
     return await withCheckedContinuation { continuation in
       mostRecentFetch = { [weak self] in
@@ -122,16 +125,56 @@ extension StoreKitHelper {
 extension StoreKitHelper: SKProductsRequestDelegate {
   public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
     guard response.products.isEmpty == false else {
-      assertionFailure("Failed to receive products in StoreKit helper. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
+      // Retry if we haven't exceeded max retries
+      if retryCount < maxRetries {
+        retryCount += 1
+        print("⚠️ StoreKit products empty, retrying... (attempt \(retryCount)/\(maxRetries))")
+
+        // Wait a bit before retrying to give SKTestSession time to initialize
+        // Don't return here - the retry will call this delegate method again
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+          self?.productsRequest.start()
+        }
+        return  // Return but continuation will be resumed by retry
+      }
+
+      // Failed after all retries - still need to resume continuation
+      print("❌ Failed to receive products in StoreKit helper after \(maxRetries) retries.")
+      assertionFailure("Failed to receive products in StoreKit helper after \(maxRetries) retries. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
+
+      // Resume continuation even on failure so test doesn't hang
+      mostRecentFetch?()
       return
     }
 
+    // Success - reset retry counter and store products
+    retryCount = 0
     products = response.products
+    print("✅ StoreKit products loaded successfully: \(response.products.map { $0.productIdentifier })")
     mostRecentFetch?()
   }
 
   public func request(_ request: SKRequest, didFailWithError error: Error) {
-    assertionFailure("Failed to receive products in StoreKit helper")
+    print("❌ StoreKit request failed with error: \(error.localizedDescription)")
+
+    // Retry on error as well
+    if retryCount < maxRetries {
+      retryCount += 1
+      print("⚠️ Retrying StoreKit request... (attempt \(retryCount)/\(maxRetries))")
+
+      // Don't return here - the retry will call delegate method again
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        self?.productsRequest.start()
+      }
+      return  // Return but continuation will be resumed by retry
+    }
+
+    // Failed after all retries - still need to resume continuation
+    print("❌ Failed after \(maxRetries) retries: \(error.localizedDescription)")
+    assertionFailure("Failed to receive products in StoreKit helper after \(maxRetries) retries: \(error.localizedDescription)")
+
+    // Resume continuation even on failure so test doesn't hang
+    mostRecentFetch?()
   }
 }
 

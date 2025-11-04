@@ -203,8 +203,12 @@ public extension NSObject {
     await Communicator.shared.send(.activateSubscription(productIdentifier: productIdentifier))
   }
 
-  @objc func expireSubscription(productIdentifier: String) async {
+  @objc func expireSubscriptionWithProductIdentifier(_ productIdentifier: String) async {
     await Communicator.shared.send(.expireSubscription(productIdentifier: productIdentifier))
+  }
+
+  @objc func disableAutoRenewWithProductIdentifier(_ productIdentifier: String) async {
+    await Communicator.shared.send(.disableAutoRenew(productIdentifier: productIdentifier))
   }
 
   @objc func log(_ message: String) {

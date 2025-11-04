@@ -114,7 +114,8 @@ static BOOL kHasConfigured = NO;
 
 // MARK: - Advanced configuration
 
-@interface SWKAdvancedPurchaseController: NSObject <SWKPurchaseController>
+@interface SWKAdvancedPurchaseController: NSObject <SWKPurchaseController, SWKSuperwallDelegate>
+- (void)syncSubscriptionStatus;
 @end
 
 @interface SWKConfigurationAdvanced()
@@ -136,8 +137,11 @@ static BOOL kHasConfigured = NO;
       completion:NULL
     ];
 
-    // Set status
-    [[Superwall sharedInstance] setInactiveSubscriptionStatus];
+    // Set delegate to listen for customer info changes
+    [[Superwall sharedInstance] setDelegate:self.purchaseController];
+
+    // Initialize subscription status
+    [self.purchaseController syncSubscriptionStatus];
 
     completionHandler();
   }];
@@ -195,6 +199,41 @@ static BOOL kHasConfigured = NO;
 
 - (void)restorePurchasesWithCompletion:(void (^)(enum SWKRestorationResult, NSError * _Nullable))completion {
   completion(SWKRestorationResultRestored, nil);
+}
+
+- (void)syncSubscriptionStatus {
+  /// Sync subscription status based on current transactions and web entitlements.
+  if (@available(iOS 15.0, *)) {
+    NSMutableSet<NSString *> *productIds = [NSMutableSet set];
+
+    // Collect product IDs from active transactions
+    [SKPaymentQueue.defaultQueue.transactions enumerateObjectsUsingBlock:^(SKPaymentTransaction * _Nonnull transaction, NSUInteger idx, BOOL * _Nonnull stop) {
+      if (transaction.transactionState == SKPaymentTransactionStatePurchased ||
+          transaction.transactionState == SKPaymentTransactionStateRestored) {
+        [productIds addObject:transaction.payment.productIdentifier];
+      }
+    }];
+
+    // Get device entitlements from product IDs
+    NSSet<SWKEntitlement *> *activeDeviceEntitlements = [[Superwall sharedInstance].entitlements byProductIds:productIds];
+
+    // Get web entitlements
+    NSSet<SWKEntitlement *> *activeWebEntitlements = [Superwall sharedInstance].entitlements.web;
+
+    // Combine both sets
+    NSMutableSet<SWKEntitlement *> *allActiveEntitlements = [activeDeviceEntitlements mutableCopy];
+    [allActiveEntitlements unionSet:activeWebEntitlements];
+
+    // Update subscription status
+    [[Superwall sharedInstance] setActiveSubscriptionStatusWith:allActiveEntitlements];
+  }
+}
+
+// MARK: - SWKSuperwallDelegate
+
+- (void)customerInfoDidChangeFrom:(SWKCustomerInfo *)oldValue to:(SWKCustomerInfo *)newValue {
+  /// Every time the customer info changes, sync the subscription status.
+  [self syncSubscriptionStatus];
 }
 
 @end

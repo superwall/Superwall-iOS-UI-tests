@@ -177,6 +177,13 @@ import Foundation
   func test169() async throws
   func test170() async throws
   func test171() async throws
+  func test172() async throws
+  func test173() async throws
+  func test174() async throws
+  func test175() async throws
+  func test176() async throws
+  func test177() async throws
+  func test178() async throws
 
   @objc optional func testOptions0() -> TestOptions
   @objc optional func testOptions1() -> TestOptions
@@ -350,6 +357,13 @@ import Foundation
   @objc optional func testOptions169() -> TestOptions
   @objc optional func testOptions170() -> TestOptions
   @objc optional func testOptions171() -> TestOptions
+  @objc optional func testOptions172() -> TestOptions
+  @objc optional func testOptions173() -> TestOptions
+  @objc optional func testOptions174() -> TestOptions
+  @objc optional func testOptions175() -> TestOptions
+  @objc optional func testOptions176() -> TestOptions
+  @objc optional func testOptions177() -> TestOptions
+  @objc optional func testOptions178() -> TestOptions
 }
 
 extension RootViewController {
@@ -528,6 +542,13 @@ extension RootViewController {
         case 169: return testable.testOptions169?()
         case 170: return testable.testOptions170?()
         case 171: return testable.testOptions171?()
+        case 172: return testable.testOptions172?()
+        case 173: return testable.testOptions173?()
+        case 174: return testable.testOptions174?()
+        case 175: return testable.testOptions175?()
+        case 176: return testable.testOptions176?()
+        case 177: return testable.testOptions177?()
+        case 178: return testable.testOptions178?()
         default:
           fatalError("Test options have not been defined.")
       }
@@ -716,6 +737,13 @@ extension RootViewController {
       case 169: try await testable.test169()
       case 170: try await testable.test170()
       case 171: try await testable.test171()
+      case 172: try await testable.test172()
+      case 173: try await testable.test173()
+      case 174: try await testable.test174()
+      case 175: try await testable.test175()
+      case 176: try await testable.test176()
+      case 177: try await testable.test177()
+      case 178: try await testable.test178()
       default:
         fatalError("Test has not been defined above.")
     }

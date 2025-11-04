@@ -103,6 +103,7 @@ public class Communicator {
       case failTransactions
       case activateSubscription(productIdentifier: String)
       case expireSubscription(productIdentifier: String)
+      case disableAutoRenew(productIdentifier: String)
       case log(_ message: String)
       case completed(action: Action)
     }
@@ -195,8 +196,12 @@ public class Communicator {
   private func handleCompletionAction(_ action: Communicator.Action) {
     sendSerialQueue.async {
       guard let completionHandler = self.completionHandlers[action.identifier] else {
-        fatalError("There should have been a completion handler for this identifier")
+        print("Warning: No completion handler found for action identifier: \(action.identifier)")
+        return
       }
+
+      // Remove the completion handler immediately to prevent double-calling
+      self.completionHandlers.removeValue(forKey: action.identifier)
 
       DispatchQueue.main.async {
         let action = action
@@ -249,6 +254,11 @@ public class Communicator {
     Task {
       await Communicator.shared.send(.completed(action: action))
     }
+  }
+
+  // Complete action locally without sending over HTTP (for use in test runner when app has been terminated)
+  func completedLocally(action: Communicator.Action) {
+    handleCompletionAction(action)
   }
 }
 

@@ -2349,12 +2349,15 @@ static id<SWKTestConfiguration> kConfiguration;
         CGPoint okButton = CGPointMake(196, 495);
         [weakSelf touch:okButton];
 
-        // Assert the paywall has disappeared and no survey displayed.
-        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
-          // Assert that `.surveyResponse` not called.
-          NSString *value = surveyResponseEventHolder.description;
-          TEST_ASSERT_VALUE_COMPLETION(value, ^{});
-        })
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared and no survey displayed.
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+            // Assert that `.surveyResponse` not called.
+            NSString *value = surveyResponseEventHolder.description;
+            TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+          })
+        }];
       }];
     }));
   }));
@@ -3437,12 +3440,15 @@ static id<SWKTestConfiguration> kConfiguration;
         CGPoint okButton = CGPointMake(196, 495);
         [weakSelf touch:okButton];
 
-        // Assert the paywall has disappeared and no survey displayed.
-        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
-          // Assert that `.surveyResponse` not called.
-          NSString *value = surveyResponseEventHolder.description;
-          TEST_ASSERT_VALUE_COMPLETION(value, ^{});
-        })
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared and no survey displayed.
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
+            // Assert that `.surveyResponse` not called.
+            NSString *value = surveyResponseEventHolder.description;
+            TEST_ASSERT_VALUE_COMPLETION(value, ^{});
+          })
+        }];
       }];
     }));
   }));
@@ -4930,6 +4936,424 @@ static id<SWKTestConfiguration> kConfiguration;
 
 - (void)test171WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
   TEST_SKIP(@"Skipping test. This test uses SK2 which isn't available in objective-c.")
+}
+
+#pragma mark - Tests 172-178: Subscription State Tests
+// NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.0
+// NOTE: The test app must be manually deleted if it already exists before running these tests
+
+/// Test 172: Purchase a product then cancel so it doesn't auto-renew, then register auto_renew_disabled
+- (void)test172WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Disable auto-renew for the product
+            [weakSelf disableAutoRenewWithProductIdentifier:@"com.ui_tests.monthly" completionHandler:^{
+              // Wait for OK button tap to process
+              [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+                // Purchase a product without entitlement to trigger SW's purchase listener
+                [weakSelf activateSubscriptionWithProductIdentifier:@"random.product.without.entitlement" completionHandler:^{
+                  // Wait for customer info to update
+                  [weakSelf sleepWithTimeInterval:8.0 completionHandler:^{
+                    // Register the event
+                    [[Superwall sharedInstance] registerWithPlacement:@"auto_renew_disabled"];
+
+                    TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                  }];
+                }];
+              }];
+            }];
+          }))
+        }];
+      }];
+    }];
+  }))
+}
+
+/// Test 173: Purchase a free trial and cancel the product so that it doesn't auto-renew, then register active_trials_auto_renew_disabled
+- (void)test173WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall with free trial
+  [[Superwall sharedInstance] registerWithPlacement:@"free_trial"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall (this will use the free trial product)
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Disable auto-renew for the free trial product
+            [weakSelf disableAutoRenewWithProductIdentifier:SWKStoreKitHelperConstants.freeTrialProductIdentifier completionHandler:^{
+              // Purchase a product without entitlement to trigger SW's purchase listener
+              [weakSelf activateSubscriptionWithProductIdentifier:@"random.product.without.entitlement" completionHandler:^{
+                // Wait for customer info to update
+                [weakSelf sleepWithTimeInterval:8.0 completionHandler:^{
+                  // Register the event
+                  [[Superwall sharedInstance] registerWithPlacement:@"active_trials_auto_renew_disabled"];
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                }];
+              }];
+            }];
+          }))
+        }];
+      }];
+    }];
+  }))
+}
+
+/// Test 174: Purchase a normal product (no trial) and then cancel so that it doesn't auto-renew, then register active_subscriptions_auto_renew_disabled
+- (void)test174WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Disable auto-renew for the product
+            [weakSelf disableAutoRenewWithProductIdentifier:@"com.ui_tests.monthly" completionHandler:^{
+              // Purchase a product without entitlement to trigger SW's purchase listener
+              [weakSelf activateSubscriptionWithProductIdentifier:@"random.product.without.entitlement" completionHandler:^{
+                // Wait for customer info to update
+                [weakSelf sleepWithTimeInterval:8.0 completionHandler:^{
+                  // Register the event
+                  [[Superwall sharedInstance] registerWithPlacement:@"active_subscriptions_auto_renew_disabled"];
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                }];
+              }];
+            }];
+          }))
+        }];
+      }];
+    }];
+  }))
+}
+
+/// Test 175: Purchase a product (without trial) and then make it expire, then register expired_entitlements
+- (void)test175WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Expire the subscription
+            [weakSelf expireSubscriptionWithProductIdentifier:@"com.ui_tests.monthly" completionHandler:^{
+              // Purchase a product without entitlement to trigger SW's purchase listener
+              [weakSelf activateSubscriptionWithProductIdentifier:@"random.product.without.entitlement" completionHandler:^{
+                // Wait for customer info to update
+                [weakSelf sleepWithTimeInterval:8.0 completionHandler:^{
+                  // Register the event
+                  [[Superwall sharedInstance] registerWithPlacement:@"expired_entitlements"];
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                }];
+              }];
+            }];
+          }))
+        }];
+      }];
+    }];
+  }))
+}
+
+/// Test 176: Purchase the product com.ui_tests.monthly and then cancel it such that it doesn't autorenew and then register default_active_auto_renew_disabled
+- (void)test176WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Disable auto-renew for the monthly product
+            [weakSelf disableAutoRenewWithProductIdentifier:@"com.ui_tests.monthly" completionHandler:^{
+              // Purchase a product without entitlement to trigger SW's purchase listener
+              [weakSelf activateSubscriptionWithProductIdentifier:@"random.product.without.entitlement" completionHandler:^{
+                // Wait for customer info to update
+                [weakSelf sleepWithTimeInterval:8.0 completionHandler:^{
+                  // Register the event
+                  [[Superwall sharedInstance] registerWithPlacement:@"default_active_auto_renew_disabled"];
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                }];
+              }];
+            }];
+          }))
+        }];
+      }];
+    }];
+  }))
+}
+
+/// Test 177: Purchase a product with a trial then register default_in_trial
+- (void)test177WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall with free trial
+  [[Superwall sharedInstance] registerWithPlacement:@"free_trial"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall (this will use the free trial product)
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Register the event
+            [[Superwall sharedInstance] registerWithPlacement:@"default_in_trial"];
+
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+          }))
+        }];
+      }];
+    }];
+  }))
+}
+
+/// Test 178: Purchase then expire a product and register default_expired
+- (void)test178WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  // Skip if not on iPhone 17 Pro with iOS 26.0
+  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
+      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+  }
+
+  // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
+  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+      [SWKConstants.configurationType isEqualToString:@"advanced"]) {
+    TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
+  }
+
+  TEST_START_NUM_ASSERTS(3)
+
+  // Present the paywall
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Purchase on the paywall
+    CGPoint purchaseButton = CGPointMake(201, 762);
+    [weakSelf touch:purchaseButton];
+
+    // Wait for OK button tap to process
+    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+      // Tap the Subscribe button
+      CGPoint subscribeButton = CGPointMake(201, 820);
+      [weakSelf touch:subscribeButton];
+
+      // Wait for subscribe to occur
+      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        // Tap the OK button once subscription has been confirmed
+        CGPoint okButton = CGPointMake(201, 495);
+        [weakSelf touch:okButton];
+
+        // Wait for OK button tap to process
+        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+          // Assert the paywall has disappeared
+          TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+            // Expire the subscription
+            [weakSelf expireSubscriptionWithProductIdentifier:@"com.ui_tests.monthly" completionHandler:^{
+              // Purchase a product without entitlement to trigger SW's purchase listener
+              [weakSelf activateSubscriptionWithProductIdentifier:@"random.product.without.entitlement" completionHandler:^{
+                // Wait for customer info to update
+                [weakSelf sleepWithTimeInterval:8.0 completionHandler:^{
+                  // Register the event
+                  [[Superwall sharedInstance] registerWithPlacement:@"default_expired"];
+
+                  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
+                }];
+              }];
+            }];
+          }))
+        }];
+      }];
+    }];
+  }))
 }
 
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.

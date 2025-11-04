@@ -498,6 +498,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Try to present paywall again
     Superwall.shared.register(placement: "present_data")
 
@@ -579,6 +582,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Wait for dismiss
     await sleep(timeInterval: Constants.paywallPresentationDelay)
@@ -737,6 +743,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Assert paywall didFinish result value ("purchased")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
   }
@@ -848,6 +857,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert paywall result value ("purchased")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -1573,8 +1585,11 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Expire subscription
-    await expireSubscription(productIdentifier: StoreKitHelper.Constants.freeTrialProductIdentifier)
+    await expireSubscriptionWithProductIdentifier( StoreKitHelper.Constants.freeTrialProductIdentifier)
 
   #warning("need to restart before continuing here")
 
@@ -2120,6 +2135,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Assert the paywall has disappeared and no survey displayed.
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -2288,6 +2306,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -2801,6 +2822,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Wait for dismiss
     await sleep(timeInterval: Constants.paywallPresentationDelay)
 
@@ -3169,6 +3193,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env).
     // For some reason, the tapping of OK gets called twice and dismisses both the purchase alert and the feature alert so it won't appear in screenshots.
     let okButton = CGPoint(x: 196, y: 495)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
     touch(okButton)
 
     // Assert the paywall has disappeared and no survey displayed.
@@ -4039,6 +4066,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     await assert(value: purchaseResultValueHolder.description, after: Constants.paywallPresentationDelay)
     await assert(value: transactionCompleteEventHolder.description)
   }
@@ -4462,6 +4492,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -4531,6 +4564,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Assert .transactionComplete has been called with transaction details
     await assert(value: transactionCompleteEventHolder.description, after: 8)
 
@@ -4597,6 +4633,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert .transactionComplete has been called with transaction details
     await assert(value: transactionCompleteEventHolder.description, after: 8)
@@ -4733,6 +4772,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Try to present paywall again
     Superwall.shared.register(placement: "present_data")
 
@@ -4765,6 +4807,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Wait for dismiss
     await sleep(timeInterval: Constants.paywallPresentationDelay)
@@ -4813,6 +4858,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert paywall didFinish result value ("purchased")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -4890,6 +4938,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert paywall result value ("purchased")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -5193,6 +5244,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     // TODO: Note that sometimes this dismisses everything but sometimes doesn't causing test to be flakey.
     let okButton = CGPoint(x: 196, y: 495)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
     touch(okButton)
 
     // Assert the paywall has disappeared and no survey displayed.
@@ -5248,6 +5302,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -5479,6 +5536,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Wait for dismiss
     await sleep(timeInterval: Constants.paywallPresentationDelay)
 
@@ -5543,6 +5603,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     // Assert the paywall has disappeared and no survey displayed.
     // Note: Alert disappears due to Xcode overtapping for some weird reason.
@@ -5835,6 +5898,9 @@ final class UITests_Swift: NSObject, Testable {
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
 
     await assert(value: purchaseResultValueHolder.description, after: Constants.paywallPresentationDelay)
     await assert(value: transactionCompleteEventHolder.description)
@@ -6166,6 +6232,9 @@ final class UITests_Swift: NSObject, Testable {
     let okButton = CGPoint(x: 196, y: 495)
     touch(okButton)
 
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -6175,6 +6244,394 @@ final class UITests_Swift: NSObject, Testable {
     Superwall.shared.register(placement: "campaign_trigger")
 
     // Make sure paywall isn't presented
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  // MARK: - Tests 172-178: Subscription State Tests
+  // NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.0
+  // NOTE: The test app must be manually deleted if it already exists before running these tests
+
+  /// Test 172: Purchase a product then cancel so it doesn't auto-renew, then register auto_renew_disabled
+  func test172() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard
+      await UIDevice.current.name.contains("iPhone 17 Pro"),
+      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+    else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Disable auto-renew for the product
+    await disableAutoRenewWithProductIdentifier("com.ui_tests.monthly")
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+    
+    // Purchase a product without entitlement to trigger SW's purchase listener
+    await activateSubscription(productIdentifier: "random.product.without.entitlement")
+
+    // Wait for customer info to update
+    await sleep(timeInterval: 8.0)
+
+    // Register the event
+    Superwall.shared.register(placement: "auto_renew_disabled")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test 173: Purchase a free trial and cancel the product so that it doesn't auto-renew, then register active_trials_auto_renew_disabled
+  func test173() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard
+      await UIDevice.current.name.contains("iPhone 17 Pro"),
+      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+    else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall with free trial
+    Superwall.shared.register(placement: "free_trial")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall (this will use the free trial product)
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Disable auto-renew for the free trial product
+    await disableAutoRenewWithProductIdentifier(StoreKitHelper.Constants.freeTrialProductIdentifier)
+
+    // Purchase a product without entitlement to trigger SW's purchase listener
+    await activateSubscription(productIdentifier: "random.product.without.entitlement")
+
+    // Wait for customer info to update
+    await sleep(timeInterval: 8.0)
+
+    // Register the event
+    Superwall.shared.register(placement: "active_trials_auto_renew_disabled")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test 174: Purchase a normal product (no trial) and then cancel so that it doesn't auto-renew, then register active_subscriptions_auto_renew_disabled
+  func test174() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard
+      await UIDevice.current.name.contains("iPhone 17 Pro"),
+      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+    else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Disable auto-renew for the product
+    await disableAutoRenewWithProductIdentifier("com.ui_tests.monthly")
+
+    // Purchase a product without entitlement to trigger SW's purchase listener
+    await activateSubscription(productIdentifier: "random.product.without.entitlement")
+
+    // Wait for customer info to update
+    await sleep(timeInterval: 8.0)
+
+    // Register the event
+    Superwall.shared.register(placement: "active_subscriptions_auto_renew_disabled")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test 175: Purchase a product (without trial) and then make it expire, then register expired_entitlements
+  func test175() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard
+      await UIDevice.current.name.contains("iPhone 17 Pro"),
+      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+    else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Expire the subscription
+    await expireSubscriptionWithProductIdentifier("com.ui_tests.monthly")
+
+    // Purchase a product without entitlement to trigger SW's purchase listener
+    await activateSubscription(productIdentifier: "random.product.without.entitlement")
+
+    // Wait for customer info to update
+    await sleep(timeInterval: 8.0)
+
+    // Register the event
+    Superwall.shared.register(placement: "expired_entitlements")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test 176: Purchase the product com.ui_tests.monthly and then cancel it such that it doesn't autorenew and then register default_active_auto_renew_disabled
+  func test176() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard UIDevice.current.name.contains("iPhone 17 Pro"),
+          ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26 else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Disable auto-renew for the monthly product
+    await disableAutoRenewWithProductIdentifier("com.ui_tests.monthly")
+
+    // Purchase a product without entitlement to trigger SW's purchase listener
+    await activateSubscription(productIdentifier: "random.product.without.entitlement")
+
+    // Wait for customer info to update
+    await sleep(timeInterval: 8.0)
+
+    // Register the event
+    Superwall.shared.register(placement: "default_active_auto_renew_disabled")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test 177: Purchase a product with a trial then register default_in_trial
+  func test177() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard
+      await UIDevice.current.name.contains("iPhone 17 Pro"),
+      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+    else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall with free trial
+    Superwall.shared.register(placement: "free_trial")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall (this will use the free trial product)
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Register the event
+    Superwall.shared.register(placement: "default_in_trial")
+
+    await assert(after: Constants.paywallPresentationDelay)
+  }
+
+  /// Test 178: Purchase then expire a product and register default_expired
+  func test178() async throws {
+    // Skip if not on iPhone 17 Pro with iOS 26.0
+    guard
+      await UIDevice.current.name.contains("iPhone 17 Pro"),
+      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+    else {
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      return
+    }
+
+    // Present the paywall
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Purchase on the paywall
+    let purchaseButton = CGPoint(x: 201, y: 762)
+    touch(purchaseButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Tap the Subscribe button
+    let subscribeButton = CGPoint(x: 201, y: 820)
+    touch(subscribeButton)
+
+    // Wait for subscribe to occur
+    await sleep(timeInterval: Constants.paywallPresentationDelay)
+
+    // Tap the OK button once subscription has been confirmed
+    let okButton = CGPoint(x: 201, y: 495)
+    touch(okButton)
+
+    // Wait for OK button tap to process
+    await sleep(timeInterval: 1.0)
+
+    // Assert the paywall has disappeared
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Expire the subscription
+    await expireSubscriptionWithProductIdentifier("com.ui_tests.monthly")
+
+    // Purchase a product without entitlement to trigger SW's purchase listener
+    await activateSubscription(productIdentifier: "random.product.without.entitlement")
+
+    // Wait for customer info to update
+    await sleep(timeInterval: 8.0)
+
+    // Register the event
+    Superwall.shared.register(placement: "default_expired")
+
     await assert(after: Constants.paywallPresentationDelay)
   }
 
