@@ -6248,17 +6248,17 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // MARK: - Tests 172-178: Subscription State Tests
-  // NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.0
+  // NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.1
   // NOTE: The test app must be manually deleted if it already exists before running these tests
 
   /// Test 172: Purchase a product then cancel so it doesn't auto-renew, then register auto_renew_disabled
   func test172() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
+    // Skip if not on iPhone 17 Pro with iOS 26.1
     guard
       await UIDevice.current.name.contains("iPhone 17 Pro"),
       ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
     else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
       return
     }
 
@@ -6312,12 +6312,12 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 173: Purchase a free trial and cancel the product so that it doesn't auto-renew, then register active_trials_auto_renew_disabled
   func test173() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
+    // Skip if not on iPhone 17 Pro with iOS 26.1
     guard
       await UIDevice.current.name.contains("iPhone 17 Pro"),
       ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
     else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
       return
     }
 
@@ -6368,12 +6368,12 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 174: Purchase a normal product (no trial) and then cancel so that it doesn't auto-renew, then register active_subscriptions_auto_renew_disabled
   func test174() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
+    // Skip if not on iPhone 17 Pro with iOS 26.1
     guard
       await UIDevice.current.name.contains("iPhone 17 Pro"),
       ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
     else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
       return
     }
 
@@ -6424,12 +6424,12 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 175: Purchase a product (without trial) and then make it expire, then register expired_entitlements
   func test175() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
+    // Skip if not on iPhone 17 Pro with iOS 26.1
     guard
       await UIDevice.current.name.contains("iPhone 17 Pro"),
       ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
     else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
       return
     }
 
@@ -6534,12 +6534,12 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 177: Purchase a product with a trial then register default_in_trial
   func test177() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
+    // Skip if not on iPhone 17 Pro with iOS 26.1
     guard
       await UIDevice.current.name.contains("iPhone 17 Pro"),
       ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
     else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
       return
     }
 
@@ -6581,12 +6581,12 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 178: Purchase then expire a product and register default_expired
   func test178() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
+    // Skip if not on iPhone 17 Pro with iOS 26.1
     guard
       await UIDevice.current.name.contains("iPhone 17 Pro"),
       ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
     else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
       return
     }
 

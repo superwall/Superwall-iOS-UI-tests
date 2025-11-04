@@ -4939,19 +4939,19 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 #pragma mark - Tests 172-178: Subscription State Tests
-// NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.0
+// NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.1
 // NOTE: The test app must be manually deleted if it already exists before running these tests
 
 /// Test 172: Purchase a product then cancel so it doesn't auto-renew, then register auto_renew_disabled
 - (void)test172WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
@@ -5007,14 +5007,14 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 173: Purchase a free trial and cancel the product so that it doesn't auto-renew, then register active_trials_auto_renew_disabled
 - (void)test173WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
@@ -5067,14 +5067,14 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 174: Purchase a normal product (no trial) and then cancel so that it doesn't auto-renew, then register active_subscriptions_auto_renew_disabled
 - (void)test174WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
@@ -5127,14 +5127,14 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 175: Purchase a product (without trial) and then make it expire, then register expired_entitlements
 - (void)test175WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
@@ -5187,14 +5187,14 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 176: Purchase the product com.ui_tests.monthly and then cancel it such that it doesn't autorenew and then register default_active_auto_renew_disabled
 - (void)test176WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
@@ -5247,14 +5247,14 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 177: Purchase a product with a trial then register default_in_trial
 - (void)test177WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
@@ -5298,14 +5298,14 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 178: Purchase then expire a product and register default_expired
 - (void)test178WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.0
+  // Skip if not on iPhone 17 Pro with iOS 26.1
   if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
       NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.0")
+    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
-  if (SWKConstants.language == SWKConstantsLanguageObjc &&
+  if (SWKConstants.language == 1 /* objc */ &&
       [SWKConstants.configurationType isEqualToString:@"advanced"]) {
     TEST_SKIP(@"This test is not supported for Objective-C with advanced configuration")
   }
