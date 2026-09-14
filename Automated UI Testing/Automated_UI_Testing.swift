@@ -27,6 +27,10 @@ class Automated_UI_Testing: XCTestCase {
   }
 
   override class func setUp() {
+    // Set by `scripts/run-tests.py run --record`, which overwrites the stored
+    // images instead of comparing against them. Every recorded test fails by
+    // design, so a recording run is expected to come back red.
+    isRecording = ProcessInfo.processInfo.environment["SNAPSHOT_RECORD"] == "1"
     Communicator.shared.start(httpConfiguration: Constants.httpConfiguration)
   }
 

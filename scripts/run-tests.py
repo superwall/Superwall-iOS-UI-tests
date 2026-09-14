@@ -14,6 +14,7 @@ into shards lets a CI job fan out across machines and rejoin on the exit code.
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -77,8 +78,14 @@ def only_testing_args(names: list[str]) -> list[str]:
   return [f"{TEST_TARGET}/{name}" for name in names]
 
 
-def run(scheme: str, index: int, count: int, runner: str, destination: str, dry_run: bool) -> int:
+def run(scheme: str, index: int, count: int, runner: str, destination: str, dry_run: bool, record: bool) -> int:
   selected = shard_of(test_classes(), index, count)
+
+  # xcodebuild hands TEST_RUNNER_-prefixed variables to the test process with
+  # the prefix taken off, which is the only way into a UI test runner.
+  environment = dict(os.environ)
+  if record:
+    environment["TEST_RUNNER_SNAPSHOT_RECORD"] = "1"
 
   if runner == "local":
     command = [
@@ -102,7 +109,7 @@ def run(scheme: str, index: int, count: int, runner: str, destination: str, dry_
     print(" ".join(repr(part) if " " in part else part for part in command))
     return 0
 
-  return subprocess.call(command, cwd=ROOT)
+  return subprocess.call(command, cwd=ROOT, env=environment)
 
 
 def main() -> None:
@@ -119,6 +126,7 @@ def main() -> None:
   runner.add_argument("--runner", choices=["local", "lim"], default="local")
   runner.add_argument("--destination", default=DEFAULT_DESTINATION, help="Local runs only")
   runner.add_argument("--dry-run", action="store_true", help="Print the command instead of running it")
+  runner.add_argument("--record", action="store_true", help="Overwrite the stored snapshots instead of comparing")
 
   args = parser.parse_args()
 
@@ -130,6 +138,9 @@ def main() -> None:
     print(json.dumps(plan(args.shards, schemes), indent=2))
     return
 
+  if args.record and args.runner == "lim":
+    sys.exit("--record needs a local run: a remote sandbox keeps the images it writes")
+
   if args.scheme not in SCHEMES:
     sys.exit(f"Unknown scheme: {args.scheme}")
 
@@ -138,7 +149,7 @@ def main() -> None:
   except ValueError:
     sys.exit(f"Expected shard as INDEX/COUNT, got {args.shard}")
 
-  sys.exit(run(args.scheme, index, count, args.runner, args.destination, args.dry_run))
+  sys.exit(run(args.scheme, index, count, args.runner, args.destination, args.dry_run, args.record))
 
 
 if __name__ == "__main__":
