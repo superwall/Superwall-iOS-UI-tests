@@ -4,3 +4,4 @@ DerivedData/
 build/*
 Package.resolved
 .build/
+__pycache__/
