@@ -3,3 +3,5 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 build/*
 Package.resolved
+.build/
+__pycache__/

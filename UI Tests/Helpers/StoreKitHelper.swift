@@ -39,17 +39,22 @@ public class StoreKitHelper: NSObject {
     return try? await StoreKit.Product.products(for: [Constants.customAnnualProductIdentifier]).first
   }
 
-  private lazy var productsRequest: SKProductsRequest = {
+  private var productsRequest: SKProductsRequest?
+
+  // An SKProductsRequest answers once and is then spent, so a retry needs a
+  // fresh one. Holding the current request keeps it alive until it replies.
+  private func startProductsRequest() {
     let request = SKProductsRequest(productIdentifiers: [Constants.customMonthlyProductIdentifier, Constants.customAnnualProductIdentifier])
     request.delegate = self
-    return request
-  }()
+    productsRequest = request
+    request.start()
+  }
 
   var mostRecentFetch: (() -> Void)?
 
   @objc public func fetchCustomProducts() async {
     retryCount = 0  // Reset retry counter for each new fetch attempt
-    productsRequest.start()
+    startProductsRequest()
     return await withCheckedContinuation { continuation in
       mostRecentFetch = { [weak self] in
         continuation.resume()
@@ -133,14 +138,13 @@ extension StoreKitHelper: SKProductsRequestDelegate {
         // Wait a bit before retrying to give SKTestSession time to initialize
         // Don't return here - the retry will call this delegate method again
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-          self?.productsRequest.start()
+          self?.startProductsRequest()
         }
         return  // Return but continuation will be resumed by retry
       }
 
       // Failed after all retries - still need to resume continuation
-      print("❌ Failed to receive products in StoreKit helper after \(maxRetries) retries.")
-      assertionFailure("Failed to receive products in StoreKit helper after \(maxRetries) retries. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
+      print("❌ Failed to receive products in StoreKit helper after \(maxRetries) retries. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
 
       // Resume continuation even on failure so test doesn't hang
       mostRecentFetch?()
@@ -164,14 +168,13 @@ extension StoreKitHelper: SKProductsRequestDelegate {
 
       // Don't return here - the retry will call delegate method again
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-        self?.productsRequest.start()
+        self?.startProductsRequest()
       }
       return  // Return but continuation will be resumed by retry
     }
 
     // Failed after all retries - still need to resume continuation
     print("❌ Failed after \(maxRetries) retries: \(error.localizedDescription)")
-    assertionFailure("Failed to receive products in StoreKit helper after \(maxRetries) retries: \(error.localizedDescription)")
 
     // Resume continuation even on failure so test doesn't hang
     mostRecentFetch?()

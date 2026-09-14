@@ -126,6 +126,23 @@ public extension NSObject {
           fatalError("Undefined precision value")
       }
     }
+
+    // How closely each pixel must match, as opposed to `rawValue`, which is how
+    // many pixels must match exactly. Text rendering and anti-aliasing move a
+    // great many pixels by a tiny amount from one machine or iOS minor version
+    // to the next, so an exact comparison fails on screens that look the same.
+    var perceptualPrecision: Float {
+      switch self {
+        case .default:
+          return 0.98
+        case .video:
+          return 0.96
+        case .transparency:
+          return 0.96
+        default:
+          fatalError("Undefined precision value")
+      }
+    }
   }
 
   func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Test", captureArea: CaptureArea = .safeArea(captureHomeIndicator: false)) async {
@@ -135,7 +152,7 @@ public extension NSObject {
 
     let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
 
-    await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
+    await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, perceptualPrecision: precision.perceptualPrecision, captureArea: captureArea))
   }
 
   func assert(value: @autoclosure () -> String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Test") async {
