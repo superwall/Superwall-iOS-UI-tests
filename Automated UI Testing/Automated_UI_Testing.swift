@@ -123,7 +123,10 @@ class Automated_UI_Testing: XCTestCase {
     app.launchEnvironment = Constants.launchEnvironment
     app.launchArguments.append("SUPERWALL_UI_TESTS")
     app.launch()
-    _ = app.wait(for: .runningForeground, timeout: 60)
+
+    if app.wait(for: .runningForeground, timeout: 60) == false {
+      XCTFail("The app did not reach the foreground within 60 seconds.")
+    }
   }
 
   @MainActor
@@ -143,24 +146,32 @@ class Automated_UI_Testing: XCTestCase {
   func deleteApp() async {
     let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
     let icon = springboard.icons["UI Tests"]
-    guard icon.exists else {
+    guard icon.waitForExistence(timeout: 10) else {
       print("No app to delete. This is likely a first install.")
       return
     }
 
-    icon.press(forDuration: 1.1);
+    icon.press(forDuration: 1.1)
 
-    springboard.collectionViews.buttons["Remove App"].tap()
+    // Each step is asked for on Springboard itself rather than through the
+    // view that happens to hold it. The wording has stayed put across
+    // releases; the nesting has not, and a query that spells the nesting out
+    // matches nothing the moment it changes.
+    for label in ["Remove App", "Delete App", "Delete"] {
+      let button = springboard.buttons[label]
+      guard button.waitForExistence(timeout: 10) else {
+        XCTFail("Could not delete the app: no \"\(label)\" button appeared.")
+        return
+      }
+      button.tap()
+    }
 
-    await Task.sleep(timeInterval: 2.0)
-
-    springboard.alerts["Remove “UI Tests”?"].scrollViews.otherElements.buttons["Delete App"].tap()
-
-    await Task.sleep(timeInterval: 2.0)
-
-    springboard.alerts["Delete “UI Tests”?"].scrollViews.otherElements.buttons["Delete"].tap()
-
-    await Task.sleep(timeInterval: 2.0)
+    // The next test installs the app again, and it has to be gone before the
+    // StoreKit session is set up, or the app starts with no products.
+    let disappeared = icon.waitForNonExistence(timeout: 20)
+    if disappeared == false {
+      XCTFail("The app is still on the home screen after deleting it.")
+    }
   }
 
   func performSDKTest(number: Int) async throws {
@@ -183,10 +194,14 @@ class Automated_UI_Testing: XCTestCase {
 
     await launchApp()
 
-    await Communicator.shared.send(.runTest(number: number))
+    let reported = await runTest(number: number)
 
     // Stop listening for action requests
     NotificationCenter.default.removeObserver(observer)
+
+    if reported == false {
+      XCTFail("Test #\(number) never reported back. The app has most likely stopped running; check its output above.")
+    }
 
     if let failure = assertionData.failure {
       XCTFail(failure.compactDescription)
@@ -197,6 +212,30 @@ class Automated_UI_Testing: XCTestCase {
     
     // Terminate app after test
     await terminateApp()
+  }
+}
+
+private extension Automated_UI_Testing {
+  /// Runs the test in the app, returning false if the app never answered.
+  ///
+  /// The app has a timeout of its own and reports a failure when it fires, so
+  /// this only comes into play when the app has stopped running altogether.
+  /// Without it the runner waits on an answer that can no longer arrive.
+  func runTest(number: Int) async -> Bool {
+    await withTaskGroup(of: Bool.self) { group in
+      group.addTask {
+        await Communicator.shared.send(.runTest(number: number))
+        return true
+      }
+      group.addTask {
+        await Task.sleep(timeInterval: 420)
+        return false
+      }
+
+      let reported = await group.next() ?? false
+      group.cancelAll()
+      return reported
+    }
   }
 }
 

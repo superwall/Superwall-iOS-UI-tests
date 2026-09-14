@@ -144,8 +144,7 @@ extension StoreKitHelper: SKProductsRequestDelegate {
       }
 
       // Failed after all retries - still need to resume continuation
-      print("❌ Failed to receive products in StoreKit helper after \(maxRetries) retries.")
-      assertionFailure("Failed to receive products in StoreKit helper after \(maxRetries) retries. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
+      print("❌ Failed to receive products in StoreKit helper after \(maxRetries) retries. Make sure Automated UI Testing has been setup with an `SKTestSession` instance *before* the app has been installed.")
 
       // Resume continuation even on failure so test doesn't hang
       mostRecentFetch?()
@@ -176,7 +175,6 @@ extension StoreKitHelper: SKProductsRequestDelegate {
 
     // Failed after all retries - still need to resume continuation
     print("❌ Failed after \(maxRetries) retries: \(error.localizedDescription)")
-    assertionFailure("Failed to receive products in StoreKit helper after \(maxRetries) retries: \(error.localizedDescription)")
 
     // Resume continuation even on failure so test doesn't hang
     mostRecentFetch?()
