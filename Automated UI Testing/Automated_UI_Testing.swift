@@ -21,10 +21,6 @@ class Automated_UI_Testing: XCTestCase {
     static let launchEnvironment = {
       return ProcessInfo.processInfo.environment
     }()
-    static let snapshotsPathComponent: String = {
-      return BuildHelpers.Constants.isCIEnvironment ? "CI_Snapshots" : "Snapshots"
-    }()
-
     static let httpConfiguration = {
       return Communicator.HTTPConfiguration(processInfo: ProcessInfo.processInfo)
     }()
@@ -48,10 +44,10 @@ class Automated_UI_Testing: XCTestCase {
         XCUIDevice.shared.press(.home)
         Communicator.shared.completed(action: action)
 
-      case .assert(let testName, let precision, let captureArea):
+      case .assert(let testName, let precision, let perceptualPrecision, let captureArea):
         // If Xcode 14.1/14.2 bug ever gets fixed, use `simctl` to set a consistent status bar instead (https://www.jessesquires.com/blog/2022/12/14/simctrl-status_bar-broken/)
         let image = captureArea.image(from: app.screenshot().image)
-        assertSnapshot(matching: image, as: .image(precision: precision), testName: testName)
+        assertSnapshot(matching: image, as: .image(precision: precision, perceptualPrecision: perceptualPrecision), testName: testName)
         Communicator.shared.completed(action: action)
 
       case .assertValue(let testName, let value):

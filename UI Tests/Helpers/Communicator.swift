@@ -94,7 +94,7 @@ public class Communicator {
       case relaunchApp
       case type(text: String)
       case springboard
-      case assert(testName: String, precision: Float, captureArea: CaptureArea)
+      case assert(testName: String, precision: Float, perceptualPrecision: Float, captureArea: CaptureArea)
       case assertValue(testName: String, value: String)
       case skip(message: String)
       case fail(message: String)
