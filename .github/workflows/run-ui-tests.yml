@@ -1,34 +1,98 @@
-name: Run UI Tests from superwall-me/Superwall-iOS dispatch
+name: Run UI Tests
 
 on:
   workflow_dispatch:
+    inputs:
+      commit:
+        description: SuperwallKit commit to test. Defaults to the tip of develop.
+        required: false
+      shards:
+        description: Shards per scheme. Four schemes, so the job count is four times this.
+        required: false
+        default: "2"
   repository_dispatch:
     types: [branch-push]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.client_payload.commit || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Xcode Cloud starts its own run off this tag. Kept until the Limrun path
+  # below has proven itself, so the suite never has zero ways to run.
   tag:
+    if: github.event.client_payload.commit != ''
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Setup Git User
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+      - name: Setup Git User
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
 
-    - name: Remove existing tags
-      run: |
-        git pull
-        for tag in $(git tag); do
-          if [[ $tag == run-ui-tests-* ]]; then
-            git tag -d $tag
-            git push origin :refs/tags/$tag
-          fi
-        done
+      - name: Remove existing tags
+        run: |
+          git pull
+          for tag in $(git tag); do
+            if [[ $tag == run-ui-tests-* ]]; then
+              git tag -d $tag
+              git push origin :refs/tags/$tag
+            fi
+          done
 
-    - name: Add Tag
-      run: |
-        TAG_NAME="run-ui-tests-${{ github.event.client_payload.commit }}"
-        git tag -a $TAG_NAME -m "Add $TAG_NAME tag"
-        git push origin $TAG_NAME
+      - name: Add Tag
+        run: |
+          TAG_NAME="run-ui-tests-${{ github.event.client_payload.commit }}"
+          git tag -a $TAG_NAME -m "Add $TAG_NAME tag"
+          git push origin $TAG_NAME
+
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the shards
+        id: plan
+        run: |
+          shards="${{ github.event.inputs.shards || '2' }}"
+          matrix=$(scripts/run-tests.py plan --shards "$shards" | jq -c '{include: .}')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "$matrix" | jq .
+
+  test:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Limrun bills nothing for concurrency but caps instances per org, and a
+      # shard holds two of them: an Xcode sandbox and a simulator.
+      max-parallel: 10
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install --global lim
+
+      - name: Pin the SDK to the commit under test
+        if: github.event.client_payload.commit != '' || github.event.inputs.commit != ''
+        run: |
+          scripts/pin-sdk.py --commit "${{ github.event.client_payload.commit || github.event.inputs.commit }}"
+
+      - name: Run shard ${{ matrix.shard }} of ${{ matrix.scheme }}
+        env:
+          LIM_API_KEY: ${{ secrets.LIM_API_KEY }}
+          # CI wipes the default basis cache between jobs, which would re-upload
+          # the whole tree on every run.
+          LIM_SYNC_BASIS_DIR: /var/cache/lim
+        run: |
+          scripts/run-tests.py run \
+            --runner lim \
+            --scheme "${{ matrix.scheme }}" \
+            --shard "${{ matrix.shard }}"
