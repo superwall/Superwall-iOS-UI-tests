@@ -93,6 +93,11 @@ def run(scheme: str, index: int, count: int, runner: str, destination: str, dry_
       "-project", PROJECT,
       "-scheme", scheme,
       "-destination", destination,
+      # A shard is already a process of its own, so there is nothing to gain
+      # from cloning the simulator underneath it. The app and the test runner
+      # talk over a port derived from the clone number, and the clones make
+      # that fragile for no benefit.
+      "-parallel-testing-enabled", "NO",
     ]
     for identifier in only_testing_args(selected):
       command += ["-only-testing", identifier]
