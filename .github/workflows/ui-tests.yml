@@ -32,6 +32,27 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Reuse the previous run's DerivedData (Swift packages and their compiled
+      # modules). Checkout gives every file a new modification time, which
+      # would make Xcode rebuild everything, so sources get their last commit's
+      # time back first: unchanged files then count as up to date.
+      - name: Restore source modification times
+        run: |
+          git ls-files -z -- '*.swift' '*.m' '*.h' '*.storyboard' '*.plist' '*.xcassets/*' |
+            while IFS= read -r -d '' file; do
+              touch -t "$(git log -1 --format=%cd --date=format:%Y%m%d%H%M.%S -- "$file")" "$file"
+            done
+
+      - uses: actions/cache@v4
+        with:
+          path: build-output
+          key: derived-data-xcode27-${{ hashFiles('UI Tests.xcodeproj/project.pbxproj') }}-${{ github.sha }}
+          restore-keys: |
+            derived-data-xcode27-${{ hashFiles('UI Tests.xcodeproj/project.pbxproj') }}-
+            derived-data-xcode27-
 
       - name: Build for testing
         run: BUILD_ONLY=1 SHARDS=1 ./runTests.sh
