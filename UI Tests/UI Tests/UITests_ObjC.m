@@ -392,7 +392,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 // Clusterfucks by Jake™
 - (void)test15WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(3)
+  TEST_START_NUM_ASSERTS(4)
   
   // Present paywall
   [[Superwall sharedInstance] registerWithPlacement:@"present_always"];
@@ -507,14 +507,12 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that paywall is presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Position of the perform button to open a URL in Safari
-      CGPoint point = CGPointMake(330, 212);
-      [weakSelf touch:point];
+      [weakSelf tapElement:@"Perform" index:1];
       
       // Verify that In-App Safari has opened
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Press the done button to go back
-        CGPoint donePoint = CGPointMake(30, 70);
-        [weakSelf touch:donePoint];
+        [weakSelf tapElement:@"Close"];
         
         // Verify that the paywall appears
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -585,8 +583,7 @@ static id<SWKTestConfiguration> kConfiguration;
   
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Position of the perform button to open a URL in Safari
-    CGPoint point = CGPointMake(330, 136);
-    [weakSelf touch:point];
+    [weakSelf tapElement:@"Perform"];
     
     // Verify that Safari has opened.
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea safari], ^{
@@ -609,21 +606,18 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 750);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Purchase Primary"];
     
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
       
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
         
         // Try to present paywall again
         [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
@@ -637,7 +631,50 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Track an event shortly after another one is beginning to present. The session should not be cancelled out.
 - (void)test22WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_SKIP(@"Write from Swift version")
+  TEST_START_NUM_ASSERTS(2)
+
+  // Create Superwall delegate
+  SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
+  [self holdStrongly:delegate];
+
+  // Set delegate
+  [Superwall sharedInstance].delegate = delegate;
+
+  // Record whether each trigger and paywall event carries its experiment and variant
+  SWKValueDescriptionHolder *eventsHolder = [SWKValueDescriptionHolder new];
+  eventsHolder.stringValue = @"";
+
+  [delegate handleSuperwallEvent:^(SWKSuperwallEventInfo *eventInfo) {
+    NSString *name;
+    switch (eventInfo.event) {
+      case SWKSuperwallEventTriggerFire:
+        name = [NSString stringWithFormat:@"triggerFire(%@)", eventInfo.params[@"trigger_name"]];
+        break;
+      case SWKSuperwallEventPaywallOpen:
+        name = @"paywallOpen";
+        break;
+      default:
+        return;
+    }
+    BOOL (^isSet)(id) = ^BOOL(id value) { return value != nil && ![value isKindOfClass:[NSNull class]]; };
+    NSString *hasExperiment = isSet(eventInfo.params[@"experiment_id"]) ? @"true" : @"false";
+    NSString *hasVariant = isSet(eventInfo.params[@"variant_id"]) ? @"true" : @"false";
+    eventsHolder.stringValue = [eventsHolder.stringValue stringByAppendingFormat:@"%@ experiment:%@ variant:%@; ", name, hasExperiment, hasVariant];
+    eventsHolder.intValue += 1;
+  }];
+
+  [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
+
+  // Register a second placement while the first paywall is beginning to present
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    [[Superwall sharedInstance] registerWithPlacement:@"present_and_rule_user"];
+  });
+
+  // Assert that the first paywall presents
+  TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+    // Assert that the presented paywall's events still carry its experiment and variant
+    TEST_ASSERT_VALUE_COMPLETION(eventsHolder.description, ^{})
+  }))
 }
 
 /// Case: Unsubscribed user, register event without a gating handler
@@ -680,21 +717,18 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 748);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Subscribe now"];
     
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
       
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
           // Try to present paywall again
@@ -897,14 +931,12 @@ static id<SWKTestConfiguration> kConfiguration;
       CGRect customFrame = CGRectMake(0, 488, 393, 300);
       TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
         // Tap the Subscribe button
-        CGPoint subscribeButton = CGPointMake(196, 766);
-        [weakSelf touch:subscribeButton];
+        [weakSelf tapSystemElement:@"Subscribe"];
         
         // Wait for subscribe to occur
-        [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-          CGPoint okButton = CGPointMake(196, 495);
-          [weakSelf touch:okButton];
+          [weakSelf tapSystemElement:@"OK"];
           
           // Wait for the delegate function to be called
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
@@ -1041,14 +1073,12 @@ static id<SWKTestConfiguration> kConfiguration;
       CGRect customFrame = CGRectMake(0, 488, 393, 300);
       TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
         // Tap the Subscribe button
-        CGPoint subscribeButton = CGPointMake(196, 766);
-        [weakSelf touch:subscribeButton];
+        [weakSelf tapSystemElement:@"Subscribe"];
         
         // Wait for subscribe to occur
-        [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-          CGPoint okButton = CGPointMake(196, 495);
-          [weakSelf touch:okButton];
+          [weakSelf tapSystemElement:@"OK"];
           
           // Wait for the delegate function to be called
           [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
@@ -1106,8 +1136,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Mock user as subscribed
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
         // Press restore
-        CGPoint restoreButton = CGPointMake(214, 292);
-        [weakSelf touch:restoreButton];
+        [weakSelf tapElement:@"Restore"];
         
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
@@ -1482,7 +1511,7 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 - (void)test56WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(3)
+  TEST_START_NUM_ASSERTS(4)
 
   // Create Superwall delegate
   SWKMockSuperwallDelegate *delegate = [[SWKMockSuperwallDelegate alloc] init];
@@ -1519,27 +1548,24 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that `.deepLink` was called once
     TEST_ASSERT_VALUE_COMPLETION(deepLinkEventHolder.description, (^{
       // Tap the Preview button
-      CGPoint previewButton = CGPointMake(196, 775);
-      [weakSelf touch:previewButton];
+      [weakSelf tapElement:@"Preview" index:1];
 
-      [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the Free Trial button
-        CGPoint freeTrialButton = CGPointMake(196, 665);
-        [weakSelf touch:freeTrialButton];
+        [weakSelf tapElement:@"With Intro Offer"];
 
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
           // Tap the close button
           CGPoint closeButton = CGPointMake(196, 91);
           [weakSelf touch:closeButton];
 
-          [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
+          [weakSelf sleepWithTimeInterval:0 completionHandler:^{
             // Tap the preview button
-            [weakSelf touch:previewButton];
+            [weakSelf tapElement:@"Preview" index:1];
 
-            [weakSelf sleepWithTimeInterval:2.0 completionHandler:^{
+            [weakSelf sleepWithTimeInterval:0 completionHandler:^{
               // Tap the default view
-              CGPoint defaultButton = CGPointMake(196, 725);
-              [weakSelf touch:defaultButton];
+              [weakSelf tapElement:@"Without Intro Offer"];
 
               TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{});
             }];
@@ -1625,15 +1651,13 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 750);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Purchase Primary"];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint abandonTransactionButton = CGPointMake(359, 515);
-      [weakSelf touch:abandonTransactionButton];
+      [weakSelf tapSystemElement:@"dismiss"];
 
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
         // Assert that `.transactionAbandon` was called once
@@ -1688,8 +1712,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
       // Tap the first option
-      CGPoint firstOption = CGPointMake(196, 733);
-      [weakSelf touch:firstOption];
+      [weakSelf tapAlertButtonAtIndex:0];
 
       // Assert the next paywall is displayed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -1737,15 +1760,13 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that paywall was presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
       // Purchase on the paywall
-      CGPoint purchaseButton = CGPointMake(196, 750);
-      [weakSelf touch:purchaseButton];
+      [weakSelf tapElement:@"Purchase Primary"];
 
       // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
       CGRect customFrame = CGRectMake(0, 488, 393, 300);
       TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
         // Tap subscribe button.
-        CGPoint subscribeButton = CGPointMake(196, 766);
-        [weakSelf touch:subscribeButton];
+        [weakSelf tapSystemElement:@"Subscribe"];
 
         // Assert that paywall was presented
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -1770,8 +1791,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Tap the open # URL button
-    CGPoint point = CGPointMake(330, 360);
-    [weakSelf touch:point];
+    [weakSelf tapElement:@"Perform" index:3];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }));
@@ -1779,7 +1799,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
 // Finished purchase with a result type of `restored`
 - (void)test63WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(2)
+  TEST_START_NUM_ASSERTS(3)
 
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
@@ -1807,8 +1827,7 @@ static id<SWKTestConfiguration> kConfiguration;
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
 
       // Press restore
-      CGPoint restoreButton = CGPointMake(200, 232);
-      [weakSelf touch:restoreButton];
+      [weakSelf tapElement:@"Restore"];
 
       TEST_ASSERT_DELAY_COMPLETION(kPaywallDelegateResponseDelay, (^{
         NSString *value = paywallDidFinishResultValueHolder.stringValue;
@@ -1869,8 +1888,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Tap the first option
-      CGPoint firstOption = CGPointMake(196, 733);
-      [weakSelf touch:firstOption];
+      [weakSelf tapAlertButtonAtIndex:0];
 
       // Assert that paywall has disappeared and the feature block called.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -1944,15 +1962,13 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Tap the other option
-      CGPoint otherOption = CGPointMake(196, 790);
-      [weakSelf touch:otherOption];
+      [weakSelf tapElement:@"Other"];
 
       // Assert that alert controller with textfield has disappeared and the feature block called.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf typeText:@"Test" completionHandler:^{
           // Tap the other option
-          CGPoint submitButton = CGPointMake(196, 350);
-          [weakSelf touch:submitButton];
+          [weakSelf tapElement:@"Submit"];
 
           // Assert that paywall has disappeared and the feature block called.
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -2122,9 +2138,7 @@ static id<SWKTestConfiguration> kConfiguration;
     [weakSelf touch:closeButton];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
-      CGPoint firstOption = CGPointMake(196, 733);
-      [weakSelf
-       touch:firstOption];
+      [weakSelf tapAlertButtonAtIndex:0];
 
       // Assert that new paywall has appeared.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -2203,8 +2217,7 @@ static id<SWKTestConfiguration> kConfiguration;
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
 
         // Tap the first option
-        CGPoint point = CGPointMake(196, 733);
-        [weakSelf touch:point];
+        [weakSelf tapAlertButtonAtIndex:0];
 
         // Assert the survey is displayed
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -2277,8 +2290,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Assert the survey is displayed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Tap the first option
-        CGPoint point = CGPointMake(196, 733);
-        [weakSelf touch:point];
+        [weakSelf tapAlertButtonAtIndex:0];
 
         // Assert the survey is displayed
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -2333,24 +2345,21 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 750);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared and no survey displayed.
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
             // Assert that `.surveyResponse` not called.
@@ -2476,8 +2485,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
       // Tap the close option
-      CGPoint closeOption = CGPointMake(196, 792);
-      [weakSelf touch:closeOption];
+      [weakSelf tapElement:@"Close"];
 
       // Assert the paywall has disappeared
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -2527,21 +2535,18 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 750);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Purchase Primary"];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Try to present paywall again
         [[Superwall sharedInstance] registerWithPlacement:@"present_data"];
@@ -2684,8 +2689,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
       CGRect customFrame = CGRectMake(0, 488, 393, 300);
       TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
-        CGPoint abandonTransactionButton = CGPointMake(359, 515);
-        [weakSelf touch:abandonTransactionButton];
+        [weakSelf tapSystemElement:@"dismiss"];
 
         // Wait for non-gated paywall to show
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -2734,8 +2738,7 @@ static id<SWKTestConfiguration> kConfiguration;
         CGRect customFrame = CGRectMake(0, 488, 393, 300);
         TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
           // Tap the Subscribe button
-          CGPoint subscribeButton = CGPointMake(196, 766);
-          [weakSelf touch:subscribeButton];
+          [weakSelf tapSystemElement:@"Subscribe"];
 
           // Wait for non-gated paywall to show
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -2812,8 +2815,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Mock user as subscribed
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
         // Press restore
-        CGPoint restoreButton = CGPointMake(196, 136);
-        [weakSelf touch:restoreButton];
+        [weakSelf tapElement:@"Restore"];
 
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
@@ -2858,8 +2860,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Mock user as subscribed
       [weakSelf.configuration mockSubscribedUserWithProductIdentifier:SWKStoreKitHelperConstants.customAnnualProductIdentifier completionHandler:^{
         // Press restore
-        CGPoint restoreButton = CGPointMake(196, 196);
-        [weakSelf touch:restoreButton];
+        [weakSelf tapElement:@"Restore"];
 
         // Wait for the delegate function to be called
         [weakSelf sleepWithTimeInterval:kPaywallDelegateResponseDelay completionHandler:^{
@@ -2888,7 +2889,7 @@ static id<SWKTestConfiguration> kConfiguration;
 // Finished purchase with a result type of `restored`
 // Same as test63 but with v4 paywall
 - (void)test85WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(2)
+  TEST_START_NUM_ASSERTS(3)
 
   // Create and hold strongly the delegate
   SWKMockPaywallViewControllerDelegate *delegate = [[SWKMockPaywallViewControllerDelegate alloc] init];
@@ -3026,21 +3027,18 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 748);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
           // Try to present paywall again
@@ -3140,7 +3138,7 @@ static id<SWKTestConfiguration> kConfiguration;
 // Clusterfucks by Jake™
 /// Same as test15 but with v4 paywall
 - (void)test101WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  TEST_START_NUM_ASSERTS(3)
+  TEST_START_NUM_ASSERTS(4)
 
   // Present paywall
   [[Superwall sharedInstance] registerWithPlacement:@"present_always_v4"];
@@ -3369,8 +3367,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
       // Tap the close option
-      CGPoint closeOption = CGPointMake(196, 792);
-      [weakSelf touch:closeOption];
+      [weakSelf tapElement:@"Close"];
 
       // Assert the paywall has disappeared
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -3424,24 +3421,21 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall was presented
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 750);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Start your trial today"];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared and no survey displayed.
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
             // Assert that `.surveyResponse` not called.
@@ -3565,8 +3559,7 @@ static id<SWKTestConfiguration> kConfiguration;
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
 
         // Tap the first option
-        CGPoint point = CGPointMake(196, 733);
-        [weakSelf touch:point];
+        [weakSelf tapAlertButtonAtIndex:0];
 
         // Assert the survey is displayed
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3687,8 +3680,7 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Tap the first option
-      CGPoint firstOption = CGPointMake(196, 733);
-      [weakSelf touch:firstOption];
+      [weakSelf tapAlertButtonAtIndex:0];
 
       // Assert that paywall has disappeared and the feature block called.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3762,15 +3754,13 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert the survey is displayed
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Tap the other option
-      CGPoint otherOption = CGPointMake(196, 790);
-      [weakSelf touch:otherOption];
+      [weakSelf tapElement:@"Other"];
 
       // Assert that alert controller with textfield has disappeared and the feature block called.
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         [weakSelf typeText:@"Test" completionHandler:^{
           // Tap the other option
-          CGPoint submitButton = CGPointMake(196, 350);
-          [weakSelf touch:submitButton];
+          [weakSelf tapElement:@"Submit"];
 
           // Assert that paywall has disappeared and the feature block called.
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3844,8 +3834,7 @@ static id<SWKTestConfiguration> kConfiguration;
       // Assert the survey is displayed
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Tap the first option
-        CGPoint point = CGPointMake(196, 733);
-        [weakSelf touch:point];
+        [weakSelf tapAlertButtonAtIndex:0];
 
         // Assert the survey is displayed
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
@@ -3985,14 +3974,12 @@ static id<SWKTestConfiguration> kConfiguration;
     // Assert that paywall is presented
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
       // Position of the perform button to open a URL in Safari
-      CGPoint point = CGPointMake(330, 212);
-      [weakSelf touch:point];
+      [weakSelf tapElement:@"Perform" index:1];
 
       // Verify that In-App Safari has opened
       TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
         // Press the done button to go back
-        CGPoint donePoint = CGPointMake(30, 70);
-        [weakSelf touch:donePoint];
+        [weakSelf tapElement:@"Close"];
 
         // Verify that the paywall appears
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
@@ -4010,8 +3997,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Position of the perform button to open a URL in Safari
-    CGPoint point = CGPointMake(330, 136);
-    [weakSelf touch:point];
+    [weakSelf tapElement:@"Perform"];
 
     // Verify that Safari has opened.
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea safari], ^{
@@ -4034,8 +4020,7 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Tap the open # URL button
-    CGPoint point = CGPointMake(330, 360);
-    [weakSelf touch:point];
+    [weakSelf tapElement:@"Perform" index:3];
 
     TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{})
   }));
@@ -4325,8 +4310,7 @@ static id<SWKTestConfiguration> kConfiguration;
   CGRect customFrame = CGRectMake(0, 488, 393, 300);
   TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
     // Abandon the transaction
-    CGPoint abandonTransactionButton = CGPointMake(359, 20);
-    [weakSelf touch:abandonTransactionButton];
+    [weakSelf tapSystemElement:@"dismiss"];
 
     TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, cancelledResultValueHolder.description, ^{
       TEST_ASSERT_VALUE_COMPLETION(transactionAbandonEventHolder.description, ^{});
@@ -4585,8 +4569,7 @@ static id<SWKTestConfiguration> kConfiguration;
   CGRect customFrame = CGRectMake(0, 0, 393, 390);
   TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
     // Abandon the OK button
-    CGPoint okButton = CGPointMake(261, 526);
-    [weakSelf touch:okButton];
+    [weakSelf tapSystemElement:@"OK"];
 
     [self sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
       TEST_ASSERT_VALUE_COMPLETION(transactionCompleteEventHolder.description, ^{});
@@ -4702,21 +4685,18 @@ static id<SWKTestConfiguration> kConfiguration;
   // Assert that paywall appears
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(196, 750);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Purchase Primary"];
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     CGRect customFrame = CGRectMake(0, 488, 393, 300);
     TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(196, 766);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-        CGPoint okButton = CGPointMake(196, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Ensure the paywall doesn't present.
         TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, ^{
@@ -4784,14 +4764,12 @@ static id<SWKTestConfiguration> kConfiguration;
   CGRect customFrame = CGRectMake(0, 488, 393, 300);
   TEST_ASSERT_DELAY_CAPTURE_AREA_COMPLETION(kPaywallPresentationDelay, [SWKCaptureArea customWithFrame:customFrame], (^{
     // Tap the Subscribe button
-    CGPoint subscribeButton = CGPointMake(196, 766);
-    [weakSelf touch:subscribeButton];
+    [weakSelf tapSystemElement:@"Subscribe"];
 
     // Wait for subscribe to occur
-    [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-      CGPoint okButton = CGPointMake(196, 495);
-      [weakSelf touch:okButton];
+      [weakSelf tapSystemElement:@"OK"];
 
       // Assert .transactionComplete has been called with transaction details
       TEST_ASSERT_DELAY_VALUE_COMPLETION(kPaywallPresentationDelay, transactionCompleteEventHolder.description, ^{
@@ -4939,15 +4917,13 @@ static id<SWKTestConfiguration> kConfiguration;
 }
 
 #pragma mark - Tests 172-178: Subscription State Tests
-// NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.1
-// NOTE: The test app must be manually deleted if it already exists before running these tests
+// NOTE: These tests need iOS 26 or later.
 
 /// Test 172: Purchase a product then cancel so it doesn't auto-renew, then register auto_renew_disabled
 - (void)test172WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -4963,23 +4939,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Disable auto-renew for the product
@@ -5007,10 +4980,9 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 173: Purchase a free trial and cancel the product so that it doesn't auto-renew, then register active_trials_auto_renew_disabled
 - (void)test173WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -5026,23 +4998,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall (this will use the free trial product)
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Disable auto-renew for the free trial product
@@ -5067,10 +5036,9 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 174: Purchase a normal product (no trial) and then cancel so that it doesn't auto-renew, then register active_subscriptions_auto_renew_disabled
 - (void)test174WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -5086,23 +5054,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Disable auto-renew for the product
@@ -5127,10 +5092,9 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 175: Purchase a product (without trial) and then make it expire, then register expired_entitlements
 - (void)test175WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -5146,23 +5110,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Expire the subscription
@@ -5187,10 +5148,9 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 176: Purchase the product com.ui_tests.monthly and then cancel it such that it doesn't autorenew and then register default_active_auto_renew_disabled
 - (void)test176WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -5206,23 +5166,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Disable auto-renew for the monthly product
@@ -5247,10 +5204,9 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 177: Purchase a product with a trial then register default_in_trial
 - (void)test177WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -5266,23 +5222,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall (this will use the free trial product)
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Register the event
@@ -5298,10 +5251,9 @@ static id<SWKTestConfiguration> kConfiguration;
 
 /// Test 178: Purchase then expire a product and register default_expired
 - (void)test178WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
-  // Skip if not on iPhone 17 Pro with iOS 26.1
-  if (![UIDevice.currentDevice.name containsString:@"iPhone 17 Pro"] ||
-      NSProcessInfo.processInfo.operatingSystemVersion.majorVersion != 26) {
-    TEST_SKIP(@"This test requires iPhone 17 Pro simulator with iOS 26.1")
+  // Subscription status changes in StoreKit testing need iOS 26 or later
+  if (NSProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26) {
+    TEST_SKIP(@"This test requires iOS 26 or later")
   }
 
   // Skip if using Objective-C with advanced configuration (SK1 doesn't work with this)
@@ -5317,23 +5269,20 @@ static id<SWKTestConfiguration> kConfiguration;
 
   TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
     // Purchase on the paywall
-    CGPoint purchaseButton = CGPointMake(201, 762);
-    [weakSelf touch:purchaseButton];
+    [weakSelf tapElement:@"Continue"];
 
     // Wait for OK button tap to process
-    [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+    [weakSelf sleepWithTimeInterval:0 completionHandler:^{
       // Tap the Subscribe button
-      CGPoint subscribeButton = CGPointMake(201, 820);
-      [weakSelf touch:subscribeButton];
+      [weakSelf tapSystemElement:@"Subscribe"];
 
       // Wait for subscribe to occur
-      [weakSelf sleepWithTimeInterval:kPaywallPresentationDelay completionHandler:^{
+      [weakSelf sleepWithTimeInterval:0 completionHandler:^{
         // Tap the OK button once subscription has been confirmed
-        CGPoint okButton = CGPointMake(201, 495);
-        [weakSelf touch:okButton];
+        [weakSelf tapSystemElement:@"OK"];
 
         // Wait for OK button tap to process
-        [weakSelf sleepWithTimeInterval:1.0 completionHandler:^{
+        [weakSelf sleepWithTimeInterval:0 completionHandler:^{
           // Assert the paywall has disappeared
           TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
             // Expire the subscription

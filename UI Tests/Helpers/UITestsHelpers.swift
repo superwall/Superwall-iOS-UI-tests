@@ -53,6 +53,17 @@ public class TestOptions: NSObject {
 
     // So we don't have to wait for a minute before it completely fails.
     options.maxConfigRetryCount = 0
+
+    // Preloading gives every paywall in the account its own WebKit process
+    // running the paywall's JavaScript. With several simulators in parallel
+    // (or a small cloud instance) that starves the machine, and each test only
+    // presents the paywalls it registers.
+    options.paywalls.shouldPreload = false
+
+    // SWK_SDK_DEBUG=1 turns on the SDK's debug logging when diagnosing a test.
+    if ProcessInfo.processInfo.environment["SWK_SDK_DEBUG"] == "1" {
+      options.logging.level = .debug
+    }
     self.options = options
     super.init()
   }
@@ -130,17 +141,36 @@ public extension NSObject {
 
   func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Test", captureArea: CaptureArea = .safeArea(captureHomeIndicator: false)) async {
     if timeInterval > 0 {
-      await sleep(timeInterval: timeInterval)
+      if AdaptiveWait.isEnabled && timeInterval >= AdaptiveWait.minimumEligibleDelay {
+        // Taps sent without waiting (the Objective-C `tapElement:` family)
+        // may still be queued at the runner; time the wait from when they've
+        // happened, as the Swift tests' awaited taps do.
+        await Communicator.shared.waitForPendingActions()
+        await AdaptiveWait.sleep(upTo: timeInterval)
+      } else {
+        await sleep(timeInterval: timeInterval)
+      }
     }
 
     let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
 
-    await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
+    if AssertMode.current.comparesScreen {
+      let screen = await ScreenInspector.capture(patient: true).state
+      await Communicator.shared.send(.assertScreen(testName: testName, screen: screen.json))
+    }
+    if AssertMode.current.comparesPixels {
+      await Communicator.shared.send(.assert(testName: testName, precision: Float(precision.rawValue) / 100.0, captureArea: captureArea))
+    }
+    await MainActor.run { AdaptiveWait.lastAssertion = Date() }
   }
 
   func assert(value: @autoclosure () -> String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Test") async {
     if timeInterval > 0 {
-      await sleep(timeInterval: timeInterval)
+      if AdaptiveWait.isEnabled {
+        await AdaptiveWait.wait(for: value, upTo: timeInterval)
+      } else {
+        await sleep(timeInterval: timeInterval)
+      }
     }
 
     let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
@@ -174,6 +204,57 @@ public extension NSObject {
   @objc func touch(_ point: CGPoint) {
     Task {
       await Communicator.shared.send(.touch(point: point))
+    }
+  }
+
+  /// Taps the on-screen element with this accessibility label: a paywall
+  /// button or text, an alert button, or a control on a system sheet.
+  /// The runner waits for it to appear, so no sleep is needed beforehand.
+  /// `index` picks among several elements with the same label, top to bottom.
+  func tap(_ label: String, index: Int = 0) async {
+    await AdaptiveWait.settle()
+    await Communicator.shared.send(.tapElement(label: label, index: index, systemOnly: false))
+  }
+
+  /// Taps an element of system UI drawn outside the app, such as the StoreKit
+  /// purchase sheet ("Subscribe", or "dismiss" for its close button). Never
+  /// matches the app's own content, even if a paywall has the same label.
+  /// Skipped if it doesn't appear, since system UI varies by iOS version.
+  func tapSystemElement(_ label: String) async {
+    await Communicator.shared.send(.tapElement(label: label, index: 0, systemOnly: true))
+  }
+
+  /// Taps the button at `index` (top to bottom) of the alert or action sheet
+  /// on screen, e.g. a survey's first option, whatever its title.
+  func tapAlertButton(at index: Int) async {
+    await Communicator.shared.send(.tapAlertButton(index: index))
+  }
+
+  @objc(tapElement:)
+  func tapElementObjC(_ label: String) {
+    Task {
+      await Communicator.shared.send(.tapElement(label: label, index: 0, systemOnly: false))
+    }
+  }
+
+  @objc(tapElement:index:)
+  func tapElementObjC(_ label: String, index: Int) {
+    Task {
+      await Communicator.shared.send(.tapElement(label: label, index: index, systemOnly: false))
+    }
+  }
+
+  @objc(tapSystemElement:)
+  func tapSystemElementObjC(_ label: String) {
+    Task {
+      await Communicator.shared.send(.tapElement(label: label, index: 0, systemOnly: true))
+    }
+  }
+
+  @objc(tapAlertButtonAtIndex:)
+  func tapAlertButtonObjC(at index: Int) {
+    Task {
+      await Communicator.shared.send(.tapAlertButton(index: index))
     }
   }
 
@@ -228,6 +309,9 @@ public extension NSObject {
   }
 
   @objc func sleep(timeInterval: TimeInterval) async {
+    // Objective-C tests send taps without waiting for them, then sleep so the
+    // tap's effect lands; start the sleep once the taps have happened.
+    await Communicator.shared.waitForPendingActions()
     await Self.sleep(timeInterval: timeInterval)
   }
 

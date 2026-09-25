@@ -1,0 +1,59 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "modal-exit-survey-with-other--100-fb98-2023-08-07",
+        "presentationStyle" : "pageSheet",
+        "text" : [
+          "Shows Survey On Exit",
+          "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
+          "Feature",
+          "Core",
+          "Plus",
+          "Premium",
+          "Get live safety alerts nearby your location",
+          "Access incidents that occurred within 24 hours",
+          "Monitor friends’ & family safety",
+          "Listen to full police & fire radio clips",
+          "Access incidents that occurred more than 24 hours ago",
+          "Customize notification settings and set an alert radius",
+          "DO NOT DELETE. USED FOR SCROLLING BEHAVIOR.",
+          "Unlimited alert zones around places you care about",
+          "Access Safety Agents 24/7 for help in emergencies",
+          "Live Agent monitoring if you ever feel unsafe",
+          "Get emergency help dispatched to your location",
+          "Select a plan",
+          "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
+          "$19.99/mo, cancel anytime",
+          "Continue",
+          "Live nearby safety alerts",
+          "Access alerts that happened in the past",
+          "Listen to police and fire radio clips",
+          "Create custom alerts zones and set alert preferences",
+          "Access Safety Agents 24/7 for help in emergencies",
+          "Live Agent monitoring if you ever feel unsafe",
+          "$4.99/mo, cancel anytime",
+          "Continue",
+          "Live nearby safety alerts",
+          "Access alerts that happened in the past",
+          "Listen to police and fire radio clips",
+          "Create custom alerts zones and set alert preferences",
+          "Access Safety Agents 24/7 for help in emergencies",
+          "Live Agent monitoring if you ever feel unsafe",
+          "Always Free",
+          "Continue",
+          "Live nearby safety alerts",
+          "Access alerts that happened in the past",
+          "Listen to police and fire radio clips",
+          "Create custom alerts zones and set alert preferences",
+          "Access Safety Agents 24/7 for help in emergencies",
+          "Live Agent monitoring if you ever feel unsafe",
+          "Subscribe & Continue"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

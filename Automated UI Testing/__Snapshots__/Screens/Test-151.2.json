@@ -1,0 +1,30 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "untitled-1a6e-2023-05-11",
+        "presentationStyle" : "fullScreen",
+        "text" : [
+          "Restore",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy",
+          "Purchase Primary",
+          "Line Two",
+          "primary selected description"
+        ]
+      },
+      {
+        "actions" : [
+          "Okay"
+        ],
+        "kind" : "alert",
+        "message" : "We couldn't find an active subscription for your account.",
+        "title" : "No Subscription Found"
+      }
+    ]
+  },
+  "foreground" : "app"
+}

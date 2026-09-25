@@ -1,0 +1,26 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "fizz-template-d271-2024-05-23",
+        "presentationStyle" : "fullScreen",
+        "text" : [
+          "1. Open in Safari",
+          "Perform",
+          "2. Open in-app",
+          "Perform",
+          "3. Deep link",
+          "Perform",
+          "4. Open in-app #",
+          "Perform",
+          "/mo",
+          "Continue",
+          "Not now"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

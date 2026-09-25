@@ -42,10 +42,12 @@ extension URLSessionConfiguration {
             return []
         }
         var originalProtocolClasses = fakeProcotolClasses.filter {
-            return $0 != NetworkRequestSniffableUrlProtocol.self && $0 != NetworkRedirectUrlProtocol.self
+            return $0 != NetworkRequestSniffableUrlProtocol.self && $0 != NetworkRedirectUrlProtocol.self && $0 != FixtureURLProtocol.self
         }
         originalProtocolClasses.insert(NetworkRequestSniffableUrlProtocol.self, at: 0)
         originalProtocolClasses.insert(NetworkRedirectUrlProtocol.self, at: 0)
+        // Recorded responses take precedence over everything else.
+        originalProtocolClasses.insert(FixtureURLProtocol.self, at: 0)
         return originalProtocolClasses
     }
     

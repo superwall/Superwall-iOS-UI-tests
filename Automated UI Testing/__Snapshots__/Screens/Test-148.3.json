@@ -1,0 +1,27 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "based-on-matter-template-a193-2023-07-07",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Unlock Matter",
+          "Build a world-class reading practice",
+          "Focus deeply with immersive reading mode",
+          "Read on the go with ultra-realistic voices",
+          "Retain more from podcasts and YouTube with integrated transcription",
+          "Highlight effortlessly, even while listening",
+          "Customize your reading experience with gorgeous themes",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy",
+          "Unlock Matter",
+          "/"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

@@ -1,0 +1,34 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "based-on-rapchat-template-4f2a-2023-07-07",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "UNLOCK PROJECT CLOUD STORAGE",
+          "With Gold you save space on your phone and never lose your old projects",
+          "50+ vocal effects, AutoTune™",
+          "Professional auto-mastering",
+          "Download audio files",
+          "Import your own beats",
+          "Gold artist profile badge",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy",
+          "..Save 50%",
+          "12 Months",
+          "paid yearly",
+          "/mo.",
+          "..",
+          "1 Month",
+          "paid monthly",
+          "/mo.",
+          "Get Started"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

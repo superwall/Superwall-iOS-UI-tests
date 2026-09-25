@@ -1,0 +1,36 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "fitness-ai-template-baec-2024-05-14",
+        "presentationStyle" : "pageSheet",
+        "text" : [
+          "Limited Time Offer",
+          "Special Price",
+          "($4.99 per month)",
+          "£359.88",
+          "$4.99",
+          "Includes 0-day free trial. Cancel anytime.",
+          "Continue",
+          "Ignore Offer"
+        ]
+      },
+      {
+        "actions" : [
+          "Close",
+          "Don't know what it is",
+          "I don't pay for apps",
+          "I need to try it first",
+          "Other",
+          "Too expensive"
+        ],
+        "kind" : "actionSheet",
+        "message" : "Please share why",
+        "title" : "Not interested?"
+      }
+    ]
+  },
+  "foreground" : "app"
+}

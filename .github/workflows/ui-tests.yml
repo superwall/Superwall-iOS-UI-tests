@@ -1,0 +1,47 @@
+name: UI Tests
+
+# Runs the suite on GitHub's macOS runners with `runTests.sh`, the same way as
+# locally: xcodebuild and the simulator share one Mac, so StoreKit's local test
+# environment (SKTestSession, Products.storekit) works as it does locally.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scheme:
+        description: Scheme to run
+        default: UI Tests -swift -automatic
+      tests:
+        description: Test numbers to run (space separated), empty for all
+        default: ""
+  push:
+    branches:
+      - ci/github-actions-ui-tests
+
+jobs:
+  ui-tests:
+    runs-on: xcode-27
+    timeout-minutes: 90
+    env:
+      SCHEME: ${{ inputs.scheme || 'UI Tests -swift -automatic' }}
+      # A trial run on push: a mix of StoreKit-dependent and plain tests.
+      TESTS: ${{ github.event_name == 'push' && '0 4 5 6 7 8 9 10 11 12' || inputs.tests }}
+      SHARDS: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode and simulators
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes
+          xcrun simctl list devicetypes | grep -i "iphone 18" || true
+
+      - name: Run UI tests
+        run: ./runTests.sh "$SCHEME"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+          if-no-files-found: ignore

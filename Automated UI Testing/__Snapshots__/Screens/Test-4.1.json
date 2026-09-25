@@ -1,0 +1,22 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "template-u8-template-eee9-2023-06-28",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy",
+          "Subscribe to",
+          "START MY 3-DAY TRIAL",
+          "$4.99/month after trial ends",
+          "View All Plans"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

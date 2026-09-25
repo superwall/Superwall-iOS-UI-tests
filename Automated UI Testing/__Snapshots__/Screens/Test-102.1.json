@@ -1,0 +1,49 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "roi-template-d752-2024-05-15",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "How your free trial works",
+          "4.9",
+          "Today",
+          "Start your free trial and unlock full access to Roi.",
+          "Tomorrow",
+          "We’ll send you a notification that your trial is ending soon.",
+          "Day",
+          "You’ll be charged on the th day, cancel anytime before.",
+          "1",
+          "/ mo",
+          "billed",
+          "as",
+          "SAVE 50%",
+          "1",
+          "/ mo",
+          "billed",
+          "as",
+          "SAVE 25%",
+          "1",
+          "/ mo",
+          "billed",
+          "as",
+          "Continue",
+          "Terms of Service",
+          "Restore Purchase",
+          "Privacy Policy"
+        ]
+      },
+      {
+        "actions" : [
+          "OK"
+        ],
+        "kind" : "alert",
+        "message" : "This is an alert message",
+        "title" : "Alert"
+      }
+    ]
+  },
+  "foreground" : "app"
+}

@@ -3,3 +3,7 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 build/*
 Package.resolved
+
+limrun-results/
+test-results/
+

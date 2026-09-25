@@ -1,0 +1,30 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "example-paywall-ae96-2023-01-30",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "How your free",
+          "trial works",
+          "Today",
+          "Get full access to all our features",
+          "In 5 Days",
+          "Get a reminder about when your free trial ends",
+          "In 7 Days",
+          "Get billed, unless you cancel anytime before",
+          "Already subscribed?",
+          "Restore",
+          "Privacy Policy",
+          "Terms of Use",
+          "$0.00/yr After Your Free Trial",
+          "Continue",
+          "Other Plans"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

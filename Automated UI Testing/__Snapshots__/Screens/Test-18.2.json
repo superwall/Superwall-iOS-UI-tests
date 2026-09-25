@@ -1,0 +1,35 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "untitled-23ad-2023-06-27",
+        "presentationStyle" : "fullScreen",
+        "text" : [
+          "left",
+          "Title",
+          "right",
+          "1. Open in Safari",
+          "Perform",
+          "2. Open in-app",
+          "Perform",
+          "3. Deep link",
+          "Perform",
+          "2. Open in-app #",
+          "Perform",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy",
+          "Purchase Primary",
+          "Line Two",
+          "primary selected description"
+        ]
+      },
+      {
+        "kind" : "safari"
+      }
+    ]
+  },
+  "foreground" : "app"
+}

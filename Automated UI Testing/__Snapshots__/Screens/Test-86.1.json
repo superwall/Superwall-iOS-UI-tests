@@ -1,0 +1,37 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "mood-bubble-template-9f0f-2024-05-15",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "3 Day Free Trial",
+          "color, emoji, and widget customization",
+          "charts and graphs",
+          "unlimited moods",
+          "edit previous days",
+          "all future updates included!",
+          "no ads",
+          "1",
+          "billed",
+          "/",
+          "SAVE 60%",
+          "1 Month",
+          "$4.99",
+          "billed monthly",
+          "$4.99/month",
+          "1",
+          "billed",
+          "/",
+          "Start your free trial",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

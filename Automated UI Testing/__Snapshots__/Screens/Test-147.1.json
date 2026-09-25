@@ -1,0 +1,22 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "untitled-1a6e-2023-05-11",
+        "presentationStyle" : "pageSheet",
+        "text" : [
+          "Restore",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy",
+          "Purchase Primary",
+          "Line Two",
+          "primary selected description"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

@@ -1,0 +1,16 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "new-paywall-95c3-2024-05-15",
+        "presentationStyle" : "pageSheet",
+        "text" : [
+          "Restore"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

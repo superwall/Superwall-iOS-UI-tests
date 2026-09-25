@@ -24,9 +24,14 @@ extension Configuration {
     }
 
     func handleSuperwallPlacement(withInfo placementInfo: SuperwallEventInfo) {
+      PresentationObserver.record(placementInfo)
       handleSuperwallEvent?(placementInfo)
     }
   }
+
+  /// Installed at setup so presentation outcomes are observed even in tests
+  /// that don't set their own delegate. The SDK holds delegates weakly.
+  static let defaultDelegate = MockSuperwallDelegate()
 
   class MockPaywallViewControllerDelegate: PaywallViewControllerDelegate {
     func paywall(_ paywall: PaywallViewController, loadingStateDidChange loadingState: PaywallLoadingState) {
@@ -61,6 +66,7 @@ extension Configuration {
         apiKey: Constants.currentTestOptions.apiKey,
         options: Constants.currentTestOptions.options
       )
+      Superwall.shared.delegate = Configuration.defaultDelegate
     }
 
     func tearDown() async {
@@ -70,6 +76,30 @@ extension Configuration {
 
     func mockSubscribedUser(productIdentifier: String) async {
       await activateSubscription(productIdentifier: productIdentifier)
+      await SubscriptionWaiter.waitForSubscription(productIdentifier: productIdentifier)
+    }
+  }
+}
+
+/// Waits for the SDK to have processed a subscription that a test just made.
+///
+/// In the automatic configuration the SDK learns about the purchase from
+/// StoreKit a moment after it completes. A test that registers a placement
+/// in between gets a paywall presented for an unsubscribed user, which the
+/// SDK then closes when the subscription arrives.
+@objc(SWKSubscriptionWaiter)
+final class SubscriptionWaiter: NSObject {
+  @objc(waitForSubscriptionWithProductIdentifier:completionHandler:)
+  static func waitForSubscription(productIdentifier: String) async {
+    let start = Date()
+    while Date().timeIntervalSince(start) < 15 {
+      let isProcessed = await MainActor.run {
+        Superwall.shared.customerInfo.activeSubscriptionProductIds.contains(productIdentifier)
+      }
+      if isProcessed {
+        return
+      }
+      try? await Task.sleep(nanoseconds: 100_000_000)
     }
   }
 }
@@ -93,6 +123,7 @@ extension Configuration {
         purchaseController: purchaseController,
         options: Constants.currentTestOptions.options
       )
+      Superwall.shared.delegate = Configuration.defaultDelegate
 
       Task {
         await purchaseController.syncSubscriptionStatus()
@@ -109,11 +140,20 @@ extension Configuration {
 
     func mockSubscribedUser(productIdentifier: String) async {
       await activateSubscription(productIdentifier: productIdentifier)
-      Superwall.shared.subscriptionStatus = .active([Entitlement(id: "default")])
+      let status: SuperwallKit.SubscriptionStatus = .active([Entitlement(id: "default")])
+      await MainActor.run {
+        purchaseController.mockedStatus = status
+        Superwall.shared.subscriptionStatus = status
+      }
     }
   }
 
   class AdvancedPurchaseController: PurchaseController {
+    /// A status set by `mockSubscribedUser`. The SDK can notice the purchase
+    /// that the mock makes after the mock has set the status, and the sync
+    /// below would then overwrite it; it keeps this one instead.
+    @MainActor var mockedStatus: SuperwallKit.SubscriptionStatus?
+
     func syncSubscriptionStatus() async {
       /// Every time the customer info changes, the subscription status should be updated.
       for await _ in Superwall.shared.customerInfoStream {
@@ -132,7 +172,7 @@ extension Configuration {
         let allActiveEntitlements = activeDeviceEntitlements.union(activeWebEntitlements)
 
         await MainActor.run {
-          Superwall.shared.subscriptionStatus = .active(allActiveEntitlements)
+          Superwall.shared.subscriptionStatus = mockedStatus ?? .active(allActiveEntitlements)
         }
       }
     }

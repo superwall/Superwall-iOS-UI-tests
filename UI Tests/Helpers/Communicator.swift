@@ -30,7 +30,10 @@ public class Communicator {
       static func port(environment: [String: String], indexType: IndexType) -> UInt16 {
         func parseCloneNumber() -> Int {
           // e.g. CoreSimulator 917 - Device: Clone 2 of iPhone 14 Pro
-          let simulatorString = environment["SIMULATOR_VERSION_INFO"]!
+          guard let simulatorString = environment["SIMULATOR_VERSION_INFO"] else {
+            // Treat a missing value like a non-parallel run rather than crashing.
+            return 999
+          }
 
           // Define a regular expression to find the number after 'Clone'
           do {
@@ -53,8 +56,25 @@ public class Communicator {
           }
         }
 
-        let cloneNumber = parseCloneNumber()
-        return port(at: cloneNumber, type: indexType)
+        // Ports are derived from the simulator's UDID, which the runner and the
+        // app share. Clone numbers aren't unique on a host: two concurrent test
+        // sessions both have a "Clone 1", and their messages would cross.
+        if let udid = environment["SIMULATOR_UDID"] {
+          return port(at: stableIndex(for: udid), type: indexType)
+        }
+        return port(at: parseCloneNumber(), type: indexType)
+      }
+
+      /// FNV-1a, so the value is the same in every process (Swift's `hashValue`
+      /// is seeded per process). Kept below 7000 so the runner range
+      /// (49152...) and the parent range (...65535) never overlap.
+      static func stableIndex(for string: String) -> Int {
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in string.utf8 {
+          hash ^= UInt64(byte)
+          hash = hash &* 0x100000001b3
+        }
+        return Int(hash % 7000)
       }
 
       static func port(at index: Int, type: IndexType) -> UInt16 {
@@ -95,10 +115,13 @@ public class Communicator {
       case type(text: String)
       case springboard
       case assert(testName: String, precision: Float, captureArea: CaptureArea)
+      case assertScreen(testName: String, screen: String)
       case assertValue(testName: String, value: String)
       case skip(message: String)
       case fail(message: String)
       case touch(point: CGPoint)
+      case tapElement(label: String, index: Int, systemOnly: Bool)
+      case tapAlertButton(index: Int)
       case swipeDown
       case failTransactions
       case activateSubscription(productIdentifier: String)
@@ -157,6 +180,9 @@ public class Communicator {
   }
 
   private let server = HttpServer()
+
+  /// Called with the server and its port before it starts, to add routes.
+  var configureServer: ((HttpServer, UInt16) -> Void)?
   private let operationQueue: OperationQueue = {
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 1
@@ -185,11 +211,27 @@ public class Communicator {
       return HttpResponse.accepted
     }
 
-    do {
-      try server.start(sourceConfiguration.port, forceIPv4: true)
-      print("Server has started ( port = \(try server.port()) ).")
-    } catch {
-      fatalError("Server start error: \(error) for port \(sourceConfiguration.port)")
+    configureServer?(server, sourceConfiguration.port)
+
+    // A previous process can hold the port for a moment after termination,
+    // so retry before giving up rather than crashing on the first attempt.
+    var attempts = 0
+    while true {
+      do {
+        // Swifter defaults to `.background` QoS, which recent simulator hosts
+        // throttle so hard that requests can take minutes to be handled.
+        try server.start(sourceConfiguration.port, forceIPv4: true, priority: .userInitiated)
+        print("Server has started ( port = \(try server.port()) ).")
+        break
+      } catch {
+        attempts += 1
+        guard attempts < 20 else {
+          fatalError("Server start error: \(error) for port \(sourceConfiguration.port)")
+        }
+        print("Server start failed (attempt \(attempts)) for port \(sourceConfiguration.port): \(error). Retrying...")
+        server.stop()
+        Thread.sleep(forTimeInterval: 0.5)
+      }
     }
   }
 
@@ -259,6 +301,36 @@ public class Communicator {
   // Complete action locally without sending over HTTP (for use in test runner when app has been terminated)
   func completedLocally(action: Communicator.Action) {
     handleCompletionAction(action)
+  }
+
+  /// Waits until every action sent so far has been completed by the other
+  /// side, or `timeout` elapses.
+  func waitForPendingActions(timeout: TimeInterval = 40) async {
+    // Fire-and-forget senders hop through a `Task` and this queue before
+    // their action is registered; give them a moment to get there.
+    try? await Task.sleep(nanoseconds: 200_000_000)
+    let start = Date()
+    while Date().timeIntervalSince(start) < timeout {
+      let pending = sendSerialQueue.sync { completionHandlers.count }
+      if pending == 0 {
+        return
+      }
+      try? await Task.sleep(nanoseconds: 100_000_000)
+    }
+  }
+
+  // Resumes every pending `send` continuation. Used by the test runner when
+  // the app process dies and no completion will ever arrive over HTTP.
+  func abortPendingActions() {
+    sendSerialQueue.async {
+      let handlers = self.completionHandlers
+      self.completionHandlers.removeAll()
+      for (identifier, handler) in handlers {
+        DispatchQueue.main.async {
+          handler(Action(.fail(message: "Aborted action \(identifier): app process is no longer running")))
+        }
+      }
+    }
   }
 }
 
