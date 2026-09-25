@@ -9,6 +9,11 @@
 #     DEVICE="iPhone 18 Pro"  the remaining coordinate taps are written for a
 #                             393x852 point screen and scaled for others
 #     RUNTIME="iOS 27"    runtime prefix, as listed by `xcrun simctl list runtimes`
+#   For splitting a run across machines (see .github/workflows/ui-tests.yml):
+#     DERIVED_DATA=path   build products location (default: Xcode's DerivedData)
+#     BUILD_ONLY=1        build every given scheme for testing, then stop
+#     SKIP_BUILD=1        use products already in DERIVED_DATA
+#     SHARD_INDEX=0 SHARD_COUNT=5  run only this machine's share of the tests
 #
 # Each shard is its own simulator ("UITests Shard N (<device>)") with its own xcodebuild,
 # rather than xcodebuild's parallel-testing clones: clones live in a set
@@ -62,15 +67,27 @@ for udid in "${udids[@]}"; do
 done
 
 mkdir -p test-results
-echo "Building..."
-xcodebuild build-for-testing -scheme "${schemes[0]}" -destination "platform=iOS Simulator,id=${udids[0]}" \
-  > test-results/build.log 2>&1 || { echo "Build failed; see test-results/build.log"; exit 1; }
+derived_data=()
+[ -n "${DERIVED_DATA:-}" ] && derived_data=(-derivedDataPath "$DERIVED_DATA")
+if [ "${SKIP_BUILD:-}" != "1" ]; then
+  # Each scheme gets its own .xctestrun (the schemes differ only in their test
+  # environment), so build every one; after the first, the build is a no-op.
+  for scheme in "${schemes[@]}"; do
+    echo "Building \"$scheme\"..."
+    xcodebuild build-for-testing -scheme "$scheme" -destination "platform=iOS Simulator,id=${udids[0]}" ${derived_data[@]+"${derived_data[@]}"} \
+      >> test-results/build.log 2>&1 || { echo "Build failed; see test-results/build.log"; exit 1; }
+  done
+fi
+[ "${BUILD_ONLY:-}" = "1" ] && exit 0
 
 if [ -n "${TESTS:-}" ]; then
   tests="$TESTS"
 else
   highest=$(grep -oE '^\s*func test[0-9]+\(' "UI Tests/UI Tests/UITests_Swift.swift" | grep -oE '[0-9]+' | sort -n | tail -1)
   tests=$(seq 0 "$highest" | tr '\n' ' ')
+fi
+if [ -n "${SHARD_COUNT:-}" ]; then
+  tests=$(echo $tests | tr ' ' '\n' | awk -v count="$SHARD_COUNT" -v index_="${SHARD_INDEX:-0}" '(NR - 1) % count == index_' | tr '\n' ' ')
 fi
 
 # Runs one shard. If the test runner fails to launch (it occasionally does on a
@@ -85,7 +102,7 @@ run_shard() {
     xcodebuild test-without-building -scheme "$scheme" -destination "platform=iOS Simulator,id=$udid" \
       -parallel-testing-enabled NO -retry-tests-on-failure -test-iterations 2 -collect-test-diagnostics never \
       -test-timeouts-enabled YES -default-test-execution-time-allowance 300 -maximum-test-execution-time-allowance 300 \
-      -resultBundlePath "$output.xcresult" "$@" \
+      -resultBundlePath "$output.xcresult" ${derived_data[@]+"${derived_data[@]}"} "$@" \
       > "$output.log" 2>&1
     local result=$?
     if [ "$attempt" -eq 1 ] && grep -q "Failed to install or launch the test runner" "$output.log"; then
