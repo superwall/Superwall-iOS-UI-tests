@@ -16,8 +16,8 @@ on:
         description: Test numbers to run (space separated), empty for all
         default: ""
       simulators:
-        description: Simulators per job
-        default: "2"
+        description: Simulators per job (the hosted runners are too small for more than 1)
+        default: "1"
   push:
     branches:
       - ci/github-actions-ui-tests
@@ -91,7 +91,7 @@ jobs:
     env:
       SHARD_INDEX: ${{ matrix.shard }}
       SHARD_COUNT: 5
-      SHARDS: ${{ inputs.simulators || '2' }}
+      SHARDS: ${{ inputs.simulators || '1' }}
       SKIP_BUILD: 1
     steps:
       - uses: actions/checkout@v4

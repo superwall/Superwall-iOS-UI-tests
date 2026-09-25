@@ -96,13 +96,22 @@ fi
 run_shard() {
   local scheme="$1" udid="$2" output="$3"
   shift 3
+  # With prebuilt products, run from the scheme's .xctestrun: `-scheme` would
+  # resolve Swift packages again, which fails on the unpacked products.
+  local target=(-scheme "$scheme")
+  if [ "${SKIP_BUILD:-}" = "1" ]; then
+    local xctestrun
+    xctestrun=$(ls "${DERIVED_DATA:-.}/Build/Products/$scheme"_*.xctestrun 2>/dev/null | tail -1)
+    [ -n "$xctestrun" ] || { echo "No .xctestrun for \"$scheme\" in ${DERIVED_DATA:-.}/Build/Products" > "$output.log"; return 1; }
+    target=(-xctestrun "$xctestrun")
+  fi
   local attempt
   for attempt in 1 2; do
     rm -rf "$output.xcresult"
-    xcodebuild test-without-building -scheme "$scheme" -destination "platform=iOS Simulator,id=$udid" \
+    xcodebuild test-without-building "${target[@]}" -destination "platform=iOS Simulator,id=$udid" \
       -parallel-testing-enabled NO -retry-tests-on-failure -test-iterations 2 -collect-test-diagnostics never \
       -test-timeouts-enabled YES -default-test-execution-time-allowance 300 -maximum-test-execution-time-allowance 300 \
-      -resultBundlePath "$output.xcresult" ${derived_data[@]+"${derived_data[@]}"} "$@" \
+      -resultBundlePath "$output.xcresult" "$@" \
       > "$output.log" 2>&1
     local result=$?
     if [ "$attempt" -eq 1 ] && grep -q "Failed to install or launch the test runner" "$output.log"; then
@@ -119,6 +128,7 @@ status=0
 for scheme in "${schemes[@]}"; do
   echo "Running \"$scheme\" across $shards simulators..."
   slug=$(echo "$scheme" | tr ' ' '_')
+  rm -rf test-results/"$slug"-shard*
   pids=()
   for shard in $(seq 0 $((shards - 1))); do
     selection=()
