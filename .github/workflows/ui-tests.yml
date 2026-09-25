@@ -24,7 +24,11 @@ on:
 
 env:
   DERIVED_DATA: build-output
-  TESTS: ${{ inputs.tests }}
+  # TEMPORARY: pushes to the CI branch rerun only the tests that failed on the
+  # hosted runners, while they're being fixed.
+  TESTS: ${{ github.event_name == 'push' && '17 59 108 109 112 122 149' || inputs.tests }}
+  # Requests that weren't answered from Fixtures/, to see what a slow paywall waits on.
+  TEST_RUNNER_SWK_FIXTURES_LOG: ${{ github.workspace }}/test-results/network.log
 
 jobs:
   build:

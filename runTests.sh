@@ -9,6 +9,7 @@
 #     DEVICE="iPhone 18 Pro"  the remaining coordinate taps are written for a
 #                             393x852 point screen and scaled for others
 #     RUNTIME="iOS 27"    runtime prefix, as listed by `xcrun simctl list runtimes`
+#     LOCALE=en_GB LANGUAGE=en-GB  simulator region and language (references are en_GB)
 #   For splitting a run across machines (see .github/workflows/ui-tests.yml):
 #     DERIVED_DATA=path   build products location (default: Xcode's DerivedData)
 #     BUILD_ONLY=1        build every given scheme for testing, then stop
@@ -64,6 +65,14 @@ print(next((d["udid"] for d in devices if d["name"] == name and d["isAvailable"]
 done
 for udid in "${udids[@]}"; do
   xcrun simctl bootstatus "$udid" >/dev/null 2>&1
+  # Screen references show region-formatted prices and dates; they were
+  # recorded in en_GB, and hosted CI machines default to en_US.
+  xcrun simctl spawn "$udid" defaults write -g AppleLocale -string "${LOCALE:-en_GB}"
+  xcrun simctl spawn "$udid" defaults write -g AppleLanguages -array "${LANGUAGE:-en-GB}"
+  # Safari's first launch on a new simulator is slow; tests that open a link
+  # expect it in front within the usual delay.
+  xcrun simctl launch "$udid" com.apple.mobilesafari >/dev/null 2>&1 && sleep 5
+  xcrun simctl terminate "$udid" com.apple.mobilesafari >/dev/null 2>&1
 done
 
 mkdir -p test-results
