@@ -161,6 +161,10 @@ run_shard() {
 
   lim ios simctl --id "$ios" -- spawn booted defaults write -g AppleLocale -string "${LOCALE:-en_GB}" >&2
   lim ios simctl --id "$ios" -- spawn booted defaults write -g AppleLanguages -array "${LANGUAGE:-en-GB}" >&2
+  # Safari's first launch on a new simulator is slow, and tests that open a
+  # link expect it in front within the usual delay (as runTests.sh does).
+  lim ios simctl --id "$ios" -- launch booted com.apple.mobilesafari >&2 && sleep 5
+  lim ios simctl --id "$ios" -- terminate booted com.apple.mobilesafari >&2 || true
 
   local status=0
   lim xcode test . \
