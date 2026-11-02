@@ -4,7 +4,7 @@ End-to-end UI tests for [SuperwallKit](https://github.com/superwall/Superwall-iO
 repo configures the SDK, runs one scenario per test (register a placement, purchase, restore, dismiss,
 …) and reports back to an XCUITest runner, which checks what ends up on screen.
 
-There are about 180 numbered tests (`test0`, `test1`, …), each run in four schemes:
+The tests are numbered (`test0`, `test1`, …), and each runs in four schemes:
 
 | Scheme | Language | Purchases handled by |
 |---|---|---|
