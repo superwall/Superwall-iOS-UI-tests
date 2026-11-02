@@ -531,7 +531,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "# Recorded API responses and paywall pages (see Fixtures.swift), shipped\n# inside the app so remote runners can replay them.\nsrc=\"${SRCROOT}/Fixtures\"\ndest=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fixtures\"\nrm -rf \"$dest\"\n[ -d \"$src\" ] || exit 0\ncp -R \"$src\" \"$dest\"\n";
+			shellScript = "# Recorded API responses and paywall pages (see Fixtures.swift), shipped\n# inside the app so remote runners can replay them.\nsrc=\"${SRCROOT}/Fixtures\"\ndest=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fixtures\"\nrm -rf \"$dest\"\n[ -d \"$src\" ] && cp -R \"$src\" \"$dest\"\n\n# Screen references, so the app can stop waiting as soon as the screen\n# matches the one the next assertion expects (see ScreenReference).\nscreens_src=\"${SRCROOT}/Automated UI Testing/__Snapshots__/Screens\"\nscreens_dest=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ScreenReferences\"\nrm -rf \"$screens_dest\"\n[ -d \"$screens_src\" ] && cp -R \"$screens_src\" \"$screens_dest\"\nexit 0\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

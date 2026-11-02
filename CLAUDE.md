@@ -49,10 +49,11 @@ Custom network interception system in `Libraries/NetworkInterceptor/`:
 # Run specific scheme
 xcodebuild test -scheme "UI Tests -swift -automatic" -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0'
 
-# Run on Limrun cloud simulators, sharded (needs `npm i -g lim` and LIM_API_KEY).
-# Tests that need StoreKit (products, prices, purchases) are skipped there: StoreKit's local
-# test environment isn't available to XCUITest-launched apps under `lim xcode test`.
-scripts/limrun-test.sh -n 8
+# Run on Limrun cloud simulators, sharded (needs `npm i -g lim` and `lim login` or LIM_API_KEY).
+# Runs the whole suite, StoreKit tests included, on iOS 27 / Xcode 27 (-o / -x). Each shard
+# creates its own simulator, sets it to en_GB (Limrun's region otherwise misreads the
+# .storekit prices) and deletes it afterwards. Limrun's only iPhone is an iPhone 16 Pro.
+scripts/limrun-test.sh            # or -t "4 60" for a few tests, -n for the shard count
 ```
 
 Screen references are recorded on iPhone 18 Pro / iOS 27 (the iOS 16.4 runtime the old PNGs came from

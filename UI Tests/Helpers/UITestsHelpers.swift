@@ -140,19 +140,29 @@ public extension NSObject {
   }
 
   func assert(after timeInterval: TimeInterval = 0, precision: PrecisionValue = .default, testName: String = #function, prefix: String = "Test", captureArea: CaptureArea = .safeArea(captureHomeIndicator: false)) async {
+    let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
+
+    // Keep the runner's numbering: the screen assertion is sent first, then
+    // the pixel one.
+    var expected: NSDictionary?
+    if AssertMode.current.comparesScreen {
+      expected = ScreenReference.expectedApp(testName: testName, number: await ScreenReference.nextAssertion())
+    }
+    if AssertMode.current.comparesPixels {
+      _ = await ScreenReference.nextAssertion()
+    }
+
     if timeInterval > 0 {
       if AdaptiveWait.isEnabled && timeInterval >= AdaptiveWait.minimumEligibleDelay {
         // Taps sent without waiting (the Objective-C `tapElement:` family)
         // may still be queued at the runner; time the wait from when they've
         // happened, as the Swift tests' awaited taps do.
         await Communicator.shared.waitForPendingActions()
-        await AdaptiveWait.sleep(upTo: timeInterval)
+        await AdaptiveWait.sleep(upTo: timeInterval, expected: expected)
       } else {
         await sleep(timeInterval: timeInterval)
       }
     }
-
-    let testName = "\(prefix)-\(testName.replacingOccurrences(of: "test", with: ""))"
 
     if AssertMode.current.comparesScreen {
       let screen = await ScreenInspector.capture(patient: true).state
@@ -165,6 +175,7 @@ public extension NSObject {
   }
 
   func assert(value: @autoclosure () -> String, after timeInterval: TimeInterval = 0, testName: String = #function, prefix: String = "Test") async {
+    _ = await ScreenReference.nextAssertion()
     if timeInterval > 0 {
       if AdaptiveWait.isEnabled {
         await AdaptiveWait.wait(for: value, upTo: timeInterval)

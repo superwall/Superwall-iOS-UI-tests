@@ -68,14 +68,27 @@ enum AdaptiveWait {
   /// presentation request ended without a paywall.
   private static let noPaywallGrace: TimeInterval = 2.0
 
+  /// How long the screen must keep matching the expected reference before the
+  /// wait ends early. A screen can pass through the expected state on its way
+  /// somewhere else (a paywall the SDK closes straight away), and a test that
+  /// stopped at the first frame would miss that.
+  private static let matchHoldDuration: TimeInterval = 0.4
+
   /// Waits until the screen has changed and settled, or `timeout` elapses.
+  /// With `expected` (the app part of the reference the next assertion is
+  /// compared with, see `ScreenReference`), it returns as soon as the screen
+  /// matches it and stays matching, unless the screen already matched when
+  /// the wait began: that's a "nothing should change" assertion, which keeps
+  /// the full wait.
   @MainActor
-  static func sleep(upTo timeout: TimeInterval) async {
+  static func sleep(upTo timeout: TimeInterval, expected: NSDictionary? = nil) async {
     let timeout = effectiveTimeout(timeout)
     let start = Date()
     var previous = await ScreenInspector.capture().state
     var lastChange: Date?
     var isStable = true
+    let expected = expected.flatMap { ScreenReference.matches(previous, $0) ? nil : $0 }
+    var matchingSince: Date?
 
     while true {
       let elapsed = Date().timeIntervalSince(start)
@@ -92,6 +105,18 @@ enum AdaptiveWait {
         lastChange = Date()
       }
       previous = capture.state
+
+      if let expected {
+        if capture.isStable && ScreenReference.matches(capture.state, expected) {
+          let since = matchingSince ?? Date()
+          matchingSince = since
+          if Date().timeIntervalSince(since) >= matchHoldDuration {
+            return
+          }
+        } else {
+          matchingSince = nil
+        }
+      }
 
       // Without an observed change we can't tell "not yet" from "never",
       // unless the SDK said it decided not to show a paywall. Otherwise wait
@@ -159,6 +184,58 @@ extension AdaptiveWait {
         return
       }
     }
+  }
+}
+
+/// The screen references the runner compares assertions with, bundled into
+/// the app ("Bundle fixtures" build phase) so `AdaptiveWait` can stop waiting
+/// once the screen is the one the next assertion expects.
+///
+/// The runner numbers a test's assertions in order (`Test-4.1`, `Test-4.2`,
+/// ...), counting screen, pixel and value assertions alike, so the app keeps
+/// the same count. It's per process, and the app is relaunched for every test.
+enum ScreenReference {
+  @MainActor private static var assertionCount = 0
+
+  private static let directory = Bundle.main.resourceURL?.appendingPathComponent("ScreenReferences")
+
+  /// Recording overwrites references, so the old ones can't end a wait.
+  private static let isRecording = ProcessInfo.processInfo.environment["SWK_RECORD_SCREENS"] == "1"
+
+  /// Counts an assertion the runner will number; returns its number.
+  @MainActor
+  static func nextAssertion() -> Int {
+    assertionCount += 1
+    return assertionCount
+  }
+
+  /// The app part of reference `<testName>.<number>`, or nil when there's
+  /// nothing the app alone can match: no reference, recording, or a screen
+  /// with Safari, the home screen or a system alert in front (only the runner
+  /// sees those).
+  static func expectedApp(testName: String, number: Int) -> NSDictionary? {
+    guard !isRecording, let directory else { return nil }
+    // Same naming as the runner's (`ReferenceStore.verifyScreen`).
+    let baseName = testName
+      .replacingOccurrences(of: "\\W+", with: "-", options: .regularExpression)
+      .replacingOccurrences(of: "^-|-$", with: "", options: .regularExpression)
+    let url = directory.appendingPathComponent("\(baseName).\(number).json")
+    guard
+      let data = try? Data(contentsOf: url),
+      let reference = (try? JSONSerialization.jsonObject(with: data)) as? NSDictionary,
+      reference["foreground"] as? String == "app",
+      reference["systemAlerts"] == nil
+    else {
+      return nil
+    }
+    return reference["app"] as? NSDictionary
+  }
+
+  static func matches(_ state: ScreenState, _ expected: NSDictionary) -> Bool {
+    guard let object = try? JSONSerialization.jsonObject(with: Data(state.json.utf8)) as? NSDictionary else {
+      return false
+    }
+    return object.isEqual(expected)
   }
 }
 

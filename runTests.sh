@@ -65,8 +65,8 @@ print(next((d["udid"] for d in devices if d["name"] == name and d["isAvailable"]
 done
 for udid in "${udids[@]}"; do
   xcrun simctl bootstatus "$udid" >/dev/null 2>&1
-  # Screen references show region-formatted prices and dates; they were
-  # recorded in en_GB, and hosted CI machines default to en_US.
+  # The app is launched in en_GB (the runner's launch arguments); system UI
+  # such as the purchase sheet follows the simulator, so match it here.
   xcrun simctl spawn "$udid" defaults write -g AppleLocale -string "${LOCALE:-en_GB}"
   xcrun simctl spawn "$udid" defaults write -g AppleLanguages -array "${LANGUAGE:-en-GB}"
   # Safari's first launch on a new simulator is slow; tests that open a link

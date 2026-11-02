@@ -21,6 +21,12 @@ class Automated_UI_Testing: XCTestCase {
     static let launchEnvironment = {
       return ProcessInfo.processInfo.environment
     }()
+    /// Screen references show region-formatted prices and dates, and some
+    /// campaigns choose a paywall by region; they were recorded in en_GB. The
+    /// arguments set it for the app itself, whatever the simulator's region
+    /// (hosted CI and Limrun simulators aren't en_GB).
+    static let regionArguments = ["-AppleLocale", "en_GB", "-AppleLanguages", "(en-GB)"]
+
     static let snapshotsPathComponent: String = {
       return BuildHelpers.Constants.isCIEnvironment ? "CI_Snapshots" : "Snapshots"
     }()
@@ -247,7 +253,7 @@ class Automated_UI_Testing: XCTestCase {
       environment["SWK_FIXTURES_DIR"] = fixtures.path
     }
     app.launchEnvironment = environment
-    app.launchArguments.append("SUPERWALL_UI_TESTS")
+    app.launchArguments = ["SUPERWALL_UI_TESTS"] + Constants.regionArguments
     app.launch()
     _ = app.wait(for: .runningForeground, timeout: 60)
   }
@@ -642,37 +648,14 @@ enum KnownIssue {
     )
   ]
 
-  /// Tests that need StoreKit's local test environment (products, prices,
-  /// purchases). On Limrun it isn't available to apps that XCUITest launches:
-  /// storekitd reports the app "is not using StoreKit Testing in Xcode" and
-  /// asks Apple's sandbox, which has none of our test products.
-  ///
-  /// These are the tests that failed in a full Limrun run of the Swift
-  /// automatic scheme (all for this reason: missing prices and templated
-  /// product text, purchases that never happen, or tests stopping because no
-  /// products loaded). Tests that don't involve products pass there. Re-derive
-  /// the list once Limrun supports StoreKit testing for XCUITest-launched apps.
-  private static let storeKitTests: Set<Int> = [
-    4, 5, 6, 7, 9, 10, 21, 24, 25, 27, 32, 35, 37, 38, 39, 43,
-    44, 45, 47, 48, 58, 60, 63, 69, 71, 75, 77, 78, 79, 80, 81, 83,
-    84, 85, 86, 87, 88, 89, 90, 91, 93, 94, 95, 96, 97, 98, 99, 103,
-    104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 124,
-    125, 126, 127, 128, 129, 130, 131, 132, 133, 137, 138, 139, 140, 141, 142, 143,
-    144, 145, 146, 147, 148, 149, 150, 152, 153, 154, 155, 156, 157, 159, 160, 161,
-    162, 163, 164, 165, 166, 167, 171, 172, 173, 174, 175, 176, 177, 178
-  ]
-
   /// Limrun runs the test products from its own file area on the simulator.
   static let isLimrun = Bundle(for: Automated_UI_Testing.self).bundlePath.contains("/limulator-files/")
 
   /// Why a test can't run where it's running, if so. Skipped rather than run
   /// as an expected failure: Limrun's results drop or fail tests with
   /// expected failures, and there's no point spending a simulator on them.
+  /// Nothing needs skipping at the moment.
   static func skipReason(testNumber: Int) -> String? {
-    if isLimrun, storeKitTests.contains(testNumber) {
-      return "Limrun: StoreKit's local test environment isn't available to apps launched by XCUITest in "
-        + "`lim xcode test`, so products don't load and purchases don't happen."
-    }
     return nil
   }
 
