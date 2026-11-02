@@ -1,0 +1,24 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "based-on-breakaway-template-c979-2023-06-28",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "GATED",
+          "PAYWALL",
+          "Our AI based coaching system is focused on gaining insight and actionable direction from your data in a simple straightforward environment.",
+          "Unlock it by becoming a member today.",
+          "Privacy policy",
+          "|",
+          "Terms of service",
+          "Start free trial",
+          "Just $3.99/month after your free trial"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

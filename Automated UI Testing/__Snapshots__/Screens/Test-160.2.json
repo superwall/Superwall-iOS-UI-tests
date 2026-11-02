@@ -1,0 +1,42 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "twinbees-template-75cb-2024-05-21",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Try Twinbees for free",
+          "⭐️ Rated <date> stars worldwide on the App Store ⭐️",
+          "You are ready",
+          "Everything is set for you to use the app with your preferred devices.",
+          "Today: Start your trial",
+          "Get full access to the features.",
+          "Day -1: Last call",
+          "Having second thought? You can still cancel your subscription before the end of your trial, and come back whenever you want.",
+          "Day 0: Your subscription begins",
+          "You'll be charged for your plan. Cancel anytime before.",
+          "Subscriptions billed as one payment. Recurring billing.",
+          "Cancel anytime for any reason.",
+          "Restore Purchase",
+          "Terms and Privacy",
+          "Best plan - 137% OFF",
+          "Monthly",
+          "$719.99",
+          "$4.99",
+          "0 days free",
+          "Yearly",
+          "$59.99",
+          "7 days free",
+          "Start your trial today",
+          "Free for 0 days, then $4.99/month",
+          "Free for 0 days, then $4.99/month",
+          "Start your trial today",
+          "View All Plans"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

@@ -1,0 +1,25 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "docusnap-template-8217-2024-04-30",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "How your trial works",
+          "First days free, then per",
+          "Today",
+          "Unlock access to all the app's features like X, Y and even Z.",
+          "In NaN Days",
+          "We'll send you a reminder that your trial is ending soon.",
+          "In Days",
+          "You'll be charged on unless you cancel anytime before.",
+          "No Payment Due Now",
+          "Continue"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

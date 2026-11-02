@@ -1,0 +1,31 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "based-on-loopsie-template-7c52-2023-06-28",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Back",
+          "NONGATED",
+          "PAYWALL",
+          "Generating realistic photo is a very heavy computation task but we try to make it as cheap as possible 😊",
+          "..Most Popular",
+          "All packs + Rizz Pro",
+          "300 AI-generated pictures",
+          "$199.99",
+          "year",
+          "..",
+          "3 Selected Packs",
+          "120 AI-generated pictures",
+          "$39.99",
+          "Subscribe now",
+          "🔒 Your pictures are securely stored on our server and",
+          "deleted right after the creation of your new photos"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

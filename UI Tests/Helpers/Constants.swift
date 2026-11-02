@@ -95,10 +95,9 @@ public class Constants: NSObject {
   }()
   
   // Time interval constants
-  @objc public static let paywallPresentationDelay: TimeInterval = 12.0 * CIDelayMultiplier
-  @objc public static let implicitPaywallPresentationDelay: TimeInterval = 12.0 * CIDelayMultiplier
-  @objc public static let paywallPresentationFailureDelay: TimeInterval = 16.0 * CIDelayMultiplier
-  @objc public static let paywallDelegateResponseDelay: TimeInterval = 12.0 * CIDelayMultiplier
-
-  private static let CIDelayMultiplier: TimeInterval = BuildHelpers.Constants.isCIEnvironment ? 1.5 : 1.0
+  // Upper bounds: waits return as soon as the screen or value has settled.
+  @objc public static let paywallPresentationDelay: TimeInterval = 12.0
+  @objc public static let implicitPaywallPresentationDelay: TimeInterval = 12.0
+  @objc public static let paywallPresentationFailureDelay: TimeInterval = 16.0
+  @objc public static let paywallDelegateResponseDelay: TimeInterval = 12.0
 }

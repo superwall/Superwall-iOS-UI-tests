@@ -386,15 +386,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Position of the perform button to open a URL in Safari
-    let point = CGPoint(x: 330, y: 212)
-    touch(point)
+    await tap("Perform", index: 1)
 
     // Verify that In-App Safari has opened
     await assert(after: Constants.paywallPresentationDelay)
 
     // Press the done button to go back
-    let donePoint = CGPoint(x: 30, y: 70)
-    touch(donePoint)
+    await tap("Close")
 
     // Verify that the paywall appears
     await assert(after: Constants.paywallPresentationDelay)
@@ -455,8 +453,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Position of the perform button to open a URL in Safari
-    let point = CGPoint(x: 330, y: 136)
-    touch(point)
+    await tap("Perform")
 
     // Verify that Safari has opened.
     await assert(after: Constants.paywallPresentationDelay, captureArea: .safari)
@@ -481,22 +478,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -510,18 +501,44 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Track an event shortly after another one is beginning to present. The session should not be cancelled out.
   func test22() async throws {
-    skip("Skipping until we can read didTrackSuperwallEventInfo params")
-    return
+    // Create Superwall delegate
+    let delegate = Configuration.MockSuperwallDelegate()
+    holdStrongly(delegate)
 
-    // TODO: Maybe clear attributes here? Don't want rules matching
+    // Set delegate
+    Superwall.shared.delegate = delegate
+
+    // Record whether each trigger and paywall event carries its experiment and variant
+    let eventsHolder = ValueDescriptionHolder()
+    eventsHolder.stringValue = ""
+
+    delegate.handleSuperwallEvent { eventInfo in
+      let name: String
+      switch eventInfo.event {
+      case .triggerFire(let placementName, _):
+        name = "triggerFire(\(placementName))"
+      case .paywallOpen:
+        name = "paywallOpen"
+      default:
+        return
+      }
+      let hasExperiment = eventInfo.params["experiment_id"].map { !($0 is NSNull) && "\($0)" != "nil" } ?? false
+      let hasVariant = eventInfo.params["variant_id"].map { !($0 is NSNull) && "\($0)" != "nil" } ?? false
+      eventsHolder.stringValue += "\(name) experiment:\(hasExperiment) variant:\(hasVariant); "
+      eventsHolder.intValue += 1
+    }
 
     Superwall.shared.register(placement: "present_data")
 
-    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(200)) {
-      Superwall.shared.register(placement: "present_and_rule_user")
-    }
+    // Register a second placement while the first paywall is beginning to present
+    await sleep(timeInterval: 0.2)
+    Superwall.shared.register(placement: "present_and_rule_user")
 
-    // TODO: Need to read the output of the didTrackSuperwallEventInfo params and check that trigger_session_id, experiment_id, and variant_id isn't nil.
+    // Assert that the first paywall presents
+    await assert(after: Constants.paywallPresentationDelay)
+
+    // Assert that the presented paywall's events still carry its experiment and variant
+    await assert(value: eventsHolder.description)
   }
 
   /// Case: Unsubscribed user, register event without a gating handler
@@ -566,22 +583,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 748)
-    touch(purchaseButton)
+    await tap("Subscribe now")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -733,15 +744,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -848,15 +854,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -906,8 +907,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
-    let restoreButton = CGPoint(x: 214, y: 292)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert paywall finished result value ("restored")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -1293,14 +1293,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(value: deepLinkEventHolder.description)
 
     // Tap the Preview button
-    let previewButton = CGPoint(x: 196, y: 775)
-    touch(previewButton)
-
-    await sleep(timeInterval: 2)
+    await tap("Preview", index: 1)
 
     // Tap the Free Trial button
-    let freeTrialButton = CGPoint(x: 196, y: 665)
-    touch(freeTrialButton)
+    await tap("With Intro Offer")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -1308,16 +1304,11 @@ final class UITests_Swift: NSObject, Testable {
     let closeButton = CGPoint(x: 196, y: 91)
     touch(closeButton)
 
-    await sleep(timeInterval: 2)
-
     // Tap the Preview button
-    touch(previewButton)
-
-    await sleep(timeInterval: 2)
+    await tap("Preview", index: 1)
 
     // Tap the default view
-    let defaultButton = CGPoint(x: 196, y: 725)
-    touch(defaultButton)
+    await tap("Without Intro Offer")
 
     await assert(after: Constants.paywallPresentationDelay)
   }
@@ -1397,14 +1388,12 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
-    let abandonTransactionButton = CGPoint(x: 359, y: 515)
-    touch(abandonTransactionButton)
+    await tapSystemElement("dismiss")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -1464,8 +1453,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert the next paywall is displayed
     await assert(after: Constants.paywallPresentationDelay)
@@ -1516,15 +1504,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
+    await tapSystemElement("Subscribe")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -1575,15 +1561,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -1608,8 +1589,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the open # URL button
-    let point = CGPoint(x: 330, y: 360)
-    touch(point)
+    await tap("Perform", index: 3)
 
     // Verify that nothing happened
     await assert(after: Constants.paywallPresentationDelay)
@@ -1641,8 +1621,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Press restore
-    let restoreButton = CGPoint(x: 200, y: 232)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert no subscription alert appeared.
     await assert(after: Constants.paywallDelegateResponseDelay)
@@ -1697,8 +1676,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -1765,8 +1743,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the other option
-    let firstOption = CGPoint(x: 196, y: 790)
-    touch(firstOption)
+    await tap("Other")
 
     // Assert that alert controller with textfield has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -1774,8 +1751,7 @@ final class UITests_Swift: NSObject, Testable {
     await typeText("Test")
 
     // Tap the submit button
-    let submitButton = CGPoint(x: 196, y: 350)
-    touch(submitButton)
+    await tap("Submit")
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -1924,8 +1900,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that new paywall has appeared.
     await assert(after: Constants.paywallPresentationDelay)
@@ -1998,8 +1973,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -2066,8 +2040,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -2118,25 +2091,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared and no survey displayed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -2245,8 +2209,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the close option
-    let closeOption = CGPoint(x: 196, y: 792)
-    touch(closeOption)
+    await tap("Close")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -2290,25 +2253,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -2486,20 +2440,15 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Continue on the paywall
-    let continueButton = CGPoint(x: 196, y: 786)
-    touch(continueButton)
-
-    await sleep(timeInterval: 2)
+    await tap("Continue")
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 786)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
-    let abandonTransactionButton = CGPoint(x: 359, y: 515)
-    touch(abandonTransactionButton)
+    await tapSystemElement("dismiss")
 
     // Wait for non-gated paywall to show
     await assert(after: Constants.paywallPresentationDelay)
@@ -2538,21 +2487,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Continue on the paywall
-    let continueButton = CGPoint(x: 196, y: 786)
-    touch(continueButton)
-
-    await sleep(timeInterval: 2)
+    await tap("Continue")
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 786)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
+    await tapSystemElement("Subscribe")
 
     // Wait for non-gated paywall to show
     await assert(after: Constants.paywallPresentationDelay)
@@ -2620,8 +2564,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
-    let restoreButton = CGPoint(x: 196, y: 136)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert paywall result value
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -2659,8 +2602,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
-    let restoreButton = CGPoint(x: 196, y: 196)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert paywall finished result value ("restored")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -2707,8 +2649,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Press restore
-    let restoreButton = CGPoint(x: 196, y: 136)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert no subscription alert appeared.
     await assert(after: Constants.paywallDelegateResponseDelay)
@@ -2805,22 +2746,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 748)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -3122,8 +3057,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the close option
-    let closeOption = CGPoint(x: 196, y: 792)
-    touch(closeOption)
+    await tap("Close")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -3177,26 +3111,18 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Start your trial today")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env).
     // For some reason, the tapping of OK gets called twice and dismisses both the purchase alert and the feature alert so it won't appear in screenshots.
-    let okButton = CGPoint(x: 196, y: 495)
 
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared and no survey displayed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -3308,8 +3234,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -3415,8 +3340,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -3484,8 +3408,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the other option
-    let firstOption = CGPoint(x: 196, y: 790)
-    touch(firstOption)
+    await tap("Other")
 
     // Assert that alert controller with textfield has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -3493,8 +3416,7 @@ final class UITests_Swift: NSObject, Testable {
     await typeText("Test")
 
     // Tap the submit button
-    let submitButton = CGPoint(x: 196, y: 350)
-    touch(submitButton)
+    await tap("Submit")
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -3562,8 +3484,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert that paywall has disappeared and the feature block called.
     await assert(after: Constants.paywallPresentationDelay)
@@ -3674,15 +3595,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Position of the perform button to open a URL in Safari
-    let point = CGPoint(x: 330, y: 212)
-    touch(point)
+    await tap("Perform", index: 1)
 
     // Verify that In-App Safari has opened
     await assert(after: Constants.paywallPresentationDelay)
 
     // Press the done button to go back
-    let donePoint = CGPoint(x: 30, y: 70)
-    touch(donePoint)
+    await tap("Close")
 
     // Verify that the paywall appears
     await assert(after: Constants.paywallPresentationDelay)
@@ -3697,8 +3616,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Position of the perform button to open a URL in Safari
-    let point = CGPoint(x: 330, y: 136)
-    touch(point)
+    await tap("Perform")
 
     // Verify that Safari has opened.
     await assert(after: Constants.paywallPresentationDelay, captureArea: .safari)
@@ -3719,8 +3637,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the open # URL button
-    let point = CGPoint(x: 330, y: 360)
-    touch(point)
+    await tap("Perform", index: 3)
 
     // Verify that nothing happened
     await assert(after: Constants.paywallPresentationDelay)
@@ -4056,15 +3973,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4116,7 +4028,6 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-
     Task {
       let result = await Superwall.shared.purchase(product)
       switch result {
@@ -4132,8 +4043,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Abandon the transaction
-    let abandonTransactionButton = CGPoint(x: 359, y: 20)
-    touch(abandonTransactionButton)
+    await tapSystemElement("dismiss")
 
     await assert(value: cancelledResultValueHolder.description, after: Constants.paywallPresentationDelay)
     await assert(value: transactionAbandonEventHolder.description)
@@ -4300,7 +4210,6 @@ final class UITests_Swift: NSObject, Testable {
         return
       }
     }
-
 
     // User is not subscribed
 
@@ -4475,25 +4384,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -4554,15 +4454,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4624,15 +4519,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button (set for iPhone 16 Pro on iOS 18.1)
-    let subscribeButton = CGPoint(x: 201, y: 810)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4755,22 +4645,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4798,15 +4682,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4849,15 +4728,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4929,15 +4803,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -4982,8 +4851,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
-    let restoreButton = CGPoint(x: 214, y: 292)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert paywall finished result value ("restored")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -5035,14 +4903,12 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
-    let abandonTransactionButton = CGPoint(x: 359, y: 515)
-    touch(abandonTransactionButton)
+    await tapSystemElement("dismiss")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -5099,8 +4965,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Tap the first option
-    let firstOption = CGPoint(x: 196, y: 733)
-    touch(firstOption)
+    await tapAlertButton(at: 0)
 
     // Assert the next paywall is displayed
     await assert(after: Constants.paywallPresentationDelay)
@@ -5144,15 +5009,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
+    await tapSystemElement("Subscribe")
 
     await assert(after: Constants.paywallPresentationDelay)
 
@@ -5181,8 +5044,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Press restore
-    let restoreButton = CGPoint(x: 200, y: 232)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert no subscription alert appeared.
     await assert(after: Constants.paywallDelegateResponseDelay)
@@ -5228,26 +5090,18 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
     // TODO: Note that sometimes this dismisses everything but sometimes doesn't causing test to be flakey.
-    let okButton = CGPoint(x: 196, y: 495)
 
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared and no survey displayed.
     await assert(after: Constants.paywallPresentationDelay)
@@ -5286,25 +5140,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -5330,20 +5175,15 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Continue on the paywall
-    let continueButton = CGPoint(x: 196, y: 786)
-    touch(continueButton)
-
-    await sleep(timeInterval: 2)
+    await tap("Continue")
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 786)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
-    let abandonTransactionButton = CGPoint(x: 359, y: 515)
-    touch(abandonTransactionButton)
+    await tapSystemElement("dismiss")
 
     // Wait for non-gated paywall to show
     await assert(after: Constants.paywallPresentationDelay)
@@ -5375,21 +5215,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Continue on the paywall
-    let continueButton = CGPoint(x: 196, y: 786)
-    touch(continueButton)
-
-    await sleep(timeInterval: 2)
+    await tap("Continue")
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 786)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
+    await tapSystemElement("Subscribe")
 
     // Wait for non-gated paywall to show
     await assert(after: Constants.paywallPresentationDelay)
@@ -5426,8 +5261,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
-    let restoreButton = CGPoint(x: 196, y: 136)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert paywall result value
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -5458,8 +5292,7 @@ final class UITests_Swift: NSObject, Testable {
     await configuration.mockSubscribedUser(productIdentifier: StoreKitHelper.Constants.customAnnualProductIdentifier)
 
     // Press restore
-    let restoreButton = CGPoint(x: 196, y: 196)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert paywall finished result value ("restored")
     await assert(value: paywallDidFinishResultValueHolder.stringValue, after: Constants.paywallDelegateResponseDelay)
@@ -5499,8 +5332,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Press restore
-    let restoreButton = CGPoint(x: 196, y: 136)
-    touch(restoreButton)
+    await tap("Restore")
 
     // Assert no subscription alert appeared.
     await assert(after: Constants.paywallDelegateResponseDelay)
@@ -5519,22 +5351,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 748)
-    touch(purchaseButton)
+    await tap("Continue")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -5587,25 +5413,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Start your trial today")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared and no survey displayed.
     // Note: Alert disappears due to Xcode overtapping for some weird reason.
@@ -5889,15 +5706,10 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
+    await tapSystemElement("OK")
 
     // Wait for OK button tap to process
     await sleep(timeInterval: 1.0)
@@ -5942,7 +5754,6 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-
     Task {
       let result = await Superwall.shared.purchase(product)
       switch result {
@@ -5958,8 +5769,7 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Abandon the transaction
-    let abandonTransactionButton = CGPoint(x: 359, y: 20)
-    touch(abandonTransactionButton)
+    await tapSystemElement("dismiss")
 
     await assert(value: cancelledResultValueHolder.description, after: Constants.paywallPresentationDelay)
     await assert(value: transactionAbandonEventHolder.description)
@@ -6104,7 +5914,6 @@ final class UITests_Swift: NSObject, Testable {
       }
     }
 
-
     // User is not subscribed
 
     let result = await Superwall.shared.restorePurchases()
@@ -6215,25 +6024,16 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 196, y: 750)
-    touch(purchaseButton)
+    await tap("Purchase Primary")
 
     // Assert that the system paywall sheet is displayed but don't capture the loading indicator at the top
     await assert(after: Constants.paywallPresentationDelay, captureArea: .custom(frame: .init(origin: .init(x: 0, y: 488), size: .init(width: 393, height: 300))))
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 196, y: 766)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed (coming from Apple in Sandbox env)
-    let okButton = CGPoint(x: 196, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6248,17 +6048,13 @@ final class UITests_Swift: NSObject, Testable {
   }
 
   // MARK: - Tests 172-178: Subscription State Tests
-  // NOTE: These tests must be run on iPhone 17 Pro simulator with iOS 26.1
-  // NOTE: The test app must be manually deleted if it already exists before running these tests
+  // NOTE: These tests need iOS 26 or later.
 
   /// Test 172: Purchase a product then cancel so it doesn't auto-renew, then register auto_renew_disabled
   func test172() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.1
-    guard
-      await UIDevice.current.name.contains("iPhone 17 Pro"),
-      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-    else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6269,25 +6065,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6312,12 +6096,9 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 173: Purchase a free trial and cancel the product so that it doesn't auto-renew, then register active_trials_auto_renew_disabled
   func test173() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.1
-    guard
-      await UIDevice.current.name.contains("iPhone 17 Pro"),
-      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-    else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6328,25 +6109,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall (this will use the free trial product)
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6368,12 +6137,9 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 174: Purchase a normal product (no trial) and then cancel so that it doesn't auto-renew, then register active_subscriptions_auto_renew_disabled
   func test174() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.1
-    guard
-      await UIDevice.current.name.contains("iPhone 17 Pro"),
-      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-    else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6384,25 +6150,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6424,12 +6178,9 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 175: Purchase a product (without trial) and then make it expire, then register expired_entitlements
   func test175() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.1
-    guard
-      await UIDevice.current.name.contains("iPhone 17 Pro"),
-      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-    else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6440,25 +6191,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6480,10 +6219,9 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 176: Purchase the product com.ui_tests.monthly and then cancel it such that it doesn't autorenew and then register default_active_auto_renew_disabled
   func test176() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.0
-    guard UIDevice.current.name.contains("iPhone 17 Pro"),
-          ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26 else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.0")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6494,25 +6232,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6534,12 +6260,9 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 177: Purchase a product with a trial then register default_in_trial
   func test177() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.1
-    guard
-      await UIDevice.current.name.contains("iPhone 17 Pro"),
-      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-    else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6550,25 +6273,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall (this will use the free trial product)
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)
@@ -6581,12 +6292,9 @@ final class UITests_Swift: NSObject, Testable {
 
   /// Test 178: Purchase then expire a product and register default_expired
   func test178() async throws {
-    // Skip if not on iPhone 17 Pro with iOS 26.1
-    guard
-      await UIDevice.current.name.contains("iPhone 17 Pro"),
-      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-    else {
-      skip("This test requires iPhone 17 Pro simulator with iOS 26.1")
+    // Subscription status changes in StoreKit testing need iOS 26 or later
+    guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26 else {
+      skip("This test requires iOS 26 or later")
       return
     }
 
@@ -6597,25 +6305,13 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
 
     // Purchase on the paywall
-    let purchaseButton = CGPoint(x: 201, y: 762)
-    touch(purchaseButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tap("Continue")
 
     // Tap the Subscribe button
-    let subscribeButton = CGPoint(x: 201, y: 820)
-    touch(subscribeButton)
-
-    // Wait for subscribe to occur
-    await sleep(timeInterval: Constants.paywallPresentationDelay)
+    await tapSystemElement("Subscribe")
 
     // Tap the OK button once subscription has been confirmed
-    let okButton = CGPoint(x: 201, y: 495)
-    touch(okButton)
-
-    // Wait for OK button tap to process
-    await sleep(timeInterval: 1.0)
+    await tapSystemElement("OK")
 
     // Assert the paywall has disappeared
     await assert(after: Constants.paywallPresentationDelay)

@@ -1,0 +1,35 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "based-on-ai-app-template-fb99-2023-06-28",
+        "presentationStyle" : "fullScreen",
+        "text" : [
+          "Restore",
+          "Unlock Unlimited Access",
+          "Answers from GPT3.5",
+          "More accurate and detailed answers",
+          "Higher word limit",
+          "Type longer messages",
+          "No limits",
+          "Have unlimited dialogues",
+          "No ads",
+          "Enjoy Ask AI without any ads",
+          "Privacy | Terms",
+          "Cancel Anytime",
+          "..",
+          "Period: month",
+          "$4.99",
+          "..",
+          "Period: year",
+          "$29.99",
+          "Save 70%",
+          "Purchase Primary"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

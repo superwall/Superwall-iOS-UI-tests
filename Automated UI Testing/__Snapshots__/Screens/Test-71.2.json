@@ -1,0 +1,32 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "survey-with-purchase-button-bfa1-2023-08-18",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "FREE TRIAL VIEW",
+          "Get your Focus Report",
+          "You successfully started your journey",
+          "Today: Improve Your Focus",
+          "Block Apps automatically, get your detailed stats and stay on track to your dreams",
+          "Day 6: See first results",
+          "We’ll send you a notification with a report to see how you improved this week",
+          "Day 7: Trial Ends",
+          "Your subscription will start <date>. Cancel anytime before",
+          "1,500+ Reviews",
+          "Join 100k+ people using Opal",
+          "Subscriptions billed as one payment. Recurring billing. Cancel anytime for any reason.",
+          "Restore Purchase",
+          "Terms and Privacy",
+          "Skip for now",
+          "Continue",
+          "View All Plans"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

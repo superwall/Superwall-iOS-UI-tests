@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@import SuperwallKit;
+
 @protocol SWKTestConfiguration;
 @interface SWKConfigurationAutomatic : NSObject <SWKTestConfiguration>
 @end

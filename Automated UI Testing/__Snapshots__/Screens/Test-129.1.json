@@ -1,0 +1,41 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "mojo-template-ad07-2024-05-23",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Explore hundreds of text effects",
+          "Generate automated captions effortlessly",
+          "Go viral with the latest trending sounds",
+          "Elevate your brand with our customizable brand kit",
+          "Choose a plan",
+          "SAVE NAN%",
+          "$4.99",
+          "/month",
+          "0-day",
+          "free trial",
+          "/",
+          "-day",
+          "free trial",
+          "CONTINUE",
+          "$4.99",
+          "/month",
+          "(equivalent to $4.99/month)",
+          "$4.99",
+          "/month",
+          "(equivalent to $4.99/month)",
+          "CONTINUE",
+          "REDEEM CODE",
+          "VIEW ALL PLANS",
+          "Terms of Use",
+          "Restore Purchase",
+          "Privacy Policy"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

@@ -1,0 +1,50 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "outside-template-e47b-2024-04-30",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Enjoy the best",
+          "planning experience",
+          "No Ads",
+          "No distractions, just your plans.",
+          "Calendar Sync",
+          "Sync all your calendars eg Google, Apple",
+          "Categories & color code",
+          "Easily organize and filter your plans",
+          "Automatic reminders",
+          "Never forget something important again",
+          "Unlimited countdowns & widgets",
+          "Feel excited about what's next",
+          "Personalized AI planner",
+          "Upgrade your plans with unlimited ideas",
+          "Private event chat",
+          "Coordinate in a group chat per plan",
+          "Personalize anything",
+          "Visuals, timers, notes, location & more",
+          "Share plan with 6 people",
+          "With iCloud Family Sharing",
+          "20+ app icons",
+          "Choose from a unique growing collection",
+          "Premium profile badge",
+          "Be recognised as a supporter",
+          "Premium support",
+          "Fast responses from dedicated support",
+          "Secure & Private",
+          "Trust that your families plans are safe",
+          "Continue",
+          "Choose a plan",
+          "Primary Product",
+          "$4.99 / month",
+          "Secondary Product",
+          "$29.99 / year",
+          "Subscribe for $4.99 / month"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

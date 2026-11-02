@@ -1,0 +1,15 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "actions" : [
+          "OK"
+        ],
+        "kind" : "alert",
+        "message" : "This is an alert message",
+        "title" : "Alert"
+      }
+    ]
+  },
+  "foreground" : "app"
+}

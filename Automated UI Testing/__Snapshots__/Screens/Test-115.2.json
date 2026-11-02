@@ -1,0 +1,42 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "v4--exit-survey-with-other--100-2925-2024-05-21",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Safety Network",
+          "Protect loved ones with advanced location safety features.",
+          "24/7 Safety Agents",
+          "Instant access to trained safety agent for guidance in any emergency",
+          "Agent Monitoring",
+          "Turn on Safety Mode for an Agent to listen in discretely, ot text silently to get help.",
+          "Quick Emergency Dispatch",
+          "Agents can help rapidly dispatch police, fire, or medical to your location.",
+          "TRY 0 DAYS",
+          "Free",
+          "TRY 0 DAYS",
+          "$4.99",
+          "$4.99/ month after trial. Cancel anytime.",
+          "START TRIAL",
+          "By continuing, you agree to our",
+          "terms of use",
+          "and",
+          "privacy policy."
+        ]
+      },
+      {
+        "actions" : [
+          "Option 1",
+          "Other"
+        ],
+        "kind" : "actionSheet",
+        "message" : "User-facing message",
+        "title" : "User-facing title"
+      }
+    ]
+  },
+  "foreground" : "app"
+}

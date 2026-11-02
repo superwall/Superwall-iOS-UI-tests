@@ -1,0 +1,25 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "planner5d-template-5dae-2024-05-23",
+        "presentationStyle" : "fullScreen",
+        "text" : [
+          "Restore",
+          "Create your dream home",
+          "Join 101,263,916+ community members",
+          "Not sure? Enable free trial.",
+          "Primary Product",
+          "$4.99 / month",
+          "Tertiary Product",
+          "$29.99 / year",
+          "Continue",
+          "Continue with limited features"
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}

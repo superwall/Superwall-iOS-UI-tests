@@ -1,0 +1,27 @@
+{
+  "app" : {
+    "layers" : [
+      {
+        "kind" : "paywall",
+        "loadingState" : "ready",
+        "paywallIdentifier" : "based-on-balance-template-2942-2023-07-07",
+        "presentationStyle" : "overFullScreen",
+        "text" : [
+          "Restore Purchase",
+          "We're offering a full year of Balance for free as part of our mission to increase access to mental wellness tools.",
+          "Money shouldn't prevent you from improving your stress, sleep, and mental well-being.",
+          "It cost us 75 € per trial to compensate our team and offer this one-year trial to people around the world. But please choose the amount you're comfortable with.",
+          "..",
+          "132 €",
+          "..",
+          "75 €",
+          "..",
+          "0 €",
+          "Unlock 1 Year of Balance",
+          "Only 132 €/year. Cancel anytime."
+        ]
+      }
+    ]
+  },
+  "foreground" : "app"
+}
