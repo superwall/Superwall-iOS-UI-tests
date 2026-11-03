@@ -47,6 +47,7 @@ You can also run a scheme from Xcode, with parallel testing turned off.
 scripts/limrun-test.sh                                    # Swift automatic, every test, 20 shards
 scripts/limrun-test.sh -s "UI Tests -objc -advanced"      # another scheme
 scripts/limrun-test.sh -t "4 60 103"                      # a few tests
+scripts/limrun-test.sh -f                                 # stop at the first test that fails twice
 ```
 
 Each shard creates its own iOS 27 simulator and Xcode 27 sandbox, sets the simulator to en_GB, runs its
@@ -57,7 +58,11 @@ the end.
 
 Options: `-n` shards (default 20, the organization's limit per instance type), `-x` / `-o` the Xcode
 and iOS versions (default 27), `-r` the results directory (give each run its own when running schemes
-at the same time).
+at the same time), `-f` (or `FAIL_FAST=1`) to stop early.
+
+With `-f`, a failed test is retried straight away on a fresh instance instead of at the end. If it fails
+again, every shard is stopped, its instances are deleted and the run fails, so you only see that
+failure. SuperwallKit's release workflow uses it. Leave it off to get the full list of failures.
 
 Limrun leaves skipped tests and known issues (below) out of its results, so the summary lists them as
 "skipped or known issues".
