@@ -8,7 +8,7 @@
 #   lim login   (or export LIM_API_KEY=lim_...)
 #
 # Usage:
-#   scripts/limrun-test.sh [-s "UI Tests -swift -automatic"] [-n shards] [-t "0 5 12"] [-x 27] [-o 27] [-r dir]
+#   scripts/limrun-test.sh [-s "UI Tests -swift -automatic"] [-n shards] [-t "0 5 12"] [-x 27] [-o 27] [-r dir] [-f]
 #
 #   -s  Scheme to run (default: "UI Tests -swift -automatic").
 #   -n  Number of shards, each with its own sandbox and simulator (default: 20,
@@ -19,6 +19,10 @@
 #       running several schemes at once.
 #   -o  iOS major version of the simulator runtime (default: 27, matching the
 #       screen references). Without it Limrun picks its default runtime.
+#   -f  Stop at the first test that fails twice (also FAIL_FAST=1). A test that
+#       fails is retried straight away on a fresh instance; if that fails too,
+#       every shard is stopped and the run fails. Without it, every test runs
+#       and failures are retried at the end, so you get the full list.
 #
 # Each shard gets its own fresh instances (an iOS simulator and an Xcode
 # sandbox attached to it), set to en_GB, runs `lim xcode test` on them and
@@ -47,7 +51,8 @@ xcode_version=27
 os_version=27
 
 results="limrun-results"
-while getopts "s:n:t:x:o:r:" option; do
+fail_fast="${FAIL_FAST:-0}"
+while getopts "s:n:t:x:o:r:f" option; do
   case "$option" in
     s) scheme="$OPTARG" ;;
     n) shards="$OPTARG" ;;
@@ -55,7 +60,8 @@ while getopts "s:n:t:x:o:r:" option; do
     x) xcode_version="$OPTARG" ;;
     o) os_version="$OPTARG" ;;
     r) results="$OPTARG" ;;
-    *) sed -n '2,24p' "$0"; exit 2 ;;
+    f) fail_fast=1 ;;
+    *) sed -n '2,28p' "$0"; exit 2 ;;
   esac
 done
 
@@ -138,18 +144,21 @@ run_shard() {
   local name="$1"
   shift
   local ios="" xcode="" attempt
-  for attempt in 1 2 3 4 5; do
+  # An early retry (-f) waits longer for a free instance: the other shards
+  # can be using the organization's whole quota.
+  local attempts="${CREATE_ATTEMPTS:-5}"
+  for attempt in $(seq 1 "$attempts"); do
     ios=$(lim ios create --model iphone --os-version "$os_version" \
       --inactivity-timeout "$idle_timeout" --no-open --json --label "shard=$name" | instance_id) && break
     ios=""
-    sleep $((attempt * 20))
+    sleep $((attempt * 20 > 60 ? 60 : attempt * 20))
   done
   [ -n "$ios" ] || { echo "Couldn't create a simulator for $name" >&2; return 1; }
-  for attempt in 1 2 3 4 5; do
+  for attempt in $(seq 1 "$attempts"); do
     xcode=$(lim xcode create --attach --simulator-id "$ios" \
       --inactivity-timeout "$idle_timeout" --json --label "shard=$name" | instance_id) && break
     xcode=""
-    sleep $((attempt * 20))
+    sleep $((attempt * 20 > 60 ? 60 : attempt * 20))
   done
   if [ -z "$xcode" ]; then
     echo "Couldn't create an Xcode sandbox for $name" >&2
@@ -190,10 +199,20 @@ run_shard() {
 idle_timeout=30m
 instances="$results/instances.txt"
 : > "$instances"
+# Stops a process and everything it started.
+kill_tree() {
+  local child
+  for child in $(pgrep -P "$1" 2>/dev/null); do
+    kill_tree "$child"
+  done
+  kill "$1" 2>/dev/null || true
+}
 cleanup() {
   trap - EXIT INT TERM
-  local ios xcode
-  jobs -p | xargs kill 2>/dev/null || true
+  local ios xcode pid
+  for pid in $(jobs -p); do
+    kill_tree "$pid"
+  done
   while read -r ios xcode; do
     lim xcode delete "$xcode" >/dev/null 2>&1 &
     lim ios delete "$ios" >/dev/null 2>&1 &
@@ -221,13 +240,58 @@ run_shards() {
     # Instance creation is the busy part; don't start every shard at once.
     sleep 3
   done
-  for pid in "${pids[@]}"; do
+  wait_for "$prefix" ${pids[@]+"${pids[@]}"}
+}
+
+# Waits for the given processes. With -f, checks the results every 10s
+# meanwhile: a test that failed once is retried straight away (during the
+# first pass), and a test that failed twice stops the run.
+wait_for() {
+  local prefix="$1" pid running
+  shift
+  while :; do
+    running=0
+    for pid in "$@"; do
+      if kill -0 "$pid" 2>/dev/null; then
+        running=1
+      fi
+    done
+    if [ "$fail_fast" = 1 ]; then
+      fail_fast_check "$prefix"
+    fi
+    [ "$running" = 1 ] || break
+    sleep 10
+  done
+  for pid in "$@"; do
     wait "$pid" || true
   done
 }
 
-echo "Running $(echo "$tests" | wc -w | tr -d ' ') tests of \"$scheme\" across $shards Limrun shards..."
-plan_shards "$shards" "$tests" | run_shards shard
+early_retried=""
+early_pids=()
+fail_fast_check() {
+  local prefix="$1" twice number
+  twice=$(results_py failed-twice "$results"/*.ndjson)
+  if [ -n "$twice" ]; then
+    echo
+    echo "Stopping early (-f): $(for number in $twice; do printf 'test%s ' "$number"; done)failed twice."
+    results_py summary "$results"/shard-*.ndjson "$results"/retry*.ndjson || true
+    exit 1
+  fi
+  [ "$prefix" = shard ] || return 0
+  # Only tests that ran and failed; a shard that stopped early leaves its
+  # tests for the retry pass.
+  for number in $(results_py failed-once "$results"/shard-*.ndjson); do
+    case " $early_retried " in *" $number "*) continue ;; esac
+    early_retried="$early_retried $number"
+    echo "test$number failed; retrying it now on a fresh instance."
+    echo "$number" > "$results/retry-t$number.tests"
+    CREATE_ATTEMPTS=30 run_shard "retry-t$number" \
+      --only-testing "Automated UI Testing/Automated_UI_Testing_test${number}" \
+      > "$results/retry-t$number.ndjson" 2> "$results/retry-t$number.log" &
+    early_pids+=($!)
+  done
+}
 
 # UI tests on shared cloud machines have occasional timing flakes (a slow page
 # load, StoreKit being slow to answer). Give each failed test one more try on
@@ -246,6 +310,7 @@ results_py() {
 import json, re, sys
 mode, files = sys.argv[1], sys.argv[2:]
 last, unfinished, skipped = {}, [], set()
+failures = {}
 for path in files:
     finished = False
     seen = set()
@@ -268,6 +333,8 @@ for path in files:
             # Files are read in order, so a retry overrides the first attempt.
             last[int(match.group(1))] = event
             seen.add(int(match.group(1)))
+            if not event.get("passed"):
+                failures[int(match.group(1))] = failures.get(int(match.group(1)), 0) + 1
     if finished:
         try:
             given = open(path[:-len(".ndjson")] + ".tests").read().split()
@@ -277,6 +344,12 @@ for path in files:
     if not finished:
         unfinished.append(path)
 failed = sorted(n for n, e in last.items() if not e.get("passed"))
+if mode == "failed-twice":
+    print(" ".join(str(n) for n in sorted(failures) if failures[n] >= 2))
+    sys.exit(0)
+if mode == "failed-once":
+    print(" ".join(str(n) for n in sorted(failures)))
+    sys.exit(0)
 requested = [int(t) for t in __import__("os").environ.get("REQUESTED_TESTS", "").split()]
 skipped -= set(last)
 missing = sorted(set(requested) - set(last) - skipped)
@@ -304,10 +377,19 @@ PY
 }
 
 export REQUESTED_TESTS="$tests"
-failed_tests=$(results_py failed "$results"/shard-*.ndjson)
+echo "Running $(echo "$tests" | wc -w | tr -d ' ') tests of \"$scheme\" across $shards Limrun shards..."
+# Process substitution rather than a pipe keeps run_shards in this shell, so
+# -f can start retries as jobs of this shell and stop the run with `exit`.
+run_shards shard < <(plan_shards "$shards" "$tests")
+if [ "$fail_fast" = 1 ]; then
+  wait_for shard ${early_pids[@]+"${early_pids[@]}"}
+fi
+
+# An early retry (-f) that passed already counts.
+failed_tests=$(results_py failed "$results"/shard-*.ndjson $(ls "$results"/retry-t*.ndjson 2>/dev/null))
 if [ -n "$failed_tests" ] && [ "${NO_RETRY:-0}" != "1" ]; then
   echo "Retrying failed or unrun tests once: $failed_tests"
-  plan_shards "$shards" "$failed_tests" | run_shards retry
+  run_shards retry < <(plan_shards "$shards" "$failed_tests")
 
   # A test whose first shard died before running it has only had one attempt
   # (the retry), so it gets one more if that failed.
@@ -316,7 +398,7 @@ if [ -n "$failed_tests" ] && [ "${NO_RETRY:-0}" != "1" ]; then
   second=$(comm -12 <(tr ' ' '\n' <<< "$unrun_first" | sort) <(tr ' ' '\n' <<< "$still_failing" | sort) | grep . | sort -n | tr '\n' ' ' || true)
   if [ -n "${second// /}" ]; then
     echo "Retrying again (their first shard never ran them): $second"
-    plan_shards "$shards" "$second" | run_shards retry2
+    run_shards retry2 < <(plan_shards "$shards" "$second")
   fi
 fi
 
