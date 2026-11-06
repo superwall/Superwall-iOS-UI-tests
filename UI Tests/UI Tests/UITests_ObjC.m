@@ -5305,6 +5305,96 @@ static id<SWKTestConfiguration> kConfiguration;
   }))
 }
 
+/// Test 179: See the Swift version.
+- (void)test179WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  [SWKLandscapeViewController presentWithCompletionHandler:^{
+    {
+      [weakSelf rotateDeviceToLandscape:YES completionHandler:^{
+        [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+        // Assert that the paywall appears
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+          [weakSelf rotateDeviceToLandscape:NO completionHandler:^{
+            // Assert the app is still in landscape
+            TEST_ASSERT_DELAY_VALUE_COMPLETION(2, SWKLandscapeViewController.appOrientation, (^{
+              [[Superwall sharedInstance] dismissWithCompletion:^{
+                // Assert the app is still in landscape after the paywall closes
+                TEST_ASSERT_DELAY_VALUE_COMPLETION(2, SWKLandscapeViewController.appOrientation, ^{})
+              }];
+            }))
+          }];
+        }))
+      }];
+    }
+  }];
+}
+
+/// Test 180: See the Swift version.
+- (void)test180WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  [SWKLandscapeViewController presentWithCompletionHandler:^{
+    [SWKLandscapeViewController presentSheetWithCompletionHandler:^{
+      [weakSelf rotateDeviceToLandscape:YES completionHandler:^{
+        [[Superwall sharedInstance] registerWithPlacement:@"present_data_v4"];
+
+        // Assert that the paywall appears
+        TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+          [weakSelf rotateDeviceToLandscape:NO completionHandler:^{
+            // Assert the app is still in landscape
+            TEST_ASSERT_DELAY_VALUE_COMPLETION(2, SWKLandscapeViewController.appOrientation, (^{
+              [[Superwall sharedInstance] dismissWithCompletion:^{
+                // Assert the app is still in landscape after the paywall closes
+                TEST_ASSERT_DELAY_VALUE_COMPLETION(2, SWKLandscapeViewController.appOrientation, ^{})
+              }];
+            }))
+          }];
+        }))
+      }];
+    }];
+  }];
+}
+
+/// Test 181: See the Swift version.
+- (void)test181WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
+  TEST_START_NUM_ASSERTS(3)
+
+  SWKMockPaywallViewControllerDelegate *delegate = [SWKMockPaywallViewControllerDelegate new];
+  [self holdStrongly:delegate];
+
+  [SWKLandscapeViewController presentWithCompletionHandler:^{
+    [SWKLandscapeViewController presentSheetWithCompletionHandler:^{
+      [weakSelf rotateDeviceToLandscape:YES completionHandler:^{
+        [[Superwall sharedInstance] getPaywallForPlacement:@"present_data_v4" params:nil paywallOverrides:nil delegate:delegate completion:^(SWKGetPaywallResult * _Nonnull result) {
+          SWKPaywallViewController *paywall = result.paywall;
+          if (!paywall) {
+            completionHandler(result.error);
+            return;
+          }
+          [SWKLandscapeViewController presentOnTop:paywall completionHandler:^{
+            // Assert that the paywall appears
+            TEST_ASSERT_DELAY_COMPLETION(kPaywallPresentationDelay, (^{
+              [weakSelf rotateDeviceToLandscape:NO completionHandler:^{
+                // Assert the app is still in landscape
+                TEST_ASSERT_DELAY_VALUE_COMPLETION(2, SWKLandscapeViewController.appOrientation, (^{
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                    [paywall dismissViewControllerAnimated:NO completion:^{
+                      // Assert the app is still in landscape after the paywall closes
+                      TEST_ASSERT_DELAY_VALUE_COMPLETION(2, SWKLandscapeViewController.appOrientation, ^{})
+                    }];
+                  });
+                }))
+              }];
+            }))
+          }];
+        }];
+      }];
+    }];
+  }];
+}
+
 /// Assert survey is displayed after tapping exit button to dismiss a paywall presented by `getPaywall`.
 //- (void)test73WithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler {
 //  TEST_START_NUM_ASSERTS(2)

@@ -15,6 +15,12 @@ class RootViewController: UIViewController {
 
   let communicator = Communicator.shared
 
+  /// Info.plist allows landscape so orientation tests can lock a screen to it, but every other
+  /// test runs in portrait, as before.
+  override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    return .portrait
+  }
+
   override func viewDidLoad() {
     super.viewDidLoad()
 

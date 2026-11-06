@@ -275,6 +275,12 @@ public extension NSObject {
     }
   }
 
+  /// Turns the simulator, like a person turning the phone. The runner turns it back to portrait
+  /// after every test.
+  @objc func rotateDevice(toLandscape: Bool) async {
+    await Communicator.shared.send(.rotateDevice(toLandscape: toLandscape))
+  }
+
   @objc func typeText(_ text: String) async {
     await Communicator.shared.send(.type(text: text))
   }
@@ -450,5 +456,74 @@ extension PaywallResult: CustomStringConvertible {
       case .restored:
         return PaywallResultObjc.restored.description
     }
+  }
+}
+
+/// A landscape-only screen, the way a game locks its orientation in a view controller rather than
+/// in its Info.plist.
+@objc(SWKLandscapeViewController)
+class LandscapeViewController: UIViewController {
+  override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    return .landscape
+  }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = .systemBackground
+  }
+
+  /// Presents it over the root view controller and waits until it's on screen.
+  @MainActor
+  @objc static func present() async {
+    let viewController = LandscapeViewController()
+    viewController.modalPresentationStyle = .fullScreen
+    await withCheckedContinuation { continuation in
+      RootViewController.shared.present(viewController, animated: false) {
+        continuation.resume()
+      }
+    }
+  }
+
+  /// Presents a sheet over it that keeps UIKit's default orientations, like a settings screen.
+  @MainActor
+  @objc static func presentSheet() async {
+    let landscape = RootViewController.shared.presentedViewController
+    let sheet = UIViewController()
+    sheet.view.backgroundColor = .secondarySystemBackground
+    sheet.modalPresentationStyle = .pageSheet
+    await withCheckedContinuation { continuation in
+      landscape?.present(sheet, animated: false) {
+        continuation.resume()
+      }
+    }
+  }
+
+  /// Presents a view controller full screen from whatever is on top of the app, such as the sheet.
+  @MainActor
+  @objc static func presentOnTop(_ viewController: UIViewController) async {
+    var top: UIViewController = RootViewController.shared
+    while let presented = top.presentedViewController {
+      top = presented
+    }
+    viewController.modalPresentationStyle = .fullScreen
+    await withCheckedContinuation { continuation in
+      top.present(viewController, animated: false) {
+        continuation.resume()
+      }
+    }
+  }
+
+  /// Whether the app's own window is showing in landscape or portrait.
+  @objc static var appOrientation: String {
+    if !Thread.isMainThread {
+      return DispatchQueue.main.sync { appOrientation }
+    }
+    // Not the root view controller's window: a full-screen presentation takes its view out of
+    // the window.
+    let scene = UIApplication.shared.connectedScenes.first { $0 is UIWindowScene } as? UIWindowScene
+    guard let orientation = scene?.interfaceOrientation else {
+      return "unknown"
+    }
+    return orientation.isLandscape ? "landscape" : "portrait"
   }
 }

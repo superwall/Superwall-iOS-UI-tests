@@ -178,6 +178,10 @@ class Automated_UI_Testing: XCTestCase {
         app.swipeDown(velocity: XCUIGestureVelocity.fast)
         Communicator.shared.completed(action: action)
 
+      case .rotateDevice(let toLandscape):
+        XCUIDevice.shared.orientation = toLandscape ? .landscapeLeft : .portrait
+        Communicator.shared.completed(action: action)
+
       case .failTransactions:
         storeKitTestSession.failTransactionsEnabled = true
         Communicator.shared.completed(action: action)
@@ -342,6 +346,9 @@ class Automated_UI_Testing: XCTestCase {
     await Communicator.shared.send(.runTest(number: number))
 
     watchdog.cancel()
+
+    // The simulator keeps its orientation from one test to the next.
+    await MainActor.run { XCUIDevice.shared.orientation = .portrait }
 
     // Stop listening for action requests
     NotificationCenter.default.removeObserver(observer)

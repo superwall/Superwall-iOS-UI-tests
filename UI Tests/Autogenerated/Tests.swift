@@ -718,3 +718,15 @@ class Automated_UI_Testing_test178: Automated_UI_Testing {
   func test178() async throws { try await performSDKTest(number: 178) }
 }
 
+class Automated_UI_Testing_test179: Automated_UI_Testing {
+  func test179() async throws { try await performSDKTest(number: 179) }
+}
+
+class Automated_UI_Testing_test180: Automated_UI_Testing {
+  func test180() async throws { try await performSDKTest(number: 180) }
+}
+
+class Automated_UI_Testing_test181: Automated_UI_Testing {
+  func test181() async throws { try await performSDKTest(number: 181) }
+}
+
