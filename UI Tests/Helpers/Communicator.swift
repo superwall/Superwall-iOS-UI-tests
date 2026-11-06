@@ -123,6 +123,7 @@ public class Communicator {
       case tapElement(label: String, index: Int, systemOnly: Bool)
       case tapAlertButton(index: Int)
       case swipeDown
+      case rotateDevice(toLandscape: Bool)
       case failTransactions
       case activateSubscription(productIdentifier: String)
       case expireSubscription(productIdentifier: String)

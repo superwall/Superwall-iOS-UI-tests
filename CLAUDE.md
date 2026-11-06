@@ -64,6 +64,11 @@ doesn't run on macOS 27 hosts). Taps target elements by accessibility label wher
 The runner waits up to 15s for the element. Remaining `touch(CGPoint)` calls (unlabelled close icons,
 "tap anywhere") are written for 393x852 and mapped for other sizes (`TouchMapping`).
 
+`await rotateDevice(toLandscape: true)` turns the simulator (ObjC: `rotateDeviceToLandscape:`); the
+runner turns it back to portrait after every test. Info.plist allows landscape so tests 179–181 can
+lock a screen to it (`LandscapeViewController`), the way Unity games lock orientation in a view
+controller. `RootViewController` only allows portrait, so every other test runs in portrait as before.
+
 ### Test environment
 - Paywall preloading is off (`TestOptions`): preloading gives every paywall in the account its own
   WebKit process and starves the machine when simulators run in parallel.

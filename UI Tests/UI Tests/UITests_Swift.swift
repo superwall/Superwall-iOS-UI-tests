@@ -6331,6 +6331,84 @@ final class UITests_Swift: NSObject, Testable {
     await assert(after: Constants.paywallPresentationDelay)
   }
 
+  /// Test 179: A paywall over a landscape-only screen stays in landscape when the phone turns to
+  /// portrait, and the app is still in landscape once it closes.
+  func test179() async throws {
+    await LandscapeViewController.present()
+    await rotateDevice(toLandscape: true)
+
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that the paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await rotateDevice(toLandscape: false)
+
+    // Assert the app is still in landscape
+    await assert(value: LandscapeViewController.appOrientation, after: 2)
+
+    await Superwall.shared.dismiss()
+
+    // Assert the app is still in landscape after the paywall closes
+    await assert(value: LandscapeViewController.appOrientation, after: 2)
+  }
+
+  /// Test 180: Same as test 179, with the paywall opened while a sheet is showing over the
+  /// landscape-only screen. The sheet allows portrait, but UIKit doesn't let a sheet decide the
+  /// app's orientation, so the paywall mustn't either.
+  func test180() async throws {
+    await LandscapeViewController.present()
+    await LandscapeViewController.presentSheet()
+    await rotateDevice(toLandscape: true)
+
+    Superwall.shared.register(placement: "present_data_v4")
+
+    // Assert that the paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await rotateDevice(toLandscape: false)
+
+    // Assert the app is still in landscape
+    await assert(value: LandscapeViewController.appOrientation, after: 2)
+
+    await Superwall.shared.dismiss()
+
+    // Assert the app is still in landscape after the paywall closes
+    await assert(value: LandscapeViewController.appOrientation, after: 2)
+  }
+
+  /// Test 181: Same as test 180, but the app gets the paywall with `getPaywall` and presents it
+  /// full screen from the sheet itself.
+  func test181() async throws {
+    await LandscapeViewController.present()
+    await LandscapeViewController.presentSheet()
+    await rotateDevice(toLandscape: true)
+
+    let delegate = Configuration.MockPaywallViewControllerDelegate()
+    holdStrongly(delegate)
+
+    guard let paywall = try? await Superwall.shared.getPaywall(forPlacement: "present_data_v4", delegate: delegate) else {
+      await Communicator.shared.send(.fail(message: "getPaywall didn't return a paywall"))
+      return
+    }
+    await LandscapeViewController.presentOnTop(paywall)
+
+    // Assert that the paywall appears
+    await assert(after: Constants.paywallPresentationDelay)
+
+    await rotateDevice(toLandscape: false)
+
+    // Assert the app is still in landscape
+    await assert(value: LandscapeViewController.appOrientation, after: 2)
+
+    await MainActor.run {
+      paywall.dismiss(animated: false)
+    }
+
+    // Assert the app is still in landscape after the paywall closes
+    await assert(value: LandscapeViewController.appOrientation, after: 2)
+  }
+
   // TODO: The loading of the paywall doesn't always match up. Need to disable animations.
 //  /// Assert exit/refresh shows up if paywall.js isn't installed on page. Tap close button.
 //  func test73() async throws {
